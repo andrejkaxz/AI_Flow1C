@@ -1,0 +1,30 @@
+{
+  "$schema": "../schemas/capabilities.schema.json",
+  "schema_version": 1,
+  "python": {
+    "minimum": "3.10",
+    "preferred": "3.14"
+  },
+  "capabilities": {
+    "core": {"requires": [], "optional": false},
+    "git": {"requires": ["core"], "optional": false},
+    "project": {"requires": ["git"], "optional": false},
+    "office": {"requires": ["project"], "optional": false},
+    "rlm": {"requires": ["office"], "optional": false},
+    "bsl-ls": {"requires": ["rlm"], "optional": false},
+    "cc-1c-skills": {"requires": ["bsl-ls"], "optional": true, "opt_in": true},
+    "template-core": {"requires": ["core"], "optional": false},
+    "template-markdown": {"requires": ["template-core"], "optional": false},
+    "template-docx": {"requires": ["template-core"], "optional": false}
+  },
+  "profiles": {
+    "conversation": {"capabilities": ["core"]},
+    "project-basic": {"capabilities": ["project"]},
+    "documents": {"capabilities": ["office"]},
+    "analysis": {"capabilities": ["rlm"], "recommended": true},
+    "implementation": {"capabilities": ["bsl-ls"]},
+    "full": {"capabilities": ["cc-1c-skills"], "explicit_only": true},
+    "template-markdown": {"capabilities": ["template-markdown"]},
+    "template-docx": {"capabilities": ["template-markdown", "template-docx"]}
+  }
+}

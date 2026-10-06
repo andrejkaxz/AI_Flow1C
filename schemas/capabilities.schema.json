@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://git.example.ru/team/flow1c/schemas/capabilities.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "python", "capabilities", "profiles"],
+  "properties": {
+    "$schema": {"type": "string"},
+    "schema_version": {"const": 1},
+    "python": {
+      "type": "object",
+      "required": ["minimum", "preferred"],
+      "properties": {
+        "minimum": {"type": "string"},
+        "preferred": {"type": "string"}
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["requires", "optional"],
+        "properties": {
+          "requires": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+          "optional": {"type": "boolean"},
+          "opt_in": {"type": "boolean"}
+        }
+      }
+    },
+    "profiles": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["capabilities"],
+        "properties": {
+          "capabilities": {"type": "array", "items": {"type": "string"}, "minItems": 1, "uniqueItems": true},
+          "recommended": {"type": "boolean"},
+          "explicit_only": {"type": "boolean"}
+        }
+      }
+    }
+  }
+}

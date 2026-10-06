@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schema_version", "source_sha256", "source_format", "extractor_version", "targets", "blocks", "resources", "metadata"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "extractor_version": {"const": 1},
+    "source_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "source_format": {"enum": ["markdown", "docx"]},
+    "targets": {"type": "array", "minItems": 1, "maxItems": 200000, "items": {
+      "type": "object", "required": ["id", "kind", "range", "part", "supported", "text"],
+      "properties": {
+        "id": {"type": "string"}, "kind": {"enum": ["field", "section", "paragraph", "table"]},
+        "range": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "integer", "minimum": 0}},
+        "part": {"type": "string"}, "supported": {"type": "boolean"}, "text": {"type": "string"}
+      }
+    }},
+    "blocks": {"type": "array"}, "resources": {"type": "array", "items": {"type": "string"}},
+    "metadata": {"type": "object"}, "missing_resources": {"type": "array", "items": {"type": "string"}}
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "type": "object",
+  "required": ["schema_version", "state", "ready", "operation_id", "library_id", "document_type", "template_id", "revision_id", "storage_kind", "checks", "questions", "next_actions", "preserved_state"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "state": {"enum": ["READY", "WAITING_SOURCE", "RECEIVED", "ANALYZING", "PROFILE_DRAFT", "PROFILE_COMMITTING", "NEEDS_CLARIFICATION", "VALIDATED", "ACTIVATING", "ACTIVE", "FAILED_RECOVERABLE", "DEFERRED", "PLANNED"]},
+    "ready": {"type": "boolean"},
+    "operation_id": {"type": ["string", "null"]}, "library_id": {"type": ["string", "null"]},
+    "document_type": {"type": ["string", "null"]}, "template_id": {"type": ["string", "null"]}, "revision_id": {"type": ["string", "null"]},
+    "storage_kind": {"const": "documentation"}, "checks": {"type": "array"}, "questions": {"type": "array"},
+    "next_actions": {"type": "array", "items": {"type": "string"}}, "preserved_state": {}
+  }
+}

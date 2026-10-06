@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Flow1C registry import status",
+  "type": "object",
+  "required": ["status", "source_sha256", "report_path", "updated_at"],
+  "properties": {
+    "status": {"enum": ["verified", "partial", "invalid"]},
+    "source_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "report_path": {"type": "string", "minLength": 1},
+    "errors_count": {"type": "integer", "minimum": 0},
+    "warnings_count": {"type": "integer", "minimum": 0},
+    "updated_at": {"type": "string", "minLength": 1}
+  },
+  "additionalProperties": true
+}

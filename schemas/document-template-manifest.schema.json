@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "type": "object",
+  "required": ["schema_version", "state", "template_id", "revision_id", "document_type", "source_format", "source_sha256", "parent_revision", "operation_id", "created_at", "extractor_version", "profile_builder_version", "source", "hashes"],
+  "properties": {
+    "schema_version": {"const": 1}, "state": {"const": "VALIDATED"},
+    "template_id": {"type": "string"}, "revision_id": {"type": "string"}, "document_type": {"type": "string"},
+    "source_format": {"enum": ["markdown", "docx"]}, "source_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "parent_revision": {"type": ["string", "null"]}, "operation_id": {"type": "string"}, "created_at": {"type": "string"},
+    "extractor_version": {"const": 1}, "profile_builder_version": {"const": 1},
+    "source": {"enum": ["source/template.md", "source/template.docx"]},
+    "hashes": {"type": "object", "minProperties": 5, "additionalProperties": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}
+  }
+}

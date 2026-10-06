@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://git.example.ru/team/flow1c/schemas/workflow.schema.json",
+  "title": "Flow1C shared configuration",
+  "type": "object",
+  "required": ["version", "project", "registry", "gitea"],
+  "properties": {
+    "version": {"const": 1},
+    "python": {
+      "type": "object",
+      "required": ["minimum", "preferred"],
+      "properties": {
+        "minimum": {"const": "3.10"},
+        "preferred": {"const": "3.14"}
+      }
+    },
+    "project": {
+      "type": "object",
+      "required": ["name", "default_branch"]
+    },
+    "registry": {
+      "type": "object",
+      "required": [
+        "requirements_sheet",
+        "requirements_header_row",
+        "requirements_data_row",
+        "requirement_id_column",
+        "specifications_sheet",
+        "specifications_header_row",
+        "specifications_data_row"
+      ],
+      "properties": {
+        "requirement_id_column": {"const": "J"}
+      }
+    },
+    "gitea": {
+      "type": "object",
+      "required": ["base_url", "owner", "repository", "token_env"]
+    }
+  }
+}

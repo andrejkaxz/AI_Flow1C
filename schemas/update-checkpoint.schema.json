@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Flow1C update result and checkpoint (additive schema 2)",
+  "type": "object",
+  "required": ["schema_version", "state", "ready", "update_id", "phase", "config_signature", "options"],
+  "properties": {
+    "schema_version": {"const": 2},
+    "update_id": {"type": "string", "format": "uuid"},
+    "state": {"enum": ["READY", "WAITING_BACKGROUND", "BLOCKED", "RECOVERY_REQUIRED", "NEEDS_CONFIRMATION", "UPDATE_AVAILABLE", "REVIEW_REQUIRED"]},
+    "ready": {"type": "boolean"},
+    "phase": {"enum": ["preflight", "workflow", "indexes", "doctor", "complete"]},
+    "config_signature": {"type": "string"},
+    "checkpoint_path": {"type": "string"},
+    "previous_commit": {"type": "string"},
+    "current_commit": {"type": "string"},
+    "backup_directory": {"type": "string"},
+    "jobs": {"type": "array", "items": {"type": "object"}},
+    "options": {
+      "type": "object",
+      "required": ["allow_external_updates", "skip_external_tool_updates", "repair_prerequisites"],
+      "properties": {
+        "allow_external_updates": {"type": "boolean"},
+        "skip_external_tool_updates": {"type": "boolean"},
+        "repair_prerequisites": {"type": "boolean"}
+      }
+    }
+  },
+  "allOf": [{"if": {"properties": {"state": {"const": "READY"}}}, "then": {"properties": {"ready": {"const": true}}}, "else": {"properties": {"ready": {"const": false}}}}]
+}

@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "policy": {
+    "check_updates": true,
+    "apply_updates": false,
+    "allow_network": true,
+    "rollback_on_failure": true
+  },
+  "rlm_tools_bsl": {
+    "package": "rlm-tools-bsl",
+    "requirement": ">=1.34,<2",
+    "index_package": "rlm-bsl-index"
+  },
+  "cc_1c_skills": {
+    "repository": "https://github.com/Nikolay-Shirokov/cc-1c-skills.git",
+    "remote": "origin",
+    "ref": "main",
+    "path": ".tools/cc-1c-skills",
+    "switch_command": ["scripts/switch.py", "agents"]
+  },
+  "bsl_language_server": {
+    "platform": "windows",
+    "version": "1.0.7",
+    "url": "https://github.com/1c-syntax/bsl-language-server/releases/download/v1.0.7/bsl-language-server_win.zip",
+    "sha256": "fed523e3b6d1d64c65a0df08ff74088c4d26eb3c550a2ff776c84ac2c8655c30",
+    "executable": "bsl-language-server/bsl-language-server.exe"
+  }
+}

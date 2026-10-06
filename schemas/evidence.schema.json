@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schema_version", "operation", "code", "artifacts", "rlm_queries", "source_reads", "changed_files"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "operation": {"type": "string"},
+    "code": {"type": ["string", "null"], "minLength": 1, "maxLength": 128, "pattern": "^[^\\u0000-\\u001F\\u007F]+$", "deprecated": true},
+    "project_reference": {"type": ["string", "null"], "minLength": 1, "maxLength": 128, "pattern": "^[^\\u0000-\\u001F\\u007F]+$"},
+    "task_reference": {"type": ["string", "null"], "minLength": 1, "maxLength": 128, "pattern": "^[^\\u0000-\\u001F\\u007F]+$"},
+    "work_reference": {"type": ["string", "null"], "minLength": 1, "maxLength": 128, "pattern": "^[^\\u0000-\\u001F\\u007F]+$"},
+    "traceability_mode": {"enum": ["registry", "provisional"]},
+    "requirement_basis": {
+      "type": "object",
+      "required": ["type", "sha256"],
+      "properties": {
+        "type": {"enum": ["registry_snapshot", "user_brief", "mixed"]},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      },
+      "additionalProperties": true
+    },
+    "registry_snapshot_sha256": {"type": ["string", "null"]},
+    "deviations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {"enum": ["process", "registry_bypass", "completion"]},
+          "actor": {"type": "string"},
+          "reason": {"type": "string"},
+          "user_statement": {"type": "string"},
+          "scope": {"enum": ["gate", "work-item"]},
+          "condition_ids": {"type": "array", "items": {"type": "string"}},
+          "waived_conditions": {"type": "array", "items": {"type": "string"}},
+          "recorded_at": {"type": "string"}
+        },
+        "additionalProperties": true
+      }
+    },
+    "revalidation_required": {"type": "boolean"},
+    "gate_id": {"type": "string"},
+    "validation_snapshot": {"type": "object"},
+    "context_sha256": {"type": "string"},
+    "context_evidence_id": {"type": "string", "pattern": "^CTX-[a-f0-9]{12}$"},
+    "artifacts": {"type": "array"},
+    "diff": {"type": ["object", "null"]},
+    "rlm_queries": {"type": "array"},
+    "source_reads": {"type": "array"},
+    "bsl_ls": {"type": ["object", "null"]},
+    "changed_files": {"type": "array"}
+  },
+  "additionalProperties": true
+}

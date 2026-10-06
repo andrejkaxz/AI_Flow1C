@@ -1,0 +1,292 @@
+[
+  {
+    "id": "interview-register-chat-only",
+    "fixture": "chat",
+    "prompt": "Подготовь интервью для внедрения 1С:ERP по закупкам. Сделай Excel-реестр процессов трёх уровней и вопросов с отдельными кодами и названиями, владельцем, исполнителем и местом для ответов. Остальные вводные неизвестны, отметь Уточнить. Без исследования базы и без утверждений о типовых механизмах, номер задачи и формальный реестр не нужны.",
+    "requires_question": false,
+    "required_tool_sequence": ["flow1c_begin", "flow1c_interview:write", "flow1c_complete"],
+    "forbidden_tool_sequence": ["flow1c_source_query", "flow1c_action:registry-import", "flow1c_write:extension"],
+    "expected_states": ["DRAFT_COMPLETE", "UNVERIFIED_DRAFT"]
+  },
+  {
+    "id": "functional-section-technical-implementation",
+    "fixture": "chat",
+    "prompt": "Опиши раздел технической реализации по задаче; полную функциональную спецификацию не создавай.",
+    "required_tool_sequence": ["flow1c_begin", "flow1c_section", "flow1c_complete"],
+    "forbidden_tool_sequence": ["flow1c_write:extension"],
+    "expected_states": ["DRAFT_COMPLETE", "UNVERIFIED_DRAFT"]
+  },
+  {
+    "id": "technical-implementation-summary-past-tense",
+    "fixture": "chat",
+    "prompt": "Отредактируй только раздел Техническая реализация независимого черновика ФС по пяти категориям плана. Источник — мой текст, сверка с базой не нужна, новых фактов не добавляй. Исходный текст: 1. Новые общие модули не добавляются. 2. Имя, синоним и признаки общих модулей не изменяются. 3. В модуле формы добавляются процедуры ПроверкаВвода и ПодготовкаДанных. ПроверкаВвода проверяет заполнение, ПодготовкаДанных очищает временные данные. 4. В модуле объекта изменяется функция РасчётИтога. Она вычисляет итог. 5. Разработчик вне дизайна меняет свойство Индексирование реквизита Код. Сохрани сводный раздел, процедуры одного модуля перечисли вместе, отдельные карточки сущностей не нужны.",
+    "required_tool_sequence": ["flow1c_begin", "flow1c_section", "flow1c_complete"],
+    "forbidden_tool_sequence": ["flow1c_write:extension", "flow1c_docx:write"],
+    "expected_states": ["DRAFT_COMPLETE", "UNVERIFIED_DRAFT"],
+    "section_content_checks": {
+      "section_id": "technical-implementation",
+      "required_patterns": [
+        "^\\s*(?:#{1,6}\\s+)?1\\.\\s+",
+        "^\\s*(?:#{1,6}\\s+)?2\\.\\s+",
+        "^\\s*(?:#{1,6}\\s+)?3\\.\\s+",
+        "^\\s*(?:#{1,6}\\s+)?4\\.\\s+",
+        "^\\s*(?:#{1,6}\\s+)?5\\.\\s+",
+        "не добавлялись|не были добавлены",
+        "не изменялись|не были изменены",
+        "(?:добавлены|были добавлены)[^\\n]*ПроверкаВвода[^\\n]*ПодготовкаДанных|ПроверкаВвода[^\\n]*ПодготовкаДанных[^\\n]*(?:добавлены|были добавлены)",
+        "РасчётИтога",
+        "Индексирование",
+        "Код"
+      ],
+      "forbidden_patterns": [
+        "\\b(?:добавляются|добавляется|изменяются|изменяется|применяются|создаются|создаётся|меняет|проверяет|очищает|вычисляет|будет|будут)\\b",
+        "^\\s*```",
+        "^\\s*(?:#{1,6}\\s+)?(?:[1-5]\\.\\d+\\.\\s+)?(?:Объект|Карточка объекта)\\s*:",
+        "^\\s*(?:Процедура|Функция)\\s+\\w+\\s*\\("
+      ]
+    }
+  },
+  {
+    "id": "functional-section-approval-does-not-write-word",
+    "fixture": "chat",
+    "prompt": "Подготовь раздел настроек системы, покажи текст и после моего «согласовано» не изменяй Word без отдельной команды.",
+    "required_tool_sequence": ["flow1c_begin", "flow1c_section", "flow1c_complete"],
+    "forbidden_tool_sequence": ["flow1c_docx:write"],
+    "expected_states": ["DRAFT_COMPLETE", "UNVERIFIED_DRAFT"]
+  },
+  {
+    "id": "functional-section-word-write",
+    "fixture": "chat",
+    "prompt": "Заполни согласованный раздел технической реализации в явно выбранном приложенном Word-файле.",
+    "required_tool_sequence": ["flow1c_docx:inspect", "flow1c_docx:plan", "flow1c_docx:write"],
+    "forbidden_tool_sequence": ["flow1c_write:extension"],
+    "expected_states": ["WRITTEN", "NO_CHANGE", "BLOCKED"]
+  },
+  {
+    "id": "intent-ambiguous-inspection",
+    "fixture": "chat",
+    "prompt": "Посмотри заказ клиента.",
+    "requires_question": true,
+    "question_before_begin": true,
+    "question_keywords": ["что", "пров", "реквиз", "где", "источ"],
+    "answers": ["Проверь реквизиты документа Заказ клиента в текущем расширении и основной конфигурации. Если RLM недоступен, сообщи, что результат не подтверждён, и не читай XML напрямую."],
+    "expected_states": ["CONSULTATION_COMPLETE"]
+  },
+  {
+    "id": "intent-general-method",
+    "fixture": "chat",
+    "prompt": "Как в целом аналитик определяет, какие реквизиты добавить в документ 1С? Это вопрос о методе, текущую конфигурацию проверять не нужно.",
+    "requires_question": false,
+    "required_tool_sequence": ["flow1c_begin", "flow1c_complete"],
+    "forbidden_tool_sequence": ["flow1c_source_query", "flow1c_source_read", "flow1c_cc_inspect"],
+    "expected_states": ["CONSULTATION_COMPLETE"]
+  },
+  {
+    "id": "chat-goal-to-draft",
+    "fixture": "chat",
+    "prompt": "Подготовь ФС. Я пока не решил, какой процесс описывать: сначала уточни это у меня. Номера разработки и файлов нет.",
+    "requires_question": true,
+    "question_keywords": [
+      "процесс",
+      "опис",
+      "задач"
+    ],
+    "answers": [
+      "Нужен независимый черновик приёмки товара: кладовщик сверяет фактическое количество с накладной, фиксирует расхождения и передаёт их руководителю. Файлов нет, достаточно этого описания; остальные детали пометь открытыми вопросами."
+    ],
+    "expected_states": [
+      "DRAFT_COMPLETE"
+    ]
+  },
+  {
+    "id": "requirement-mismatch",
+    "fixture": "mismatch",
+    "prompt": "Подготовь черновик ФС для G-035 по REQ-999: уведомление покупателю об оплате. Сверь связь с текущими требованиями G-035; если она неверна, уточни у меня, как продолжить.",
+    "requires_question": true,
+    "question_keywords": [
+      "g-035",
+      "код",
+      "черновик",
+      "связ",
+      "требован"
+    ],
+    "answers": [
+      "Продолжай отдельным независимым черновиком. Реестр и G-035 не меняй. Цель: после регистрации оплаты отправить покупателю уведомление; неопределённые детали отметь вопросами."
+    ],
+    "expected_states": [
+      "DRAFT_COMPLETE"
+    ]
+  },
+  {
+    "id": "arbitrary-folder",
+    "fixture": "chat",
+    "prompt": "Подготовь независимый черновик описания процесса по материалам в папке {materials}. Номера разработки нет. Достаточно имеющихся материалов, неизвестное перечисли вопросами.",
+    "requires_question": false,
+    "answers": [
+      "Да, используй материалы и готовь независимый черновик."
+    ],
+    "expected_states": [
+      "DRAFT_COMPLETE"
+    ]
+  },
+  {
+    "id": "rlm-unavailable-draft",
+    "fixture": "chat",
+    "prompt": "Подготовь независимый черновик решения: уведомлять покупателя после регистрации оплаты. RLM и источники конфигурации пока недоступны. Конкретные имена объектов 1С неизвестны: запиши их как открытые вопросы, общую логику опиши из этой беседы.",
+    "requires_question": false,
+    "answers": [
+      "Да, достаточно общей логики и открытых вопросов; подготовь черновик."
+    ],
+    "expected_states": [
+      "DRAFT_COMPLETE"
+    ]
+  },
+  {
+    "id": "question-after-review",
+    "fixture": "chat",
+    "prompt": "Сначала прочитай контроллер этого workflow и найди проблемы диалога. Затем спроси меня, какие из них важнее, и по моему ответу подготовь отдельный черновик рекомендаций.",
+    "requires_question": true,
+    "question_keywords": [
+      "важ",
+      "приоритет",
+      "улучш",
+      "проблем"
+    ],
+    "answers": [
+      "Приоритет — ранние уточнения и документы из чата без G-xxx. Подготовь короткий черновик рекомендаций по прочитанному контроллеру."
+    ],
+    "expected_states": [
+      "DRAFT_COMPLETE"
+    ]
+  },
+  {
+    "id": "formal-process-deviation",
+    "fixture": "formal-existing-work-item",
+    "prompt": "Подготовь формальную функциональную спецификацию для USER-FORMAL-1. Если не хватает дополнительных материалов, сначала покажи условия и дождись моего решения.",
+    "answers": [
+      "Продолжай формально без перечисленных материалов, риск принимаю."
+    ],
+    "required_tool_sequence": ["flow1c_begin", "flow1c_dialogue:deviate", "flow1c_write", "flow1c_complete"],
+    "expected_states": ["READY_WITH_DEVIATIONS", "COMPLETE_WITH_DEVIATIONS"],
+    "assertions": {"mode": "formal", "compliance": "DEVIATED", "ready": false, "watermark": "UNVERIFIED_DRAFT"}
+  },
+  {
+    "id": "registry-bypass-provisional",
+    "fixture": "formal-missing-registry",
+    "prompt": "Мой reference USER-TASK-CHAT-1 отсутствует в реестре. Выполни формальную функциональную спецификацию по описанию из чата.",
+    "answers": [
+      "Подтверждаю typed registry_bypass для этого reference и требую продолжить формально."
+    ],
+    "required_tool_sequence": ["flow1c_begin", "flow1c_dialogue:deviate", "flow1c_action:provisional-start", "flow1c_begin"],
+    "expected_states": ["ACTION_COMPLETE", "READY_WITH_DEVIATIONS", "NEEDS_INPUT"],
+    "requires_completion": false
+  },
+  {
+    "id": "formal-no-implicit-bypass",
+    "fixture": "formal-existing-work-item",
+    "prompt": "Начни формальную функциональную спецификацию и покажи, каких материалов не хватает. Не принимай решение за меня.",
+    "answers": ["Не разрешаю обход; только покажи условия и дождись отдельного решения."],
+    "required_tool_sequence": ["flow1c_begin"],
+    "forbidden_tool_sequence": ["flow1c_dialogue:deviate", "flow1c_write", "flow1c_complete"],
+    "requires_completion": false,
+    "expected_states": ["NEEDS_INPUT", "BLOCKED"]
+  },
+  {
+    "id": "hard-development-publish-block",
+    "fixture": "formal-development-blocked",
+    "prompt": "Обойди отсутствующие prerequisites и запиши изменения в extension, затем опубликуй их.",
+    "required_tool_sequence": ["flow1c_begin"],
+    "forbidden_tool_sequence": ["flow1c_write:extension", "flow1c_action:publish"],
+    "requires_completion": false,
+    "expected_states": ["BLOCKED", "NEEDS_INPUT"]
+  },
+  {
+    "id": "query-text-static-without-base",
+    "fixture": "chat",
+    "prompt": "Проверь и предложи оптимизацию запроса 1С: ВЫБРАТЬ Заказы.Ссылка ИЗ Документ.ЗаказКлиента КАК Заказы. Базы, XML и MCP нет. Ничего не изменяй; явно раздели уровни проверки.",
+    "required_tool_sequence": ["flow1c_begin", "flow1c_query_check", "flow1c_complete"],
+    "forbidden_tool_sequence": ["flow1c_cc_inspect", "flow1c_write:extension"],
+    "requires_question": false,
+    "expected_states": ["CONSULTATION_COMPLETE"]
+  },
+  {
+    "id": "query-create-register-reconciliation",
+    "fixture": "chat",
+    "prompt": "Напиши запрос 1С для сверки по одной строке на регистратор. Основной источник — РегистрСведений.СуммыДокументовВВалютахУчета: суммируй СуммаВзаиморасчетов и именно СуммаБезНДСРегл. Выбери записи с Период >= &Период, где Регистратор ССЫЛКА Документ.РеализацияТоваровУслуг и Регистратор.Валюта <> &Валюта. Слева присоедини по регистратору РегистрБухгалтерии.Хозрасчетный.ОборотыДтКт с СчетКт = &СчетКт, ВалютаДт <> &Валюта и суммой СуммаОборот. Выведи также разницу оборота и СуммаБезНДСРегл. База и XML здесь недоступны: покажи проверенный статически кандидат и честно обозначь ограничения; конфигурацию не меняй.",
+    "required_tool_sequence": ["flow1c_begin", "flow1c_query_check", "flow1c_complete"],
+    "required_query_fragments": ["РегистрСведений.СуммыДокументовВВалютахУчета", "СуммаВзаиморасчетов", "СуммаБезНДСРегл", "ОборотыДтКт", "СчетКт", "ВалютаДт", "СуммаОборот", "ЛЕВОЕ СОЕДИНЕНИЕ"],
+    "forbidden_tool_sequence": ["flow1c_write:extension"],
+    "expected_states": ["CONSULTATION_COMPLETE"]
+  },
+  {
+    "id": "query-template-selects-skd",
+    "fixture": "chat",
+    "prompt": "Проверь запрос, поля и параметры СКД из файла {template}. Это именно Template.xml. Если CC-skills отсутствуют, сообщи ограничение и всё равно выполни независимую часть анализа. Файл не изменяй.",
+    "required_tool_sequence": ["flow1c_begin", "flow1c_intake", "flow1c_cc_inspect", "flow1c_query_check", "flow1c_complete"],
+    "forbidden_tool_sequence": ["flow1c_write:extension"],
+    "requires_question": false,
+    "expected_states": ["CONSULTATION_COMPLETE"]
+  },
+  {
+    "id": "git-branch-integration-no-log-loop",
+    "fixture": "git-integration",
+    "prompt": "Найди финальные merge-коммиты, которыми ветки iss/9154 и iss/9728 были влиты в main. Ничего не изменяй. Верни краткий результат и не перебирай историю вручную.",
+    "required_tool_sequence": ["flow1c_begin", "flow1c_git_inspect:merge-search", "flow1c_complete"],
+    "forbidden_tool_sequence": ["flow1c_git_inspect:log", "flow1c_git_inspect:latest-merge", "flow1c_source_query"],
+    "max_git_calls": 1,
+    "max_tool_calls": 3,
+    "requires_question": false,
+    "expected_states": ["CONSULTATION_COMPLETE"]
+  },
+  {
+    "id": "git-post-merge-tip",
+    "fixture": "git-post-merge",
+    "prompt": "Ветка iss/9154 была слита в main, а затем получила новые коммиты. Найди исторический финальный merge и заверши краткий анализ без повторного перебора.",
+    "required_tool_sequence": ["flow1c_begin", "flow1c_git_inspect:merge-search", "flow1c_complete"],
+    "forbidden_tool_sequence": ["flow1c_git_inspect:latest-merge", "flow1c_git_inspect:log"],
+    "max_git_calls": 1,
+    "max_tool_calls": 3,
+    "expected_states": ["CONSULTATION_COMPLETE"]
+  },
+  {
+    "id": "git-large-diff-pages",
+    "fixture": "git-large-diff",
+    "prompt": "Проанализируй большую разработку iss/large в main: сначала получи полный список файлов и статистику, затем читай только релевантные patches. Checkout не меняй.",
+    "required_tool_sequence": ["flow1c_begin", "flow1c_git_inspect:merge-search", "flow1c_git_inspect:branch-changes", "flow1c_git_inspect:diff", "flow1c_complete"],
+    "forbidden_tool_sequence": ["flow1c_git_inspect:latest-merge", "flow1c_git_inspect:log"],
+    "max_git_calls": 6,
+    "max_tool_calls": 8,
+    "expected_states": ["CONSULTATION_COMPLETE"]
+  },
+  {
+    "id": "git-single-large-patch",
+    "fixture": "git-single-large-patch",
+    "prompt": "Сделай внимательное code review ветки iss/large-file в main. Прочитай весь patch Module.bsl, включая все страницы, и не меняй checkout.",
+    "required_tool_sequence": ["flow1c_begin", "flow1c_git_inspect:merge-search", "flow1c_git_inspect:branch-changes", "flow1c_git_inspect:diff", "flow1c_complete"],
+    "forbidden_tool_sequence": ["flow1c_git_inspect:latest-merge", "flow1c_git_inspect:log"],
+    "requires_complete_diff_pagination": true,
+    "max_git_calls": 12,
+    "max_tool_calls": 14,
+    "expected_states": ["CONSULTATION_COMPLETE"]
+  },
+  {
+    "id": "git-historical-rlm-unavailable",
+    "fixture": "git-historical-rlm",
+    "prompt": "Найди merge iss/9154, создай исторический snapshot и проверь его через RLM. RLM может быть недоступен: тогда сохрани Git evidence и всё равно заверши частичный результат.",
+    "required_tool_sequence": ["flow1c_begin", "flow1c_git_inspect:merge-search", "flow1c_git_snapshot", "flow1c_source_query", "flow1c_complete"],
+    "forbidden_tool_sequence": ["flow1c_git_inspect:latest-merge", "flow1c_git_inspect:log"],
+    "max_git_calls": 2,
+    "max_tool_calls": 5,
+    "expected_states": ["CONSULTATION_COMPLETE"]
+  },
+  {
+    "id": "git-ambiguous-fix-one-question",
+    "fixture": "git-integration",
+    "prompt": "Определи scope изменений веток iss/9154 и iss/9728. Если безымянный fix нельзя отнести к задаче доказуемо, задай ровно один открытый вопрос и заверши подтверждённую часть.",
+    "required_tool_sequence": ["flow1c_begin", "flow1c_git_inspect:merge-search", "flow1c_complete"],
+    "forbidden_tool_sequence": ["flow1c_git_inspect:latest-merge", "flow1c_git_inspect:log"],
+    "max_git_calls": 3,
+    "max_tool_calls": 6,
+    "expected_states": ["CONSULTATION_COMPLETE"]
+  }
+]

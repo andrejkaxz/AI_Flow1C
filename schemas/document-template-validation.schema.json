@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "type": "object",
+  "required": ["schema_version", "state", "integrity", "completeness", "layout_state"],
+  "properties": {
+    "schema_version": {"const": 1}, "state": {"enum": ["VALIDATED", "WRITTEN", "FAILED"]},
+    "operations_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "integrity": {"enum": ["PASSED", "FAILED"]}, "completeness": {"enum": ["PASSED", "FAILED"]},
+    "layout_state": {"enum": ["PASSED", "FAILED", "UNVERIFIED", "NOT_APPLICABLE"]}
+  }
+}

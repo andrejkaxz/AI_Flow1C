@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Persistent RLM index worker; schema 1 legacy jobs remain readable",
+  "oneOf": [
+    {"type": "object", "required": ["schema_version", "pid", "source_path"], "properties": {"schema_version": {"const": 1}}},
+    {
+      "type": "object",
+      "required": ["schema_version", "job_id", "state", "mode", "source_path", "stdout_log", "stderr_log"],
+      "properties": {
+        "schema_version": {"const": 2},
+        "job_id": {"type": "string", "format": "uuid"},
+        "request_id": {"type": ["string", "null"]},
+        "state": {"enum": ["RUNNING", "FRESH", "FAILED", "RECOVERY_REQUIRED"]},
+        "mode": {"enum": ["build", "update"]},
+        "source_path": {"type": "string"},
+        "pid": {"type": "integer"},
+        "heartbeat_at": {"type": "number"},
+        "completed_at": {"type": "number"},
+        "exit_code": {"type": "integer"},
+        "stdout_log": {"type": "string"},
+        "stderr_log": {"type": "string"}
+      }
+    }
+  ]
+}

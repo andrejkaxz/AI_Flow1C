@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://git.example.ru/team/flow1c/schemas/manifest.schema.json",
+  "title": "Flow1C work item manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "title", "status", "requirements", "branches", "approvals"],
+  "allOf": [
+    {
+      "if": {"properties": {"traceability_mode": {"const": "provisional"}}, "required": ["traceability_mode"]},
+      "then": {
+        "required": ["requirements_source", "registry", "requirement_basis"],
+        "properties": {
+          "requirements_source": {"enum": ["user_brief", "mixed"]},
+          "registry": {"properties": {"status": {"const": "bypassed"}}},
+          "requirement_basis": {"properties": {"type": {"enum": ["user_brief", "mixed"]}}}
+        }
+      },
+      "else": {
+        "properties": {
+          "requirements": {
+            "minItems": 1,
+            "items": {"pattern": "^[A-Za-zА-Яа-яЁё][A-Za-zА-Яа-яЁё0-9_.]*-[0-9]+$"}
+          }
+        }
+      }
+    }
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "code": {"type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[^\\u0000-\\u001F\\u007F]+$", "deprecated": true},
+    "project_reference": {"type": ["string", "null"], "minLength": 1, "maxLength": 128, "pattern": "^[^\\u0000-\\u001F\\u007F]+$"},
+    "task_reference": {"type": ["string", "null"], "minLength": 1, "maxLength": 128, "pattern": "^[^\\u0000-\\u001F\\u007F]+$"},
+    "work_reference": {"type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[^\\u0000-\\u001F\\u007F]+$"},
+    "reference_source": {"enum": ["task", "project", "legacy"]},
+    "requested_reference": {"type": "string", "minLength": 1, "maxLength": 128},
+    "reference_resolution": {"enum": ["auto", "requirement", "specification", "explicit"]},
+    "work_item_slug": {"type": "string", "minLength": 1, "maxLength": 128},
+    "title": {"type": "string", "minLength": 1},
+    "traceability_mode": {"enum": ["registry", "provisional"]},
+    "requirements_source": {"enum": ["registry", "user_brief", "mixed"]},
+    "registry": {
+      "type": "object",
+      "required": ["status"],
+      "properties": {
+        "status": {"enum": ["verified", "invalid", "absent", "bypassed"]},
+        "snapshot_sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+        "source_status": {"enum": ["verified", "partial"]},
+        "source_sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+        "scope": {
+          "type": "object",
+          "required": ["specification", "requirements"],
+          "properties": {
+            "specification": {"type": "string", "minLength": 1},
+            "requirements": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}}
+          },
+          "additionalProperties": false
+        },
+        "bypass": {
+          "type": "object",
+          "required": ["reason", "actor", "confirmed_at"],
+          "properties": {
+            "reason": {"type": "string", "minLength": 1},
+            "actor": {"type": "string", "minLength": 1},
+            "confirmed_at": {"type": "string", "minLength": 1},
+            "scope": {"type": "string"},
+            "unconfirmed_conditions": {"type": "array", "items": {"type": "string"}}
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "requirement_basis": {
+      "type": "object",
+      "required": ["type", "path", "sha256"],
+      "properties": {
+        "type": {"enum": ["registry_snapshot", "user_brief", "mixed"]},
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      },
+      "additionalProperties": false
+    },
+    "status": {
+      "enum": [
+        "registered",
+        "clarification",
+        "specification_draft",
+        "functional_review",
+        "technical_review",
+        "ready_for_development",
+        "development",
+        "code_review",
+        "analyst_testing",
+        "acceptance",
+        "done"
+      ]
+    },
+    "requirements": {
+      "type": "array",
+      "minItems": 0,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[^\\u0000-\\u001F\\u007F]+$"}
+    },
+    "branches": {
+      "type": "object",
+      "required": ["documentation", "extension"],
+      "properties": {
+        "documentation": {"type": "string"},
+        "extension": {"type": "string"}
+      }
+    },
+    "approvals": {
+      "type": "object",
+      "required": ["functional_architect", "technical_architect"],
+      "properties": {
+        "functional_architect": {"enum": ["pending", "approved", "changes_requested"]},
+        "technical_architect": {"enum": ["pending", "approved", "changes_requested"]}
+      }
+    },
+    "created_at": {"type": "string"},
+    "updated_at": {"type": "string"}
+  }
+}

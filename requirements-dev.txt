@@ -1,0 +1,3 @@
+-r requirements-office.txt
+pytest>=8,<10
+-r requirements-capabilities/template-docx.txt

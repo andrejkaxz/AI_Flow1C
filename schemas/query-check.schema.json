@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schema_version", "text_sha256", "verification_level", "check_result", "platform_executed", "performance_measured", "sources", "fields", "parameters", "diagnostics", "limitations"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "text_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "verification_level": {"const": "STATIC"},
+    "check_result": {"enum": ["PARTIAL", "FAIL"]},
+    "platform_executed": {"const": false},
+    "performance_measured": {"const": false},
+    "sources": {"type": "array", "items": {"type": "object"}},
+    "fields": {"type": "array", "items": {"type": "object"}},
+    "parameters": {"type": "array", "items": {"type": "object"}},
+    "diagnostics": {"type": "array", "items": {"type": "object"}},
+    "limitations": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "modes": ["explore", "draft"],
+  "repositories": ["workflow", "extension"],
+  "commands": {
+    "git": ["status", "log", "show", "diff", "diff-tree", "rev-list", "rev-parse", "merge-base",
+            "for-each-ref", "branch", "ls-tree", "name-rev", "remote"],
+    "grep": [],
+    "rg": []
+  },
+  "git_remote_subcommands": ["-v", "get-url"],
+  "denied_git_subcommands": ["add", "commit", "push", "pull", "fetch", "checkout", "switch", "restore",
+                              "merge", "rebase", "cherry-pick", "revert", "reset", "clean", "stash", "config",
+                              "worktree", "tag"],
+  "denied_flags": ["--ext-diff", "--textconv", "--exec", "--upload-pack", "--receive-pack"],
+  "denied_shell_syntax": [";", "&&", "||", ">", "<", ">>", "$(", "`", "${", "("],
+  "limits": {"pipeline_segments": 2, "timeout_seconds": 30, "max_output_chars": 100000, "max_processes": 2}
+}

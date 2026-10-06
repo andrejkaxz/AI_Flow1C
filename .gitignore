@@ -1,0 +1,29 @@
+# Local project data. Never publish from the workflow repository.
+/FLOW1C_conf/
+/FLOW1C_ext/
+/Реестр требований_пример.xlsx
+/G-004 Разработка механизма начисления ретро-бонусов v4.docx
+
+# User-specific configuration and cloned dependencies.
+.flow1c.local.json
+.env
+.env.*
+!.env.example
+.workspace/
+.tools/
+.venv/
+
+# Temporary test and diagnostic workspaces created in the repository root.
+# Tests and tooling should prefer .workspace/ or the system temp directory.
+/.test-*/
+/tmp*/
+
+# Generated caches.
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+
+# Office temporary files.
+~$*.docx
+~$*.xlsx

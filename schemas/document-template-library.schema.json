@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "type": "object",
+  "required": ["schema_version", "library_id", "storage_kind", "templates"],
+  "properties": {
+    "schema_version": {"const": 1}, "library_id": {"type": "string", "format": "uuid"},
+    "storage_kind": {"const": "documentation"}, "project_reference": {"type": ["string", "null"]},
+    "templates": {"type": "array", "items": {
+      "type": "object", "required": ["template_id", "document_type", "name", "active_revision", "default", "revisions"],
+      "properties": {
+        "template_id": {"type": "string"}, "document_type": {"type": "string"}, "name": {"type": "string"},
+        "active_revision": {"type": ["string", "null"]}, "default": {"type": "boolean"},
+        "revisions": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+      }
+    }}
+  }
+}

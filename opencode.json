@@ -1,0 +1,24 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "default_agent": "flow1c-controller",
+  "skills": [
+    ".agents/skills"
+  ],
+  "mcp": {
+    "servers": {
+      "rlm-tools-bsl": {
+        "type": "remote",
+        "url": "http://127.0.0.1:9000/mcp",
+        "oauth": false
+      }
+    }
+  },
+  "permission": {
+    "*": "ask",
+    "skill": {
+      "*": "ask",
+      "flow1c-*": "allow"
+    },
+    "flow1c_*": "allow"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schema_version", "intake_id", "created_at", "artifacts", "confirmed_absent"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "intake_id": {"type": "string"},
+    "code": {"type": ["string", "null"]},
+    "created_at": {"type": "string"},
+    "artifacts": {"type": "array"},
+    "confirmed_absent": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+  },
+  "additionalProperties": false
+}

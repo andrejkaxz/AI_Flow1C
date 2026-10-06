@@ -1,0 +1,4 @@
+# Tested resolution target for CPython 3.12. Refresh deliberately in CI.
+openpyxl==3.1.5
+python-docx==1.2.0
+docxtpl==0.20.2

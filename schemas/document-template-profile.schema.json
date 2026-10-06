@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "source_sha256", "coverage", "rules", "questions"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "source_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "coverage": {"type": "array", "minItems": 1, "maxItems": 200000, "items": {
+      "type": "object", "additionalProperties": false,
+      "required": ["target_id", "role", "purpose", "required", "unknown"],
+      "properties": {
+        "target_id": {"type": "string", "maxLength": 200},
+        "role": {"enum": ["constant", "variable", "hint", "example"]},
+        "purpose": {"type": "string", "maxLength": 8000},
+        "required": {"type": "boolean"},
+        "required_basis": {"type": ["string", "null"]},
+        "unknown": {"type": "string", "maxLength": 2000},
+        "value_type": {"type": "string"},
+        "format": {"type": "string"},
+        "not_applicable": {"type": "string"},
+        "allowed_values": {"type": "array", "items": {"type": "string"}},
+        "sources": {"type": "array", "items": {"type": "string"}},
+        "columns": {"type": "array", "items": {"type": "string"}}
+      }
+    }},
+    "rules": {"type": "array", "maxItems": 10000, "items": {
+      "type": "object", "additionalProperties": false, "required": ["text", "provenance", "source"],
+      "properties": {
+        "text": {"type": "string", "maxLength": 8000},
+        "provenance": {"enum": ["observed", "inferred", "user_defined"]},
+        "source": {"type": "string", "maxLength": 8000},
+        "scope": {"type": "string"}
+      }
+    }},
+    "questions": {"type": "array", "items": {"type": "object"}},
+    "canonical_mapping": {"type": "object", "additionalProperties": {"type": "array", "items": {"type": "string"}}},
+    "provenance": {"type": "object"},
+    "answers": {"type": "array", "items": {"type": "object"}}
+  }
+}

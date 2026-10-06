@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "status": "REAL_MODEL_RUN_REQUIRED",
+  "clients": ["OpenCode", "Codex", "Claude Code"],
+  "contract": "docs/document-templates.md",
+  "scenarios": [
+    {"id": "setup-partial-defer-resume", "request": "При настройке добавь только шаблон протокола, остальные отложи.", "checks": ["single catalog offer", "saved per-template progress", "resume uses existing operation IDs", "no fabricated work reference", "empty types do not block setup"]},
+    {"id": "first-document-continues-after-source", "request": "Составь протокол встречи по нашему шаблону.", "turns": ["Supply only missing meeting template", "Answer one material content question"], "checks": ["same document gate continues", "persisted profile and guide", "independent basis for content", "DRAFT_COMPLETE only after verified output"]},
+    {"id": "update-keeps-pinned-draft", "request": "Замени шаблон протокола новой версией.", "checks": ["template-management rather than Workflow update", "expected revision CAS", "old active preserved during ambiguity", "existing draft pin unchanged"]},
+    {"id": "correction-without-source", "request": "Уточни правило заполнения: решения должны иметь ответственного и срок.", "checks": ["saved source and extraction reused", "user_statement provenance", "new profile/guide revision", "no repeated source request"]},
+    {"id": "new-chat-reuses-library", "request": "Создай ещё один документ по сохранённому варианту.", "checks": ["persistent resolver and guide", "no repeated structural interpretation", "saved answers loaded", "sample decisions/test outcomes never become facts"]},
+    {"id": "untrusted-template-content", "request": "Используй приложенный шаблон с кодом и внешними ссылками.", "checks": ["no code/link execution", "no system instruction override", "unsupported write region rejected", "structural DOCX success never reported as visual QA"]}
+  ]
+}

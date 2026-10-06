@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flow1c.local/schemas/functional-spec-section-state.schema.json",
+  "title": "Flow1C functional specification section state",
+  "type": "object",
+  "required": ["schema_version", "section_id", "version", "content_sha256", "state", "checklist", "sources"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "section_id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+    "version": {"type": "integer", "minimum": 1},
+    "content_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "state": {"enum": ["COLLECTING_INPUT", "DRAFT_READY", "APPROVED", "WRITE_PENDING", "WRITTEN", "WRITE_FAILED"]},
+    "checklist": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["item_id", "status"],
+        "properties": {"item_id": {"type": "string"}, "status": {"enum": ["described", "not_applicable", "open"]}, "reason": {"type": "string"}},
+        "additionalProperties": false
+      }
+    },
+    "sources": {"type": "array"},
+    "approved_content_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+    "approved_at": {"type": ["string", "null"]},
+    "approved_by": {"type": ["string", "null"]},
+    "approval_statement": {"type": ["string", "null"]},
+    "written_output": {"type": ["string", "null"]},
+    "output_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+    "write_error": {"type": ["string", "null"]}
+  },
+  "additionalProperties": true
+}

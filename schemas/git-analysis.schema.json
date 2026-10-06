@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flow1c.local/schemas/git-analysis.schema.json",
+  "title": "Flow1C Git analysis evidence",
+  "type": "object",
+  "required": ["schema_version", "integration_status", "source", "target", "merge_candidates", "next_actions"],
+  "properties": {
+    "schema_version": {"const": 2},
+    "source": {
+      "type": "object",
+      "required": ["requested"],
+      "properties": {
+        "requested": {"type": "string", "minLength": 1},
+        "resolved_ref": {"type": ["string", "null"]},
+        "current_tip": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40,64}$"}
+      },
+      "additionalProperties": true
+    },
+    "target": {
+      "type": "object",
+      "required": ["requested"],
+      "properties": {
+        "requested": {"type": "string", "minLength": 1},
+        "resolved_ref": {"type": ["string", "null"]},
+        "commit": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40,64}$"},
+        "freshness": {"type": "object"}
+      },
+      "additionalProperties": true
+    },
+    "integration_status": {
+      "enum": ["MERGE_FOUND", "MULTIPLE_MERGES_FOUND", "PARTIALLY_MERGED", "FAST_FORWARD",
+               "SQUASH_OR_REBASE_MATCH", "AMBIGUOUS_CANDIDATES", "NO_INTEGRATION_EVIDENCE",
+               "REFRESH_REQUIRED", "SOURCE_NOT_FOUND", "TARGET_NOT_FOUND"]
+    },
+    "merge_candidates": {"type": "array", "items": {"$ref": "#/$defs/candidate"}},
+    "final_merge": {"oneOf": [{"$ref": "#/$defs/candidate"}, {"type": "null"}]},
+    "integrated_source_commit": {"type": ["string", "null"]},
+    "ranges": {"type": "object", "additionalProperties": {"type": "string"}},
+    "limitations": {"type": "array", "items": {"type": "object"}},
+    "next_actions": {"type": "array", "items": {"type": "string"}},
+    "legacy_status": {"type": "string"}
+  },
+  "$defs": {
+    "candidate": {
+      "type": "object",
+      "required": ["commit", "evidence_level"],
+      "properties": {
+        "commit": {"type": "string", "pattern": "^[0-9a-f]{40,64}$"},
+        "parents": {"type": "array", "items": {"type": "string"}},
+        "subject": {"type": "string"},
+        "integrated_source_commit": {"type": ["string", "null"]},
+        "evidence_level": {"enum": ["EXACT_TOPOLOGY", "AUTHORITATIVE_PR", "EXACT_MESSAGE_AND_PARENT",
+                                             "PATCH_EQUIVALENT", "HEURISTIC_CANDIDATE", "NO_EVIDENCE"]}
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

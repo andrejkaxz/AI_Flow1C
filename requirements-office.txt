@@ -1,0 +1,4 @@
+-r requirements.txt
+markitdown[docx,xlsx,pdf]>=0.1,<1
+python-docx>=1.1,<2
+docxtpl>=0.20,<1

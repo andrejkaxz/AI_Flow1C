@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "types": [
+    {"id": "meeting-minutes", "name": "Протокол встречи", "aliases": ["протокол встречи"], "policy": null},
+    {"id": "functional-spec", "name": "Функциональная спецификация", "aliases": ["ФС"], "policy": "functional-spec"},
+    {"id": "technical-assignment", "name": "Техническое задание", "aliases": ["ТЗ"], "policy": null},
+    {"id": "test-protocol", "name": "Протокол тестирования", "aliases": ["протокол тестирования"], "policy": null},
+    {"id": "user-instruction", "name": "Инструкция", "aliases": ["инструкция пользователя"], "policy": null}
+  ]
+}

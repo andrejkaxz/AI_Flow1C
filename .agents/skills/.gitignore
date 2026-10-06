@@ -1,0 +1,5 @@
+# External 1C skills are generated from .tools/cc-1c-skills.
+*
+!.gitignore
+!flow1c-*/
+!flow1c-*/**

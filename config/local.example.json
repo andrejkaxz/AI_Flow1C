@@ -1,0 +1,46 @@
+{
+  "schema_version": 2,
+  "project_reference": "ERP-2026",
+  "setup": {
+    "validation_version": 1,
+    "confirmed_at": "2030-01-01T00:00:00+00:00",
+    "workflow_root": "C:\\path\\to\\flow1c-clone",
+    "workflow_repository_url": "https://git.example.ru/team/flow1c.git",
+    "documentation_repository_initialized_locally": false,
+    "allow_shared_workflow_documentation_repository": false
+  },
+  "documentation_path": "C:\\path\\to\\project-documentation-repository",
+  "documentation_repository_url": "https://git.example.ru/team/project-docs.git",
+  "configuration_path": "C:\\path\\to\\configuration-xml",
+  "extension_mode": "git",
+  "extension_branch_prefix": "iss",
+  "extension_repository_url": "https://git.example.ru/team/project-extension.git",
+  "extension_path": "C:\\path\\to\\extension-repository",
+  "functional_spec_template": "C:\\path\\to\\functional-spec-template.docx",
+  "rlm": {
+    "endpoint": "http://127.0.0.1:9000/mcp",
+    "server_command": "C:\\path\\to\\flow1c-clone\\.venv\\Scripts\\rlm-tools-bsl.exe",
+    "index_command": "C:\\path\\to\\flow1c-clone\\.venv\\Scripts\\rlm-bsl-index.exe",
+    "indexed_paths": [
+      "C:\\path\\to\\configuration-xml",
+      "C:\\path\\to\\extension-repository\\src\\extension-name"
+    ]
+  },
+  "bsl_language_server": {
+    "command": "C:\\path\\to\\bsl-language-server.exe",
+    "version": "1.0.7",
+    "max_heap": "4g"
+  },
+  "gitea": {
+    "base_url": "https://git.example.ru",
+    "owner": "team",
+    "repository": "project-docs",
+    "token_env": "FLOW1C_GITEA_TOKEN"
+  },
+  "template_library": {
+    "schema_version": 1,
+    "storage_kind": "documentation",
+    "root": "document-templates",
+    "library_id": null
+  }
+}
