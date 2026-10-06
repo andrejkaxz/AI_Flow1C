@@ -8,13 +8,19 @@ Flow1C использует редактор, Git и тесты; продукт�
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
+.\.venv\Scripts\python.exe -m pytest
 node --test --test-isolation=none tests/test_guard.mjs tests/test_opencode_runtime.mjs
-.\.venv\Scripts\python.exe -m compileall -q scripts tests
+.\.venv\Scripts\python.exe -m compileall -q flow1c scripts tests
 ```
 
 Python 3.10+, четыре пробела и явные типы. Policy детерминирована и не выполняет I/O;
 сервисы получают явные зависимости и возвращают данные. Новые функции не расширяют
-монолит и не дублируют смысловые правила в адаптерах. Импорт не имеет side effects.
+пакет несвязанными обязанностями и не дублируют смысловые правила в адаптерах.
+`scripts/flow1c.py` остаётся запускателем; CLI, сервисы и policy имеют отдельных
+владельцев по `docs/architecture.md`. Импорт не имеет side effects.
+
+Полные unittest и pytest выполняйте последовательно: DOCX fixtures используют
+общий тестовый каталог. Проверки границ модулей входят в оба прогона.
 
 Сохраняйте публичные CLI/schema/state контракты, containment, provenance и approvals.
 Несовместимые изменения требуют миграции и release note. Регрессии используют

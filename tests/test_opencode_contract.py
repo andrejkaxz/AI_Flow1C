@@ -150,7 +150,7 @@ class OpenCodeContractTests(unittest.TestCase):
 
     def test_update_can_repair_python_and_forward_per_run_external_consent(self) -> None:
         adapter = (ROOT / ".opencode" / "tools" / "flow1c.ts").read_text(encoding="utf-8")
-        cli = (ROOT / "scripts" / "flow1c.py").read_text(encoding="utf-8")
+        cli = (ROOT / "flow1c" / "setup.py").read_text(encoding="utf-8")
         updater = (ROOT / "scripts" / "update.ps1").read_text(encoding="utf-8")
 
         self.assertIn('gate.operation === "update"', adapter)

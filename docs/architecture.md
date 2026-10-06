@@ -1,8 +1,50 @@
 # Архитектура Flow1C
 
 Документ описывает текущую реализацию самостоятельного продуктового репозитория.
-CLI находится в `scripts/flow1c.py`; уже выделенные policy и adapters описаны ниже.
-Новые модульные границы и контрактные routes пока не являются поставленной функцией.
+`scripts/flow1c.py` — совместимый запускатель `flow1c.cli.main` из любого cwd.
+Parser, представление результата и exit codes находятся в `flow1c.cli`;
+бизнес-операции принадлежат сервисам пакета. Контрактные routes ещё не реализованы.
+
+## Границы Python-пакета
+
+`flow1c/` содержит самостоятельные сервисы:
+
+- `errors.py` — общий `WorkflowError` с прежним контрактом CLI-ошибок;
+- `storage.py` — чтение и запись JSON/текста, атомарная замена, обработка Unicode,
+  SHA-256, containment и проверка symlink/reparse points;
+- `context.py` — `RuntimeContext` с корнем checkout и загруженной конфигурацией,
+  явная загрузка настроек и выбор корня пользовательской документации;
+- `results.py` — данные операции и код результата; форматирование выполняет CLI.
+- `system.py`, `git_runtime.py`, `sources.py` — проверки executable/source paths,
+  Git документации и ограниченный RLM transport.
+- `setup.py`, `readiness.py` — setup checkpoints, запуск setup/update и readiness.
+- `registry.py`, `work_items.py` — импорт/разрешение реестра, безопасные пути,
+  manifest, создание и reconciliation рабочих элементов.
+- `intake.py`, `redmine.py` — intake/provenance и транзакции Redmine credentials.
+- `documents.py`, `templates.py` — разделы, DOCX, интервью и lifecycle шаблонов.
+- `publication.py` — status, validation snapshots, commit и PR.
+- `workflow/state.py` — gate/request/evidence persistence и tool authorization.
+- `workflow/begin.py`, `dialogue.py`, `complete.py` — assessment, ответы/resume,
+  ролевой контекст и проверка завершения.
+- `workflow/actions.py`, `git_actions.py`, `source_actions.py` — разрешённые
+  действия, Git evidence и source/query/BSL evidence соответственно.
+
+Импорт этих модулей не читает пользовательские файлы, не меняет потоки CLI и не
+запускает процессы. Они работают без optional integrations. Сервисы не импортируют
+CLI. `context-build` и `agent-context` используют одну операцию построения;
+`agent-context` сохраняет отдельную копию с SHA-256 в evidence своего gate.
+Сервисы получают `product_root` явно и возвращают данные или предметную ошибку.
+Необязательные библиотеки загружаются при выполнении нужной операции.
+Все специализированные модули импортируются через `scripts.<module>`.
+
+Передачи `globals()`, внутренние вызовы `cmd_*` и обмен через stdout удалены.
+Readiness, registry import, создание work-item и публикация используются напрямую
+как сервисы. Шаблонные операции импортируют конкретных владельцев gates,
+sections и setup checkpoints; контейнера API нет. Направления импортов и импорт
+всех runtime-модулей без I/O/optional packages защищены регрессиями.
+Форматы хранения, schemas, policy versions, CLI options и exit codes
+не изменены. Контракты parser, draft lifecycle и ролевого контекста защищены
+fixtures в `tests/fixtures/cli-baseline/`.
 
 ## Границы репозиториев
 
@@ -33,7 +75,7 @@ Flow1C repo
 
 Импортёр преобразует Excel в маленькие JSON-индексы. Для конкретной задачи CLI формирует ролевой context pack. Агент не должен читать весь Excel, всю ФС, всю конфигурацию и весь diff в один контекст.
 
-В OpenCode запрос поступает в `flow1c-controller`. Уточняющий вопрос допустим до gate. Режимы explore и draft используют чат и необязательные материалы; formal применяет условия этапа. Чистая функция оценки и переходы диалога находятся в `scripts/flow1c_policy.py`, I/O и CLI — в `scripts/flow1c.py`. Ограниченное чтение доступно через flow1c_inspect; конфигурация — через RLM. Подробности: [диалог и черновики](dialogue.md).
+В OpenCode запрос поступает в `flow1c-controller`. Уточняющий вопрос допустим до gate. Режимы explore и draft используют чат и необязательные материалы; formal применяет условия этапа. Чистая функция оценки и переходы диалога находятся в `scripts/flow1c_policy.py`, I/O — в `flow1c.workflow`, CLI — в `flow1c.cli`. Ограниченное чтение доступно через flow1c_inspect; конфигурация — через RLM. Подробности: [диалог и черновики](dialogue.md).
 
 Материалы без назначенной задачи сохраняются в `inbox/<intake-id>/`. После назначения ссылки оригиналы попадают в `work-items/<safe-reference-slug>/input/meetings/` или `input/attachments/`, производный текст — в `input/derived/`, а хеши и категории — в `input/artifacts.json`. Исходная ссылка сохраняется в manifest и никогда не используется как путь напрямую.
 
@@ -66,7 +108,7 @@ Formal gate хранит не только legacy `errors`/`missing_*`, но и 
 Registry-backed work-items используют нормализованный snapshot. Provisional work-items хранят исходное пользовательское описание и его SHA-256 в `requirement_basis`; registry имеет статус `bypassed` и запись явного согласия. Stage policy описывает альтернативные входы через `input_sets`, поэтому выбор источника выполняется по manifest и не позволяет молча подменить невалидный реестр пользовательским текстом.
 ## Reliable Git analysis boundary
 
-Git domain policy is isolated in `scripts/flow1c_git_policy.py`; it owns statuses, evidence ranking, final-merge selection, semantic fingerprints, state transitions and v1-to-v2 compatibility without performing I/O. `scripts/flow1c_git.py` owns argument-array Git execution, full ref resolution, targeted refresh, topology/history/patch analysis, paginated diffs, historical blob reads and atomic tree export. `scripts/gitea_client.py` is a read-only, timeout-bounded PR evidence boundary. `scripts/flow1c.py` only connects these components to gates and persisted evidence.
+Git domain policy is isolated in `scripts/flow1c_git_policy.py`; it owns statuses, evidence ranking, final-merge selection, semantic fingerprints, state transitions and v1-to-v2 compatibility without performing I/O. `scripts/flow1c_git.py` owns argument-array Git execution, full ref resolution, targeted refresh, topology/history/patch analysis, paginated diffs, historical blob reads and atomic tree export. `scripts/gitea_client.py` is a read-only, timeout-bounded PR evidence boundary. `flow1c.workflow.git_actions` connects these components to gates and persisted evidence; `flow1c.cli` presents their results.
 
 The selected snapshot backend is Git tree export rather than a linked worktree. Files are copied from verified blobs into a temporary directory and the complete snapshot is atomically activated below `.workspace/git-analysis/<request>/<commit>/`. This keeps the analyzed checkout's HEAD, index, worktree and Git configuration untouched and avoids worktree administration state. Snapshot identity includes repository identity, commit/tree and requested paths; current configuration, current extension and historical snapshots therefore cannot share an indistinguishable RLM source key.
 
@@ -101,6 +143,6 @@ containment, integrity and relocation; `flow1c_templates_extract.py` dispatches
 bounded format parsing in an isolated process. `flow1c_markdown.py` handles
 CommonMark/GFM ranges and `flow1c_docx.py` exposes the generic API with OOXML
 mechanics in `flow1c_docx_templates.py`. `flow1c_templates.py` orchestrates these
-services; `flow1c_templates_cli.py` integrates shared gates. Agent adapters only
+services; `flow1c.templates` integrates shared gates. Agent adapters only
 interpret user intent/content and call these contracts. Adding/removing catalog
 types does not alter storage, selection or generation code or delete saved data.

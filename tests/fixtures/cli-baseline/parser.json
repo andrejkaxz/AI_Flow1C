@@ -1,0 +1,4913 @@
+{
+  "actions": [
+    {
+      "options": [
+        "-h",
+        "--help"
+      ],
+      "dest": "help",
+      "action": "_HelpAction",
+      "required": false,
+      "nargs": 0,
+      "default": "==SUPPRESS==",
+      "const": null,
+      "choices": null,
+      "type": null,
+      "help": "show this help message and exit"
+    }
+  ],
+  "commands": {
+    "doctor": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [
+            "--json"
+          ],
+          "dest": "json",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": "Emit a machine-readable readiness gate"
+        },
+        {
+          "options": [
+            "--format"
+          ],
+          "dest": "format",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": [
+            "docx",
+            "markdown"
+          ],
+          "type": null,
+          "help": "Selected template format for targeted readiness"
+        },
+        {
+          "options": [
+            "--gate-id"
+          ],
+          "dest": "gate_id",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "Infer the selected template format from a saved request pin"
+        },
+        {
+          "options": [
+            "--profile"
+          ],
+          "dest": "profile",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": [
+            "conversation",
+            "project-basic",
+            "documents",
+            "analysis",
+            "implementation",
+            "full",
+            "template-markdown",
+            "template-docx"
+          ],
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--operation"
+          ],
+          "dest": "operation",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": [
+            "interview-preparation",
+            "consultation",
+            "query-analysis",
+            "workflow-review",
+            "setup",
+            "update",
+            "registry",
+            "functional-spec",
+            "functional-section",
+            "functional-review",
+            "technical-design",
+            "development",
+            "technical-implementation",
+            "code-review",
+            "testing",
+            "status",
+            "publish",
+            "template-management",
+            "template-document"
+          ],
+          "type": null,
+          "help": null
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": [
+        {
+          "required": false,
+          "fields": [
+            "profile",
+            "operation"
+          ]
+        }
+      ]
+    },
+    "registry-import": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [
+            "--file"
+          ],
+          "dest": "file",
+          "action": "_StoreAction",
+          "required": true,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--allow-errors"
+          ],
+          "dest": "allow_errors",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": "Deprecated compatibility flag; partial indexes are written by default"
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": []
+    },
+    "registry-reconcile": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [
+            "--file"
+          ],
+          "dest": "file",
+          "action": "_StoreAction",
+          "required": true,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--code"
+          ],
+          "dest": "code",
+          "action": "_StoreAction",
+          "required": true,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "User-supplied work reference"
+        },
+        {
+          "options": [
+            "--mappings-json"
+          ],
+          "dest": "mappings_json",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "{}",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "Confirmed user-brief to registry ID mapping"
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": []
+    },
+    "fs-start": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [
+            "--task-reference"
+          ],
+          "dest": "task_reference",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--project-reference"
+          ],
+          "dest": "project_reference",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--code"
+          ],
+          "dest": "code",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "Deprecated alias for --task-reference"
+        },
+        {
+          "options": [
+            "--g-number"
+          ],
+          "dest": "g_number",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "==SUPPRESS=="
+        },
+        {
+          "options": [
+            "--reference-kind"
+          ],
+          "dest": "reference_kind",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "auto",
+          "const": null,
+          "choices": [
+            "auto",
+            "requirement",
+            "specification"
+          ],
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--title"
+          ],
+          "dest": "title",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--requirements"
+          ],
+          "dest": "requirements",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "Comma-separated IDs when the FS is absent from the registry"
+        },
+        {
+          "options": [
+            "--create-branch"
+          ],
+          "dest": "create_branch",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": []
+    },
+    "context-build": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [
+            "--code"
+          ],
+          "dest": "code",
+          "action": "_StoreAction",
+          "required": true,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--role"
+          ],
+          "dest": "role",
+          "action": "_StoreAction",
+          "required": true,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": [
+            "analyst",
+            "functional-architect",
+            "technical-architect",
+            "tester"
+          ],
+          "type": null,
+          "help": null
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": []
+    },
+    "agent-begin": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [
+            "--json-stdin"
+          ],
+          "dest": "json_stdin",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--operation"
+          ],
+          "dest": "operation",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": [
+            "ambiguous",
+            "interview-preparation",
+            "consultation",
+            "query-analysis",
+            "workflow-review",
+            "setup",
+            "update",
+            "registry",
+            "functional-spec",
+            "functional-section",
+            "functional-review",
+            "technical-design",
+            "development",
+            "technical-implementation",
+            "code-review",
+            "testing",
+            "status",
+            "publish",
+            "template-management",
+            "template-document"
+          ],
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--code"
+          ],
+          "dest": "code",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--task-reference"
+          ],
+          "dest": "task_reference",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--project-reference"
+          ],
+          "dest": "project_reference",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--reference-kind"
+          ],
+          "dest": "reference_kind",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "auto",
+          "const": null,
+          "choices": [
+            "auto",
+            "requirement",
+            "specification"
+          ],
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--git-ref"
+          ],
+          "dest": "git_ref",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--git-refs"
+          ],
+          "dest": "git_refs",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": "*",
+          "default": [],
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--target-ref"
+          ],
+          "dest": "target_ref",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--refresh-git-refs"
+          ],
+          "dest": "refresh_git_refs",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--g-number"
+          ],
+          "dest": "g_number",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "==SUPPRESS=="
+        },
+        {
+          "options": [
+            "--summary"
+          ],
+          "dest": "summary",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--query-intent"
+          ],
+          "dest": "query_intent",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": [
+            "create",
+            "review",
+            "optimize"
+          ],
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--path"
+          ],
+          "dest": "path",
+          "action": "_AppendAction",
+          "required": false,
+          "nargs": null,
+          "default": [],
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--allow-incomplete-draft"
+          ],
+          "dest": "allow_incomplete_draft",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--mode"
+          ],
+          "dest": "mode",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": [
+            "explore",
+            "draft",
+            "formal"
+          ],
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--requirements"
+          ],
+          "dest": "requirements",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": "*",
+          "default": [],
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--mismatch"
+          ],
+          "dest": "mismatch",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "Observed semantic mismatch; ask instead of silently remapping"
+        },
+        {
+          "options": [
+            "--profile"
+          ],
+          "dest": "profile",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": [
+            "conversation",
+            "project-basic",
+            "documents",
+            "analysis",
+            "implementation",
+            "full"
+          ],
+          "type": null,
+          "help": null
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": []
+    },
+    "agent-dialogue": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [
+            "--json-stdin"
+          ],
+          "dest": "json_stdin",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--gate-id"
+          ],
+          "dest": "gate_id",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--action"
+          ],
+          "dest": "action",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": [
+            "ask",
+            "answer",
+            "record",
+            "deviate"
+          ],
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--question"
+          ],
+          "dest": "question",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--answer"
+          ],
+          "dest": "answer",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--kind"
+          ],
+          "dest": "kind",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "user_answer",
+          "const": null,
+          "choices": [
+            "user_answer",
+            "assumption",
+            "open_question",
+            "decision"
+          ],
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--deviation-type"
+          ],
+          "dest": "deviation_type",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": [
+            "process",
+            "registry_bypass"
+          ],
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--actor"
+          ],
+          "dest": "actor",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "user",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "==SUPPRESS=="
+        },
+        {
+          "options": [
+            "--scope"
+          ],
+          "dest": "scope",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": [
+            "gate",
+            "work-item"
+          ],
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--condition-ids"
+          ],
+          "dest": "condition_ids",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": "*",
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--user-statement"
+          ],
+          "dest": "user_statement",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--resolution"
+          ],
+          "dest": "resolution",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": [
+            "independent-draft",
+            "correct-code"
+          ],
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--reference-kind"
+          ],
+          "dest": "reference_kind",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": [
+            "auto",
+            "requirement",
+            "specification"
+          ],
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--code"
+          ],
+          "dest": "code",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--mode"
+          ],
+          "dest": "mode",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": [
+            "explore",
+            "draft"
+          ],
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--profile"
+          ],
+          "dest": "profile",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": [
+            "conversation",
+            "project-basic",
+            "documents",
+            "analysis",
+            "implementation",
+            "full"
+          ],
+          "type": null,
+          "help": null
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": []
+    },
+    "agent-inspect": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [
+            "--json-stdin"
+          ],
+          "dest": "json_stdin",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--gate-id"
+          ],
+          "dest": "gate_id",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--scope"
+          ],
+          "dest": "scope",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "request",
+          "const": null,
+          "choices": [
+            "workflow",
+            "request"
+          ],
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--path"
+          ],
+          "dest": "path",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--query"
+          ],
+          "dest": "query",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--start-line"
+          ],
+          "dest": "start_line",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": 1,
+          "const": null,
+          "choices": null,
+          "type": "int",
+          "help": null
+        },
+        {
+          "options": [
+            "--max-chars"
+          ],
+          "dest": "max_chars",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": 12000,
+          "const": null,
+          "choices": null,
+          "type": "int",
+          "help": null
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": []
+    },
+    "agent-git-refresh": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [
+            "--json-stdin"
+          ],
+          "dest": "json_stdin",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--gate-id"
+          ],
+          "dest": "gate_id",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--repository"
+          ],
+          "dest": "repository",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "extension",
+          "const": null,
+          "choices": [
+            "workflow",
+            "extension"
+          ],
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--remote"
+          ],
+          "dest": "remote",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "origin",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--refs"
+          ],
+          "dest": "refs",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": "*",
+          "default": [],
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": []
+    },
+    "agent-git-inspect": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [
+            "--json-stdin"
+          ],
+          "dest": "json_stdin",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--gate-id"
+          ],
+          "dest": "gate_id",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--repository"
+          ],
+          "dest": "repository",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "extension",
+          "const": null,
+          "choices": [
+            "workflow",
+            "extension"
+          ],
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--action"
+          ],
+          "dest": "action",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "resolve",
+          "const": null,
+          "choices": [
+            "resolve",
+            "log",
+            "latest-merge",
+            "integration",
+            "merge-search",
+            "branch-changes",
+            "history-search",
+            "diff",
+            "read-at-ref"
+          ],
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--git-ref"
+          ],
+          "dest": "git_ref",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--git-refs"
+          ],
+          "dest": "git_refs",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": "*",
+          "default": [],
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--base-ref"
+          ],
+          "dest": "base_ref",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--target-ref"
+          ],
+          "dest": "target_ref",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--detail"
+          ],
+          "dest": "detail",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "patch",
+          "const": null,
+          "choices": [
+            "names",
+            "stat",
+            "patch",
+            "first-parent-patch",
+            "remerge-diff",
+            "combined"
+          ],
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--paths"
+          ],
+          "dest": "paths",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": "*",
+          "default": [],
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--path"
+          ],
+          "dest": "path",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--cursor"
+          ],
+          "dest": "cursor",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--max-files"
+          ],
+          "dest": "max_files",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": 100,
+          "const": null,
+          "choices": null,
+          "type": "int",
+          "help": null
+        },
+        {
+          "options": [
+            "--start-line"
+          ],
+          "dest": "start_line",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": 1,
+          "const": null,
+          "choices": null,
+          "type": "int",
+          "help": null
+        },
+        {
+          "options": [
+            "--subject-query"
+          ],
+          "dest": "subject_query",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--regex"
+          ],
+          "dest": "regex",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--merges-only"
+          ],
+          "dest": "merges_only",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--first-parent"
+          ],
+          "dest": "first_parent",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--min-parents"
+          ],
+          "dest": "min_parents",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": "int",
+          "help": null
+        },
+        {
+          "options": [
+            "--max-parents"
+          ],
+          "dest": "max_parents",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": "int",
+          "help": null
+        },
+        {
+          "options": [
+            "--since"
+          ],
+          "dest": "since",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--until"
+          ],
+          "dest": "until",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--include-pr-evidence",
+            "--no-include-pr-evidence"
+          ],
+          "dest": "include_pr_evidence",
+          "action": "BooleanOptionalAction",
+          "required": false,
+          "nargs": 0,
+          "default": true,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--include-patch-evidence",
+            "--no-include-patch-evidence"
+          ],
+          "dest": "include_patch_evidence",
+          "action": "BooleanOptionalAction",
+          "required": false,
+          "nargs": 0,
+          "default": true,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--max-count"
+          ],
+          "dest": "max_count",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": 20,
+          "const": null,
+          "choices": null,
+          "type": "int",
+          "help": null
+        },
+        {
+          "options": [
+            "--max-chars"
+          ],
+          "dest": "max_chars",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": 40000,
+          "const": null,
+          "choices": null,
+          "type": "int",
+          "help": null
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": []
+    },
+    "agent-git-snapshot": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [
+            "--json-stdin"
+          ],
+          "dest": "json_stdin",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--gate-id"
+          ],
+          "dest": "gate_id",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--repository"
+          ],
+          "dest": "repository",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "extension",
+          "const": null,
+          "choices": [
+            "workflow",
+            "extension"
+          ],
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--action"
+          ],
+          "dest": "action",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "create",
+          "const": null,
+          "choices": [
+            "create",
+            "cleanup"
+          ],
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--git-ref"
+          ],
+          "dest": "git_ref",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--paths"
+          ],
+          "dest": "paths",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": "*",
+          "default": [],
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--ttl-hours"
+          ],
+          "dest": "ttl_hours",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": 168,
+          "const": null,
+          "choices": null,
+          "type": "int",
+          "help": null
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": []
+    },
+    "draft-promote": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [
+            "--json-stdin"
+          ],
+          "dest": "json_stdin",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--gate-id"
+          ],
+          "dest": "gate_id",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--code"
+          ],
+          "dest": "code",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--task-reference"
+          ],
+          "dest": "task_reference",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--project-reference"
+          ],
+          "dest": "project_reference",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--g-number"
+          ],
+          "dest": "g_number",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "==SUPPRESS=="
+        },
+        {
+          "options": [
+            "--requirements"
+          ],
+          "dest": "requirements",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": "*",
+          "default": [],
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--confirmed"
+          ],
+          "dest": "confirmed",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": []
+    },
+    "artifact-intake": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [
+            "--json-stdin"
+          ],
+          "dest": "json_stdin",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--gate-id"
+          ],
+          "dest": "gate_id",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--source"
+          ],
+          "dest": "source",
+          "action": "_AppendAction",
+          "required": false,
+          "nargs": null,
+          "default": [],
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--code"
+          ],
+          "dest": "code",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--category"
+          ],
+          "dest": "category",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": [
+            "requirements_workbook",
+            "meeting_materials",
+            "correspondence",
+            "current_process",
+            "document_examples",
+            "redmine_attachments",
+            "project_decisions",
+            "approval_protocols",
+            "architecture_decisions",
+            "technical_constraints",
+            "migration_requirements",
+            "verification_data",
+            "developer_notes",
+            "manual_changes",
+            "known_limitations",
+            "manual_verification",
+            "test_data",
+            "test_environment",
+            "runtime_evidence",
+            "organizational_approvals"
+          ],
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--confirm-absence"
+          ],
+          "dest": "confirm_absence",
+          "action": "_AppendAction",
+          "required": false,
+          "nargs": null,
+          "default": [],
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--confirm-large"
+          ],
+          "dest": "confirm_large",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--received-via"
+          ],
+          "dest": "received_via",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "",
+          "const": null,
+          "choices": [
+            "chat-attachment",
+            "file",
+            "folder"
+          ],
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--promote-intake-id"
+          ],
+          "dest": "promote_intake_id",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": []
+    },
+    "agent-context": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [
+            "--json-stdin"
+          ],
+          "dest": "json_stdin",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--gate-id"
+          ],
+          "dest": "gate_id",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": []
+    },
+    "agent-diff": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [
+            "--json-stdin"
+          ],
+          "dest": "json_stdin",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--gate-id"
+          ],
+          "dest": "gate_id",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--max-chars"
+          ],
+          "dest": "max_chars",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": 120000,
+          "const": null,
+          "choices": null,
+          "type": "int",
+          "help": null
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": []
+    },
+    "agent-source-read": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [
+            "--json-stdin"
+          ],
+          "dest": "json_stdin",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--gate-id"
+          ],
+          "dest": "gate_id",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--source"
+          ],
+          "dest": "source",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "extension",
+          "const": null,
+          "choices": [
+            "extension",
+            "configuration"
+          ],
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--path"
+          ],
+          "dest": "path",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--max-chars"
+          ],
+          "dest": "max_chars",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": 80000,
+          "const": null,
+          "choices": null,
+          "type": "int",
+          "help": null
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": []
+    },
+    "source-query": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [
+            "--json-stdin"
+          ],
+          "dest": "json_stdin",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--gate-id"
+          ],
+          "dest": "gate_id",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--source"
+          ],
+          "dest": "source",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--query"
+          ],
+          "dest": "query",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--code"
+          ],
+          "dest": "code",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--reason"
+          ],
+          "dest": "reason",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--effort"
+          ],
+          "dest": "effort",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "medium",
+          "const": null,
+          "choices": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--max-chars"
+          ],
+          "dest": "max_chars",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": 12000,
+          "const": null,
+          "choices": null,
+          "type": "int",
+          "help": null
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": []
+    },
+    "cc-inspect": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [
+            "--json-stdin"
+          ],
+          "dest": "json_stdin",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--gate-id"
+          ],
+          "dest": "gate_id",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--source"
+          ],
+          "dest": "source",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": [
+            "request",
+            "configuration",
+            "extension"
+          ],
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--operation"
+          ],
+          "dest": "operation",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": [
+            "meta-overview",
+            "meta-full",
+            "meta-item",
+            "skd-overview",
+            "skd-query",
+            "skd-fields",
+            "skd-params",
+            "skd-links",
+            "skd-full"
+          ],
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--path"
+          ],
+          "dest": "path",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--name"
+          ],
+          "dest": "name",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--max-chars"
+          ],
+          "dest": "max_chars",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": 12000,
+          "const": null,
+          "choices": null,
+          "type": "int",
+          "help": null
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": []
+    },
+    "query-schema": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [
+            "--json-stdin"
+          ],
+          "dest": "json_stdin",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--gate-id"
+          ],
+          "dest": "gate_id",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--source"
+          ],
+          "dest": "source",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": [
+            "request",
+            "configuration",
+            "extension"
+          ],
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--path"
+          ],
+          "dest": "path",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--rlm-evidence-id"
+          ],
+          "dest": "rlm_evidence_id",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": []
+    },
+    "query-check": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [
+            "--json-stdin"
+          ],
+          "dest": "json_stdin",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--gate-id"
+          ],
+          "dest": "gate_id",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--text"
+          ],
+          "dest": "text",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--baseline-text"
+          ],
+          "dest": "baseline_text",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--schema-ids"
+          ],
+          "dest": "schema_ids",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": "*",
+          "default": [],
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--expected-result"
+          ],
+          "dest": "expected_result",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--assumptions"
+          ],
+          "dest": "assumptions",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": "*",
+          "default": [],
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--changes"
+          ],
+          "dest": "changes",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": "*",
+          "default": [],
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": []
+    },
+    "agent-write": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [
+            "--json-stdin"
+          ],
+          "dest": "json_stdin",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--gate-id"
+          ],
+          "dest": "gate_id",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--target"
+          ],
+          "dest": "target",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": [
+            "work-item",
+            "extension",
+            "draft"
+          ],
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--path"
+          ],
+          "dest": "path",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--content"
+          ],
+          "dest": "content",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--content-stdin"
+          ],
+          "dest": "content_stdin",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": []
+    },
+    "agent-analyze-bsl": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [
+            "--json-stdin"
+          ],
+          "dest": "json_stdin",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--gate-id"
+          ],
+          "dest": "gate_id",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--source"
+          ],
+          "dest": "source",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": "loads",
+          "help": "Typed BSL source selector"
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": []
+    },
+    "agent-complete": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [
+            "--json-stdin"
+          ],
+          "dest": "json_stdin",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--gate-id"
+          ],
+          "dest": "gate_id",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--output"
+          ],
+          "dest": "output",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--summary"
+          ],
+          "dest": "summary",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": []
+    },
+    "agent-action": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [
+            "--json-stdin"
+          ],
+          "dest": "json_stdin",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--gate-id"
+          ],
+          "dest": "gate_id",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--action"
+          ],
+          "dest": "action",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": [
+            "setup-audit",
+            "setup-plan",
+            "setup-bootstrap",
+            "setup-configure",
+            "setup-status",
+            "setup-resume",
+            "doctor",
+            "update",
+            "registry-import",
+            "fs-start",
+            "provisional-start",
+            "registry-reconcile",
+            "status",
+            "publish"
+          ],
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--parameters-json"
+          ],
+          "dest": "parameters_json",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "{}",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": []
+    },
+    "redmine": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        }
+      ],
+      "commands": {
+        "configure": {
+          "actions": [
+            {
+              "options": [
+                "-h",
+                "--help"
+              ],
+              "dest": "help",
+              "action": "_HelpAction",
+              "required": false,
+              "nargs": 0,
+              "default": "==SUPPRESS==",
+              "const": null,
+              "choices": null,
+              "type": null,
+              "help": "show this help message and exit"
+            },
+            {
+              "options": [
+                "--url"
+              ],
+              "dest": "url",
+              "action": "_StoreAction",
+              "required": true,
+              "nargs": null,
+              "default": null,
+              "const": null,
+              "choices": null,
+              "type": null,
+              "help": "Redmine HTTPS base URL, optionally with a path prefix"
+            }
+          ],
+          "commands": {},
+          "subcommand_required": false,
+          "exclusive_groups": []
+        },
+        "status": {
+          "actions": [
+            {
+              "options": [
+                "-h",
+                "--help"
+              ],
+              "dest": "help",
+              "action": "_HelpAction",
+              "required": false,
+              "nargs": 0,
+              "default": "==SUPPRESS==",
+              "const": null,
+              "choices": null,
+              "type": null,
+              "help": "show this help message and exit"
+            }
+          ],
+          "commands": {},
+          "subcommand_required": false,
+          "exclusive_groups": []
+        },
+        "test": {
+          "actions": [
+            {
+              "options": [
+                "-h",
+                "--help"
+              ],
+              "dest": "help",
+              "action": "_HelpAction",
+              "required": false,
+              "nargs": 0,
+              "default": "==SUPPRESS==",
+              "const": null,
+              "choices": null,
+              "type": null,
+              "help": "show this help message and exit"
+            }
+          ],
+          "commands": {},
+          "subcommand_required": false,
+          "exclusive_groups": []
+        },
+        "disconnect": {
+          "actions": [
+            {
+              "options": [
+                "-h",
+                "--help"
+              ],
+              "dest": "help",
+              "action": "_HelpAction",
+              "required": false,
+              "nargs": 0,
+              "default": "==SUPPRESS==",
+              "const": null,
+              "choices": null,
+              "type": null,
+              "help": "show this help message and exit"
+            }
+          ],
+          "commands": {},
+          "subcommand_required": false,
+          "exclusive_groups": []
+        },
+        "cleanup": {
+          "actions": [
+            {
+              "options": [
+                "-h",
+                "--help"
+              ],
+              "dest": "help",
+              "action": "_HelpAction",
+              "required": false,
+              "nargs": 0,
+              "default": "==SUPPRESS==",
+              "const": null,
+              "choices": null,
+              "type": null,
+              "help": "show this help message and exit"
+            },
+            {
+              "options": [
+                "--url"
+              ],
+              "dest": "url",
+              "action": "_StoreAction",
+              "required": false,
+              "nargs": null,
+              "default": null,
+              "const": null,
+              "choices": null,
+              "type": null,
+              "help": "Optional HTTPS URL whose saved credential should be removed"
+            }
+          ],
+          "commands": {},
+          "subcommand_required": false,
+          "exclusive_groups": []
+        },
+        "files": {
+          "actions": [
+            {
+              "options": [
+                "-h",
+                "--help"
+              ],
+              "dest": "help",
+              "action": "_HelpAction",
+              "required": false,
+              "nargs": 0,
+              "default": "==SUPPRESS==",
+              "const": null,
+              "choices": null,
+              "type": null,
+              "help": "show this help message and exit"
+            },
+            {
+              "options": [],
+              "dest": "issue",
+              "action": "_StoreAction",
+              "required": true,
+              "nargs": null,
+              "default": null,
+              "const": null,
+              "choices": null,
+              "type": null,
+              "help": "Numeric Redmine issue number"
+            },
+            {
+              "options": [
+                "--json"
+              ],
+              "dest": "json",
+              "action": "_StoreTrueAction",
+              "required": false,
+              "nargs": 0,
+              "default": false,
+              "const": true,
+              "choices": null,
+              "type": null,
+              "help": "Emit a machine-readable file inventory"
+            }
+          ],
+          "commands": {},
+          "subcommand_required": false,
+          "exclusive_groups": []
+        },
+        "relations": {
+          "actions": [
+            {
+              "options": [
+                "-h",
+                "--help"
+              ],
+              "dest": "help",
+              "action": "_HelpAction",
+              "required": false,
+              "nargs": 0,
+              "default": "==SUPPRESS==",
+              "const": null,
+              "choices": null,
+              "type": null,
+              "help": "show this help message and exit"
+            },
+            {
+              "options": [],
+              "dest": "issue",
+              "action": "_StoreAction",
+              "required": true,
+              "nargs": null,
+              "default": null,
+              "const": null,
+              "choices": null,
+              "type": null,
+              "help": "Numeric Redmine issue number"
+            },
+            {
+              "options": [
+                "--json"
+              ],
+              "dest": "json",
+              "action": "_StoreTrueAction",
+              "required": false,
+              "nargs": 0,
+              "default": false,
+              "const": true,
+              "choices": null,
+              "type": null,
+              "help": "Emit a machine-readable relation inventory"
+            }
+          ],
+          "commands": {},
+          "subcommand_required": false,
+          "exclusive_groups": []
+        },
+        "upload": {
+          "actions": [
+            {
+              "options": [
+                "-h",
+                "--help"
+              ],
+              "dest": "help",
+              "action": "_HelpAction",
+              "required": false,
+              "nargs": 0,
+              "default": "==SUPPRESS==",
+              "const": null,
+              "choices": null,
+              "type": null,
+              "help": "show this help message and exit"
+            },
+            {
+              "options": [],
+              "dest": "issue",
+              "action": "_StoreAction",
+              "required": true,
+              "nargs": null,
+              "default": null,
+              "const": null,
+              "choices": null,
+              "type": null,
+              "help": "Numeric Redmine issue number"
+            },
+            {
+              "options": [
+                "--file"
+              ],
+              "dest": "file",
+              "action": "_StoreAction",
+              "required": true,
+              "nargs": null,
+              "default": null,
+              "const": null,
+              "choices": null,
+              "type": null,
+              "help": "Explicit local file path to upload"
+            },
+            {
+              "options": [
+                "--confirmed"
+              ],
+              "dest": "confirmed",
+              "action": "_StoreTrueAction",
+              "required": false,
+              "nargs": 0,
+              "default": false,
+              "const": true,
+              "choices": null,
+              "type": null,
+              "help": "Confirm this exact issue and local file for the external write"
+            },
+            {
+              "options": [
+                "--json"
+              ],
+              "dest": "json",
+              "action": "_StoreTrueAction",
+              "required": false,
+              "nargs": 0,
+              "default": false,
+              "const": true,
+              "choices": null,
+              "type": null,
+              "help": "Emit a machine-readable upload result"
+            }
+          ],
+          "commands": {},
+          "subcommand_required": false,
+          "exclusive_groups": []
+        },
+        "revise": {
+          "actions": [
+            {
+              "options": [
+                "-h",
+                "--help"
+              ],
+              "dest": "help",
+              "action": "_HelpAction",
+              "required": false,
+              "nargs": 0,
+              "default": "==SUPPRESS==",
+              "const": null,
+              "choices": null,
+              "type": null,
+              "help": "show this help message and exit"
+            },
+            {
+              "options": [],
+              "dest": "issue",
+              "action": "_StoreAction",
+              "required": true,
+              "nargs": null,
+              "default": null,
+              "const": null,
+              "choices": null,
+              "type": null,
+              "help": "Numeric Redmine issue number"
+            },
+            {
+              "options": [
+                "--dms-file"
+              ],
+              "dest": "dms_file",
+              "action": "_StoreAction",
+              "required": true,
+              "nargs": null,
+              "default": null,
+              "const": null,
+              "choices": null,
+              "type": null,
+              "help": "Exact existing DMSF file ID"
+            },
+            {
+              "options": [
+                "--expected-revision"
+              ],
+              "dest": "expected_revision",
+              "action": "_StoreAction",
+              "required": true,
+              "nargs": null,
+              "default": null,
+              "const": null,
+              "choices": null,
+              "type": null,
+              "help": "Current revision ID for race protection"
+            },
+            {
+              "options": [
+                "--file"
+              ],
+              "dest": "file",
+              "action": "_StoreAction",
+              "required": true,
+              "nargs": null,
+              "default": null,
+              "const": null,
+              "choices": null,
+              "type": null,
+              "help": "Local replacement file with the same name"
+            },
+            {
+              "options": [
+                "--confirmed"
+              ],
+              "dest": "confirmed",
+              "action": "_StoreTrueAction",
+              "required": false,
+              "nargs": 0,
+              "default": false,
+              "const": true,
+              "choices": null,
+              "type": null,
+              "help": "Confirm revision of this exact document"
+            },
+            {
+              "options": [
+                "--json"
+              ],
+              "dest": "json",
+              "action": "_StoreTrueAction",
+              "required": false,
+              "nargs": 0,
+              "default": false,
+              "const": true,
+              "choices": null,
+              "type": null,
+              "help": "Emit a machine-readable result"
+            }
+          ],
+          "commands": {},
+          "subcommand_required": false,
+          "exclusive_groups": []
+        },
+        "fetch": {
+          "actions": [
+            {
+              "options": [
+                "-h",
+                "--help"
+              ],
+              "dest": "help",
+              "action": "_HelpAction",
+              "required": false,
+              "nargs": 0,
+              "default": "==SUPPRESS==",
+              "const": null,
+              "choices": null,
+              "type": null,
+              "help": "show this help message and exit"
+            },
+            {
+              "options": [],
+              "dest": "issue",
+              "action": "_StoreAction",
+              "required": true,
+              "nargs": null,
+              "default": null,
+              "const": null,
+              "choices": null,
+              "type": null,
+              "help": "Numeric Redmine issue number"
+            },
+            {
+              "options": [
+                "--code"
+              ],
+              "dest": "code",
+              "action": "_StoreAction",
+              "required": false,
+              "nargs": null,
+              "default": null,
+              "const": null,
+              "choices": null,
+              "type": null,
+              "help": "Existing Flow1C task reference; omit to place files in inbox"
+            },
+            {
+              "options": [
+                "--gate-id"
+              ],
+              "dest": "gate_id",
+              "action": "_StoreAction",
+              "required": false,
+              "nargs": null,
+              "default": null,
+              "const": null,
+              "choices": null,
+              "type": null,
+              "help": "Active Flow1C gate; derives and validates the target work item"
+            },
+            {
+              "options": [
+                "--dms-file"
+              ],
+              "dest": "dms_file",
+              "action": "_AppendAction",
+              "required": false,
+              "nargs": null,
+              "default": [],
+              "const": null,
+              "choices": null,
+              "type": null,
+              "help": "Explicit DMSF file ID to import; repeat for multiple files"
+            },
+            {
+              "options": [
+                "--dms-revision"
+              ],
+              "dest": "dms_revision",
+              "action": "_StoreAction",
+              "required": false,
+              "nargs": null,
+              "default": null,
+              "const": null,
+              "choices": null,
+              "type": null,
+              "help": "DMSF revision ID; requires exactly one --dms-file"
+            },
+            {
+              "options": [
+                "--all-dms"
+              ],
+              "dest": "all_dms",
+              "action": "_StoreTrueAction",
+              "required": false,
+              "nargs": 0,
+              "default": false,
+              "const": true,
+              "choices": null,
+              "type": null,
+              "help": "Import every DMSF file currently attached to the issue"
+            }
+          ],
+          "commands": {},
+          "subcommand_required": false,
+          "exclusive_groups": []
+        }
+      },
+      "subcommand_required": true,
+      "exclusive_groups": []
+    },
+    "status": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [
+            "--write"
+          ],
+          "dest": "write",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": []
+    },
+    "git-commit": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [
+            "--code"
+          ],
+          "dest": "code",
+          "action": "_StoreAction",
+          "required": true,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--message"
+          ],
+          "dest": "message",
+          "action": "_StoreAction",
+          "required": true,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--include-registry"
+          ],
+          "dest": "include_registry",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": []
+    },
+    "pr-create": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [
+            "--code"
+          ],
+          "dest": "code",
+          "action": "_StoreAction",
+          "required": true,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--phase"
+          ],
+          "dest": "phase",
+          "action": "_StoreAction",
+          "required": true,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": [
+            "specification",
+            "technical",
+            "acceptance"
+          ],
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--title"
+          ],
+          "dest": "title",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": []
+    },
+    "section-catalog": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [
+            "--json-stdin"
+          ],
+          "dest": "json_stdin",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--gate-id"
+          ],
+          "dest": "gate_id",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": []
+    },
+    "section-save": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [
+            "--json-stdin"
+          ],
+          "dest": "json_stdin",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--gate-id"
+          ],
+          "dest": "gate_id",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--request-id"
+          ],
+          "dest": "request_id",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--work-reference"
+          ],
+          "dest": "work_reference",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--section-id"
+          ],
+          "dest": "section_id",
+          "action": "_AppendAction",
+          "required": false,
+          "nargs": null,
+          "default": [],
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--sections"
+          ],
+          "dest": "sections",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": "*",
+          "default": [],
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--content"
+          ],
+          "dest": "content",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--content-stdin"
+          ],
+          "dest": "content_stdin",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--checklist"
+          ],
+          "dest": "checklist",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "[]",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--sources"
+          ],
+          "dest": "sources",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": "*",
+          "default": [],
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": []
+    },
+    "section-approve": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [
+            "--json-stdin"
+          ],
+          "dest": "json_stdin",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--gate-id"
+          ],
+          "dest": "gate_id",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--request-id"
+          ],
+          "dest": "request_id",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--work-reference"
+          ],
+          "dest": "work_reference",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--section-id"
+          ],
+          "dest": "section_id",
+          "action": "_AppendAction",
+          "required": false,
+          "nargs": null,
+          "default": [],
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--sections"
+          ],
+          "dest": "sections",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": "*",
+          "default": [],
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--approved-by"
+          ],
+          "dest": "approved_by",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "user",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--approval-statement"
+          ],
+          "dest": "approval_statement",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": []
+    },
+    "docx-inspect": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [
+            "--json-stdin"
+          ],
+          "dest": "json_stdin",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--gate-id"
+          ],
+          "dest": "gate_id",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--source"
+          ],
+          "dest": "source",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--path"
+          ],
+          "dest": "path",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--section-id"
+          ],
+          "dest": "section_id",
+          "action": "_AppendAction",
+          "required": false,
+          "nargs": null,
+          "default": [],
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--sections"
+          ],
+          "dest": "sections",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": "*",
+          "default": [],
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": []
+    },
+    "docx-write-plan": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [
+            "--json-stdin"
+          ],
+          "dest": "json_stdin",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--gate-id"
+          ],
+          "dest": "gate_id",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--source"
+          ],
+          "dest": "source",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--path"
+          ],
+          "dest": "path",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--section-id"
+          ],
+          "dest": "section_id",
+          "action": "_AppendAction",
+          "required": false,
+          "nargs": null,
+          "default": [],
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--sections"
+          ],
+          "dest": "sections",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": "*",
+          "default": [],
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--request-id"
+          ],
+          "dest": "request_id",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--work-reference"
+          ],
+          "dest": "work_reference",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--mode"
+          ],
+          "dest": "mode",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "",
+          "const": null,
+          "choices": [
+            "replace",
+            "append"
+          ],
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--modes"
+          ],
+          "dest": "modes",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--output"
+          ],
+          "dest": "output",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--plan"
+          ],
+          "dest": "plan",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": []
+    },
+    "docx-write": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [
+            "--json-stdin"
+          ],
+          "dest": "json_stdin",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--gate-id"
+          ],
+          "dest": "gate_id",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--plan"
+          ],
+          "dest": "plan",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": []
+    },
+    "interview-register": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [
+            "--json-stdin"
+          ],
+          "dest": "json_stdin",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--gate-id"
+          ],
+          "dest": "gate_id",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--action"
+          ],
+          "dest": "action",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": "inspect",
+          "const": null,
+          "choices": [
+            "inspect",
+            "audit",
+            "write"
+          ],
+          "type": null,
+          "help": null
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": []
+    },
+    "template": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [],
+          "dest": "action",
+          "action": "_StoreAction",
+          "required": true,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": [
+            "list",
+            "intake",
+            "inspect",
+            "profile-save",
+            "activate",
+            "history",
+            "status",
+            "resume",
+            "rollback",
+            "resolve",
+            "configure",
+            "relocate",
+            "defer",
+            "document-plan",
+            "document-write",
+            "document-validate"
+          ],
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--json-stdin"
+          ],
+          "dest": "json_stdin",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--gate-id"
+          ],
+          "dest": "gate_id",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--json"
+          ],
+          "dest": "json",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": []
+    },
+    "document-plan": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [
+            "--json-stdin"
+          ],
+          "dest": "json_stdin",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--gate-id"
+          ],
+          "dest": "gate_id",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": []
+    },
+    "document-write": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [
+            "--json-stdin"
+          ],
+          "dest": "json_stdin",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--gate-id"
+          ],
+          "dest": "gate_id",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": []
+    },
+    "document-validate": {
+      "actions": [
+        {
+          "options": [
+            "-h",
+            "--help"
+          ],
+          "dest": "help",
+          "action": "_HelpAction",
+          "required": false,
+          "nargs": 0,
+          "default": "==SUPPRESS==",
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": "show this help message and exit"
+        },
+        {
+          "options": [
+            "--json-stdin"
+          ],
+          "dest": "json_stdin",
+          "action": "_StoreTrueAction",
+          "required": false,
+          "nargs": 0,
+          "default": false,
+          "const": true,
+          "choices": null,
+          "type": null,
+          "help": null
+        },
+        {
+          "options": [
+            "--gate-id"
+          ],
+          "dest": "gate_id",
+          "action": "_StoreAction",
+          "required": false,
+          "nargs": null,
+          "default": null,
+          "const": null,
+          "choices": null,
+          "type": null,
+          "help": null
+        }
+      ],
+      "commands": {},
+      "subcommand_required": false,
+      "exclusive_groups": []
+    }
+  },
+  "subcommand_required": true,
+  "exclusive_groups": []
+}

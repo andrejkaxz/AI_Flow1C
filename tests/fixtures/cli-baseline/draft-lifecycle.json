@@ -1,0 +1,397 @@
+{
+  "unknown_json_field": {
+    "exit_code": 2,
+    "stdout": {
+      "schema_version": 1,
+      "state": "BLOCKED",
+      "ready": false,
+      "errors": [
+        {
+          "code": "WORKFLOW_ERROR",
+          "message": "Unknown JSON input field: unknown_field",
+          "recoverable": true,
+          "next_action": "Correct the reported input or prerequisite and retry the same operation."
+        }
+      ]
+    },
+    "stderr": ""
+  },
+  "non_object_json": {
+    "exit_code": 2,
+    "stdout": {
+      "schema_version": 1,
+      "state": "BLOCKED",
+      "ready": false,
+      "errors": [
+        {
+          "code": "WORKFLOW_ERROR",
+          "message": "JSON stdin must contain an object.",
+          "recoverable": true,
+          "next_action": "Correct the reported input or prerequisite and retry the same operation."
+        }
+      ]
+    },
+    "stderr": ""
+  },
+  "missing_gate": {
+    "exit_code": 2,
+    "stdout": {
+      "schema_version": 1,
+      "state": "BLOCKED",
+      "ready": false,
+      "errors": [
+        {
+          "code": "WORKFLOW_ERROR",
+          "message": "Agent gate does not exist or has an unsupported schema.",
+          "recoverable": true,
+          "next_action": "Correct the reported input or prerequisite and retry the same operation."
+        }
+      ]
+    },
+    "stderr": ""
+  },
+  "begin": {
+    "exit_code": 0,
+    "stdout": {
+      "schema_version": 1,
+      "policy_version": 3,
+      "mode": "draft",
+      "gate_id": "<GATE_ID>",
+      "operation": "functional-spec",
+      "code": null,
+      "compliance": "COMPLIANT",
+      "deviations": [],
+      "state": "READY",
+      "created_at": "<TIME>",
+      "clarification": null,
+      "user_message": "Можно продолжать работу.",
+      "project_reference": null,
+      "task_reference": null,
+      "work_reference": null,
+      "reference_source": "none",
+      "reference_code": null,
+      "git_ref": null,
+      "summary": "Описать приёмку товара",
+      "git_context": {
+        "repository": "extension",
+        "source_refs": [],
+        "target_ref": "main",
+        "refresh_requested": false,
+        "freshness": "UNKNOWN"
+      },
+      "git_analysis_state": {
+        "schema_version": 1,
+        "cache": {},
+        "terminal": {},
+        "history_search_without_evidence": 0,
+        "snapshots": {}
+      },
+      "mode_selection": {
+        "mode": "draft",
+        "actor": "caller",
+        "reason": "explicit",
+        "selected_at": "<TIME>"
+      },
+      "mode_history": [
+        {
+          "mode": "draft",
+          "actor": "caller",
+          "reason": "explicit",
+          "selected_at": "<TIME>"
+        }
+      ],
+      "requirements": [],
+      "presented_paths": [],
+      "answers": [],
+      "notes": [],
+      "artifacts": [],
+      "conditions": [],
+      "remaining_blockers": [],
+      "available_actions": [
+        "flow1c_intake",
+        "flow1c_redmine_fetch",
+        "flow1c_inspect",
+        "flow1c_git_refresh",
+        "flow1c_git_inspect",
+        "flow1c_git_snapshot",
+        "flow1c_dialogue",
+        "flow1c_source_query",
+        "flow1c_complete",
+        "flow1c_section",
+        "flow1c_docx",
+        "flow1c_source_read",
+        "flow1c_write",
+        "flow1c_template",
+        "flow1c_promote"
+      ],
+      "awaiting_user_input": false,
+      "request_id": "<GATE_ID>",
+      "storage_kind": "workspace",
+      "output": "result.md",
+      "skill": "flow1c-consultation",
+      "skill_instructions": "Discuss the goal; use chat sources; draft without changing formal status.",
+      "evidence_path": "<CHECKOUT>/.workspace/drafts/<GATE_ID>/evidence.json"
+    },
+    "stderr": ""
+  },
+  "resume": {
+    "exit_code": 0,
+    "stdout": {
+      "schema_version": 1,
+      "policy_version": 3,
+      "mode": "draft",
+      "gate_id": "<GATE_ID>",
+      "operation": "functional-spec",
+      "code": null,
+      "compliance": "COMPLIANT",
+      "deviations": [],
+      "state": "READY",
+      "created_at": "<TIME>",
+      "clarification": null,
+      "user_message": "Можно продолжать работу.",
+      "project_reference": null,
+      "task_reference": null,
+      "work_reference": null,
+      "reference_source": "none",
+      "reference_code": null,
+      "git_ref": null,
+      "summary": "Описать приёмку товара",
+      "git_context": {
+        "repository": "extension",
+        "source_refs": [],
+        "target_ref": "main",
+        "refresh_requested": false,
+        "freshness": "UNKNOWN"
+      },
+      "git_analysis_state": {
+        "schema_version": 1,
+        "cache": {},
+        "terminal": {},
+        "history_search_without_evidence": 0,
+        "snapshots": {}
+      },
+      "mode_selection": {
+        "mode": "draft",
+        "actor": "caller",
+        "reason": "explicit",
+        "selected_at": "<TIME>"
+      },
+      "mode_history": [
+        {
+          "mode": "draft",
+          "actor": "caller",
+          "reason": "explicit",
+          "selected_at": "<TIME>"
+        }
+      ],
+      "requirements": [],
+      "presented_paths": [],
+      "answers": [],
+      "notes": [
+        {
+          "kind": "user_answer",
+          "text": "Количество сверяют с накладной.",
+          "created_at": "<TIME>"
+        }
+      ],
+      "artifacts": [],
+      "conditions": [],
+      "remaining_blockers": [],
+      "available_actions": [
+        "flow1c_intake",
+        "flow1c_redmine_fetch",
+        "flow1c_inspect",
+        "flow1c_git_refresh",
+        "flow1c_git_inspect",
+        "flow1c_git_snapshot",
+        "flow1c_dialogue",
+        "flow1c_source_query",
+        "flow1c_complete",
+        "flow1c_section",
+        "flow1c_docx",
+        "flow1c_source_read",
+        "flow1c_write",
+        "flow1c_template",
+        "flow1c_promote"
+      ],
+      "awaiting_user_input": false,
+      "request_id": "<GATE_ID>",
+      "storage_kind": "workspace",
+      "output": "result.md",
+      "skill": "flow1c-consultation",
+      "skill_instructions": "Discuss the goal; use chat sources; draft without changing formal status.",
+      "evidence_path": "<CHECKOUT>/.workspace/drafts/<GATE_ID>/evidence.json"
+    },
+    "stderr": ""
+  },
+  "empty_completion": {
+    "exit_code": 2,
+    "stdout": {
+      "schema_version": 1,
+      "state": "BLOCKED",
+      "ready": false,
+      "errors": [
+        {
+          "code": "WORKFLOW_ERROR",
+          "message": "A nonempty UNVERIFIED_DRAFT document is required",
+          "recoverable": true,
+          "next_action": "Correct the reported input or prerequisite and retry the same operation."
+        }
+      ]
+    },
+    "stderr": ""
+  },
+  "unsafe_write": {
+    "exit_code": 2,
+    "stdout": {
+      "schema_version": 1,
+      "state": "BLOCKED",
+      "ready": false,
+      "errors": [
+        {
+          "code": "WORKFLOW_ERROR",
+          "message": "Path is outside the request directory",
+          "recoverable": true,
+          "next_action": "Correct the reported input or prerequisite and retry the same operation."
+        }
+      ]
+    },
+    "stderr": ""
+  },
+  "write": {
+    "exit_code": 0,
+    "stdout": {
+      "state": "WRITTEN",
+      "absolute_path": "<CHECKOUT>/.workspace/drafts/<GATE_ID>/result.md"
+    },
+    "stderr": ""
+  },
+  "complete": {
+    "exit_code": 0,
+    "stdout": {
+      "state": "DRAFT_COMPLETE",
+      "document_status": "UNVERIFIED_DRAFT",
+      "compliance": "COMPLIANT",
+      "deviations": [],
+      "output": "<CHECKOUT>/.workspace/drafts/<GATE_ID>/result.md"
+    },
+    "stderr": ""
+  },
+  "saved_request": {
+    "schema_version": 1,
+    "policy_version": 3,
+    "mode": "draft",
+    "gate_id": "<GATE_ID>",
+    "operation": "functional-spec",
+    "code": null,
+    "compliance": "COMPLIANT",
+    "deviations": [],
+    "state": "DRAFT_COMPLETE",
+    "created_at": "<TIME>",
+    "clarification": null,
+    "user_message": "Можно продолжать работу.",
+    "project_reference": null,
+    "task_reference": null,
+    "work_reference": null,
+    "reference_source": "none",
+    "reference_code": null,
+    "git_ref": null,
+    "summary": "Описать приёмку товара",
+    "git_context": {
+      "repository": "extension",
+      "source_refs": [],
+      "target_ref": "main",
+      "refresh_requested": false,
+      "freshness": "UNKNOWN"
+    },
+    "git_analysis_state": {
+      "schema_version": 1,
+      "cache": {},
+      "terminal": {},
+      "history_search_without_evidence": 0,
+      "snapshots": {}
+    },
+    "mode_selection": {
+      "mode": "draft",
+      "actor": "caller",
+      "reason": "explicit",
+      "selected_at": "<TIME>"
+    },
+    "mode_history": [
+      {
+        "mode": "draft",
+        "actor": "caller",
+        "reason": "explicit",
+        "selected_at": "<TIME>"
+      }
+    ],
+    "requirements": [],
+    "presented_paths": [],
+    "answers": [],
+    "notes": [
+      {
+        "kind": "user_answer",
+        "text": "Количество сверяют с накладной.",
+        "created_at": "<TIME>"
+      }
+    ],
+    "artifacts": [],
+    "conditions": [],
+    "remaining_blockers": [],
+    "available_actions": [
+      "flow1c_intake",
+      "flow1c_redmine_fetch",
+      "flow1c_inspect",
+      "flow1c_git_refresh",
+      "flow1c_git_inspect",
+      "flow1c_git_snapshot",
+      "flow1c_dialogue",
+      "flow1c_source_query",
+      "flow1c_complete",
+      "flow1c_section",
+      "flow1c_docx",
+      "flow1c_source_read",
+      "flow1c_write",
+      "flow1c_template",
+      "flow1c_promote"
+    ],
+    "awaiting_user_input": false,
+    "request_id": "<GATE_ID>",
+    "storage_kind": "workspace",
+    "output": "result.md",
+    "skill": "flow1c-consultation",
+    "skill_instructions": "Discuss the goal; use chat sources; draft without changing formal status.",
+    "evidence_path": "<CHECKOUT>/.workspace/drafts/<GATE_ID>/evidence.json",
+    "document_status": "UNVERIFIED_DRAFT",
+    "completed_at": "<TIME>",
+    "generated_by": "Flow1C"
+  },
+  "saved_evidence": {
+    "schema_version": 2,
+    "gate_id": "<GATE_ID>",
+    "operation": "functional-spec",
+    "code": null,
+    "git_ref": null,
+    "project_reference": null,
+    "task_reference": null,
+    "work_reference": null,
+    "reference_source": "none",
+    "artifacts": [],
+    "rlm_queries": [],
+    "cc_inspections": [],
+    "source_reads": [],
+    "git_reads": [],
+    "git_analysis": [],
+    "snapshots": [],
+    "changed_files": [
+      {
+        "target": "draft",
+        "path": "result.md",
+        "sha256": "ead8f1ce8c91912bb575de23ce68a5a0b61aea6c924e60118efe1542c5b09fd1"
+      }
+    ],
+    "query_schemas": [],
+    "query_checks": []
+  },
+  "document": "<!-- Generated by Flow1C. -->\n\n> **UNVERIFIED_DRAFT** — рабочий черновик; открытые вопросы и допущения требуют уточнения.\n\n# Приёмка\n\nОператор сверяет количество.\n"
+}
