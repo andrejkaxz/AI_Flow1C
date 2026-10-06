@@ -20,6 +20,12 @@ jobs:
       - run: python -m pip install -r requirements-capabilities/template-docx.txt
       - run: python -m unittest discover -s tests -v
       - run: python -m compileall -q flow1c scripts tests
+      - name: Route catalog and structured baseline comparison (no model evaluation)
+        run: python scripts/routing-smoke.py --output routing-smoke-evidence.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: routing-contract-${{ runner.os }}
+          path: routing-smoke-evidence.json
       - name: Clean interview bootstrap and saved-gate update smoke
         run: python scripts/interview-smoke.py --bootstrap --output interview-smoke-evidence.json
 
@@ -48,5 +54,11 @@ jobs:
         run: python scripts/interview-smoke.py --bootstrap --output interview-smoke-evidence.json
       - run: python -m unittest discover -s tests -v
       - run: python -m compileall -q flow1c scripts tests
+      - name: Route catalog and structured baseline comparison (no model evaluation)
+        run: python scripts/routing-smoke.py --output routing-smoke-evidence.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: routing-contract-${{ runner.os }}
+          path: routing-smoke-evidence.json
       - run: node --test --test-isolation=none tests/test_guard.mjs
       - run: node --test --test-isolation=none tests/test_opencode_runtime.mjs

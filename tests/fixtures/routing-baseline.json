@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "baseline_commit": "68b001a",
+  "runtime_versions": {
+    "stage_catalog": 1,
+    "gate_schema": 1,
+    "gate_policy": 3,
+    "evidence_written": [1, 2],
+    "evidence_declared_schema": 1,
+    "git_analysis_schema": 2,
+    "query_contract": [0, 1],
+    "local_config_schema": 2
+  },
+  "defaults": [
+    {"case_id": "review-read-only", "operation": "code-review", "summary": "Проверь ветку synthetic-feature", "explicit_mode": null, "expected": {"status": "VALID", "operation": "code-review", "mode": "explore", "primary_skill": "flow1c-consultation"}},
+    {"case_id": "review-draft", "operation": "code-review", "summary": "Подготовь черновик отчёта", "explicit_mode": null, "expected": {"status": "VALID", "operation": "code-review", "mode": "draft", "primary_skill": "flow1c-consultation"}},
+    {"case_id": "review-formal", "operation": "code-review", "summary": "Выполни формальное ревью", "explicit_mode": null, "expected": {"status": "VALID", "operation": "code-review", "mode": "formal", "primary_skill": "flow1c-technical-review"}},
+    {"case_id": "review-explicit-overrides-word", "operation": "code-review", "summary": "Обсудим формальный процесс", "explicit_mode": "explore", "expected": {"status": "VALID", "mode": "explore"}},
+    {"case_id": "interview-default", "operation": "interview-preparation", "summary": "Подготовь интервью", "explicit_mode": null, "expected": {"status": "VALID", "mode": "draft", "primary_skill": "flow1c-interview-preparation"}},
+    {"case_id": "template-library-default", "operation": "template-management", "summary": "Обнови шаблон", "explicit_mode": null, "expected": {"status": "VALID", "mode": "explore", "primary_skill": "flow1c-document-templates"}},
+    {"case_id": "template-document-default", "operation": "template-document", "summary": "Подготовь ТЗ по шаблону", "explicit_mode": null, "expected": {"status": "VALID", "mode": "draft", "primary_skill": "flow1c-document-templates"}},
+    {"case_id": "query-default", "operation": "query-analysis", "summary": "Проверь текст запроса", "explicit_mode": null, "expected": {"status": "VALID", "mode": "explore", "primary_skill": "flow1c-query-analysis"}},
+    {"case_id": "section-default", "operation": "functional-section", "summary": "Опиши настройки системы", "explicit_mode": null, "expected": {"status": "VALID", "mode": "draft", "primary_skill": "flow1c-consultation"}},
+    {"case_id": "fs-section-default", "operation": "functional-spec", "summary": "Опиши раздел технической реализации", "explicit_mode": null, "expected": {"status": "VALID", "mode": "draft", "primary_skill": "flow1c-consultation"}},
+    {"case_id": "fs-legacy-default", "operation": "functional-spec", "summary": "Подготовь ФС", "explicit_mode": null, "expected": {"status": "VALID", "mode": "formal", "primary_skill": "flow1c-functional-spec"}},
+    {"case_id": "setup-default", "operation": "setup", "summary": "Настрой проект", "explicit_mode": null, "expected": {"status": "VALID", "mode": "formal", "primary_skill": "flow1c-project-setup"}},
+    {"case_id": "query-remap-create", "operation": "consultation", "summary": "Напиши запрос 1С", "explicit_mode": null, "expected": {"status": "VALID", "requested_operation": "consultation", "operation": "query-analysis", "mode": "explore"}},
+    {"case_id": "query-remap-review", "operation": "consultation", "summary": "Проверь запрос 1С", "explicit_mode": "explore", "expected": {"status": "VALID", "requested_operation": "consultation", "operation": "query-analysis", "mode": "explore"}},
+    {"case_id": "query-remap-optimize", "operation": "consultation", "summary": "Оптимизируй запрос СКД", "explicit_mode": null, "expected": {"status": "VALID", "requested_operation": "consultation", "operation": "query-analysis", "mode": "explore"}},
+    {"case_id": "query-draft-preserved", "operation": "consultation", "summary": "Напиши запрос 1С", "explicit_mode": "draft", "expected": {"status": "VALID", "operation": "consultation", "mode": "draft"}},
+    {"case_id": "method-not-query", "operation": "consultation", "summary": "Как написать запрос 1С?", "explicit_mode": "explore", "expected": {"status": "VALID", "operation": "consultation", "mode": "explore"}},
+    {"case_id": "consultation-legacy-error", "operation": "consultation", "summary": "Объясни подход", "explicit_mode": null, "expected": {"status": "INVALID"}},
+    {"case_id": "unknown-no-fallback", "operation": "unrecognized", "summary": "Проверь объект", "explicit_mode": null, "expected": {"status": "INVALID"}}
+  ],
+  "compatibility_notes": [
+    "Free primary skills preserve consultation fallback except query/interview/templates.",
+    "Modern structured checks do not interpret natural language; only the comparison bridge reuses legacy defaults and the published narrow query remap.",
+    "Formal template stages remain generic legacy gates; template-document writing requires draft or a specialized formal functional-spec/testing gate.",
+    "Evidence schema v1 versus runtime v1/v2 discrepancy is inventoried; no persisted migration is performed in this stage."
+  ]
+}

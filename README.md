@@ -81,6 +81,7 @@ Update возобновляется по gate и `update_id`. [Обновлен�
 
 - [Архитектура](docs/architecture.md), [жизненный цикл](docs/lifecycle.md).
 - [Маршрутизация](docs/intent-routing.md), [tool map](docs/agent-tool-map.md).
+- [Основа route contract и ограничения текущей итерации](docs/route-contract.md).
 - [Интервью](docs/interview-preparation.md), [шаблоны](docs/document-templates.md).
 - [Консультации и черновики](docs/dialogue.md), [Redmine](docs/redmine.md).
 - [Разработка и проверки](CONTRIBUTING.md), [изменения](CHANGELOG.md).

@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Flow1C RouteDecision v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "policy_version", "catalog_digest", "fingerprint", "status", "requested_operation", "route_id", "operation", "mode", "primary_skill", "role", "sources", "source_relation", "substeps", "references", "basis", "reason_codes", "unresolved_fields", "clarification", "errors", "next_actions"],
+  "properties": {
+    "schema_version": {"type": "integer", "const": 1},
+    "policy_version": {"type": "integer", "const": 1},
+    "catalog_digest": {"$ref": "#/$defs/digest"},
+    "fingerprint": {"$ref": "#/$defs/digest"},
+    "status": {"enum": ["VALID", "CLARIFICATION_REQUIRED", "INVALID"]},
+    "requested_operation": {"type": ["string", "null"]},
+    "route_id": {"type": ["string", "null"]},
+    "operation": {"type": ["string", "null"]},
+    "mode": {"enum": ["explore", "draft", "formal", null]},
+    "primary_skill": {"type": ["string", "null"]},
+    "role": {"enum": ["analyst", "functional-architect", "technical-architect", "tester", null]},
+    "sources": {
+      "type": "array", "maxItems": 8,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["kind", "version", "resolver"],
+        "properties": {
+          "kind": {"enum": ["chat", "attachment", "configuration", "extension", "git_history", "git_snapshot", "workflow", "registry", "work_item", "template_library", "redmine"]},
+          "version": {"enum": ["provided", "current", "historical"]},
+          "selector": {"type": "string"},
+          "repository": {"enum": ["workflow", "extension"]},
+          "resolver": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "substeps": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "source_relation": {"enum": ["single", "compare"]},
+    "references": {"type": "object"},
+    "basis": {"type": "array", "items": {"type": "string"}},
+    "reason_codes": {"type": "array", "items": {"type": "string"}},
+    "unresolved_fields": {"type": "array", "items": {"enum": ["operation", "mode", "source", "object", "outcome"]}, "uniqueItems": true},
+    "clarification": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object", "additionalProperties": false, "required": ["question", "options"],
+          "properties": {
+            "question": {"type": "string", "minLength": 1},
+            "options": {"type": "array", "minItems": 2, "maxItems": 3, "items": {"type": "string", "minLength": 1}}
+          }
+        }
+      ]
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["code", "component", "message", "recoverable", "preserved_state", "next_actions"],
+        "properties": {
+          "code": {"const": "ROUTE_INVALID_COMBINATION"},
+          "component": {"const": "routing-policy"},
+          "message": {"type": "string"},
+          "recoverable": {"const": true},
+          "preserved_state": {"const": true},
+          "next_actions": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "next_actions": {"type": "array", "items": {"type": "string"}}
+  },
+  "$defs": {"digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"}},
+  "allOf": [
+    {"if": {"properties": {"status": {"const": "VALID"}}}, "then": {"properties": {"operation": {"type": "string"}, "mode": {"type": "string"}, "primary_skill": {"type": "string"}, "errors": {"maxItems": 0}, "unresolved_fields": {"maxItems": 0}, "clarification": {"type": "null"}}}},
+    {"if": {"properties": {"status": {"const": "CLARIFICATION_REQUIRED"}}}, "then": {"properties": {"unresolved_fields": {"minItems": 1}, "clarification": {"type": "object"}, "errors": {"maxItems": 0}}}},
+    {"if": {"properties": {"status": {"const": "INVALID"}}}, "then": {"properties": {"errors": {"minItems": 1}}}}
+  ]
+}

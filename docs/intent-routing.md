@@ -1,5 +1,9 @@
 # Маршрутизация запросов до gate
 
+Каталог `config/intent-routes.json`, schemas и pure RouteProposal/RouteDecision
+checks реализованы для сравнения с baseline. CLI и адаптеры пока используют
+правила ниже; новое решение ещё не подключено к gates. [Контракт](route-contract.md).
+
 Эти правила применяются в Codex, Claude Code и OpenCode до выбора `flow1c-*` skill,
 operation, mode и источника. Слова ниже — примеры, а не регулярные выражения:
 решение определяется смыслом просьбы, контекстом текущего диалога и указанным

@@ -20,6 +20,14 @@
   продолжение прежнего gate в отдельном clone.
 - Smoke установки интервью включает новый Python-пакет; compileall в CI
   проверяет `flow1c/` на обеих платформах.
+- Добавлена основа route contract: каталог 19 операций, schemas предложения и
+  решения, pure policy и явная загрузка продуктовых правил без пользовательского
+  состояния. Formal skills/roles берутся из stage policies; решение не выдаёт permissions.
+- Зафиксированы 69 синтетических routing cases и 19 legacy default/remap cases,
+  версии runtime и расхождение legacy evidence schema v1 с runtime v1/v2.
+- Добавлены routing contract regressions и smoke сравнения аннотаций с policy.
+  Подключение к CLI/gates, адаптерам, handoff и compact context ещё не включено;
+  model accuracy этой итерацией не измеряется.
 
 ## 0.1.0-dev.1 — 2026-10-06
 

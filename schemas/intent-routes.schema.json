@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Flow1C intent route catalog v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "routes", "source_rules", "substeps", "compatibility"],
+  "properties": {
+    "schema_version": {"type": "integer", "const": 1},
+    "routes": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["route_id", "intent_family", "operation", "description", "activation", "exclusions", "boundary_examples", "modes", "free_primary_skill", "stage_policy", "sources", "substeps", "output_contract", "clarification"],
+        "properties": {
+          "route_id": {"$ref": "#/$defs/text"},
+          "intent_family": {"$ref": "#/$defs/text"},
+          "operation": {"$ref": "#/$defs/text"},
+          "description": {"$ref": "#/$defs/text"},
+          "activation": {"$ref": "#/$defs/examples"},
+          "exclusions": {"$ref": "#/$defs/examples"},
+          "boundary_examples": {"$ref": "#/$defs/examples"},
+          "modes": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["explore", "draft", "formal"]}},
+          "free_primary_skill": {"type": ["string", "null"]},
+          "stage_policy": {"$ref": "#/$defs/text"},
+          "sources": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/sourceKind"}},
+          "substeps": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/text"}},
+          "output_contract": {"$ref": "#/$defs/text"},
+          "clarification": {
+            "type": "object", "additionalProperties": false, "required": ["question", "options"],
+            "properties": {
+              "question": {"$ref": "#/$defs/text"},
+              "options": {"type": "array", "minItems": 2, "maxItems": 3, "uniqueItems": true, "items": {"$ref": "#/$defs/text"}}
+            }
+          }
+        }
+      }
+    },
+    "source_rules": {
+      "type": "object", "minProperties": 11, "maxProperties": 11,
+      "propertyNames": {"$ref": "#/$defs/sourceKind"},
+      "additionalProperties": {
+        "type": "object", "additionalProperties": false, "required": ["version", "resolver"],
+        "properties": {"version": {"enum": ["provided", "current", "historical"]}, "resolver": {"$ref": "#/$defs/text"}}
+      }
+    },
+    "substeps": {
+      "type": "object", "additionalProperties": {
+        "type": "object", "additionalProperties": false, "required": ["tool", "pre_gate", "access"],
+        "properties": {"tool": {"$ref": "#/$defs/text"}, "pre_gate": {"type": "boolean"}, "access": {"enum": ["read-only", "gated"]}}
+      }
+    },
+    "compatibility": {
+      "type": "object", "additionalProperties": false,
+      "required": ["operation_aliases", "reference_fields", "git_actions", "defaults_owner", "query_remap_owner"],
+      "properties": {
+        "operation_aliases": {"type": "object", "maxProperties": 0},
+        "reference_fields": {"type": "object", "additionalProperties": {"type": "string"}},
+        "git_actions": {"type": "object", "additionalProperties": {"type": "string"}},
+        "defaults_owner": {"$ref": "#/$defs/text"},
+        "query_remap_owner": {"$ref": "#/$defs/text"}
+      }
+    }
+  },
+  "$defs": {
+    "text": {"type": "string", "minLength": 1, "pattern": "\\S"},
+    "examples": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/text"}},
+    "sourceKind": {"enum": ["chat", "attachment", "configuration", "extension", "git_history", "git_snapshot", "workflow", "registry", "work_item", "template_library", "redmine"]}
+  }
+}

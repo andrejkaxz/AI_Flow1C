@@ -1,0 +1,876 @@
+{
+  "schema_version": 1,
+  "routes": [
+    {
+      "route_id": "interview-preparation",
+      "intent_family": "interview-preparation",
+      "operation": "interview-preparation",
+      "description": "Обследование процессов и подготовка интервью",
+      "activation": [
+        "Подготовь Excel-реестр процессов и вопросов для обследования закупок.",
+        "Выдели требования из ответов приложенного интервью."
+      ],
+      "exclusions": [
+        "Собеседование кандидата на работу; formal импорт готового реестра требований"
+      ],
+      "boundary_examples": [
+        "Не путать с соседним результатом: Собеседование кандидата на работу; formal импорт готового реестра требований",
+        "Соседний маршрут: registry"
+      ],
+      "modes": [
+        "explore",
+        "draft"
+      ],
+      "free_primary_skill": "flow1c-interview-preparation",
+      "stage_policy": "interview-preparation",
+      "sources": [
+        "chat",
+        "attachment",
+        "configuration",
+        "extension"
+      ],
+      "substeps": [],
+      "output_contract": "schemas/interview-register.schema.json",
+      "clarification": {
+        "question": "Какой результат и источник нужны для этой операции?",
+        "options": [
+          "Обсудить или проверить",
+          "Подготовить документ",
+          "Выполнить формальный этап"
+        ]
+      }
+    },
+    {
+      "route_id": "consultation",
+      "intent_family": "consultation",
+      "operation": "consultation",
+      "description": "Объяснение метода и проверка текущего источника",
+      "activation": [
+        "Объясни подход к проектированию учёта заказов.",
+        "Проверь реквизиты заказа в нашей текущей конфигурации."
+      ],
+      "exclusions": [
+        "Конкретный запрос 1С; историческая ветка; mutation расширения"
+      ],
+      "boundary_examples": [
+        "Не путать с соседним результатом: Конкретный запрос 1С; историческая ветка; mutation расширения",
+        "Соседний маршрут: query-analysis"
+      ],
+      "modes": [
+        "explore",
+        "draft"
+      ],
+      "free_primary_skill": "flow1c-consultation",
+      "stage_policy": "consultation",
+      "sources": [
+        "chat",
+        "attachment",
+        "configuration",
+        "extension",
+        "redmine"
+      ],
+      "substeps": [
+        "redmine-files",
+        "redmine-relations"
+      ],
+      "output_contract": "docs/dialogue.md",
+      "clarification": {
+        "question": "Какой результат и источник нужны для этой операции?",
+        "options": [
+          "Обсудить или проверить",
+          "Подготовить документ",
+          "Выполнить формальный этап"
+        ]
+      }
+    },
+    {
+      "route_id": "query-analysis",
+      "intent_family": "query-analysis",
+      "operation": "query-analysis",
+      "description": "Создание, проверка и оптимизация текста запроса 1С",
+      "activation": [
+        "Напиши запрос 1С для подсчёта остатков по складам.",
+        "Проверь приложенный текст запроса 1С без базы и XML."
+      ],
+      "exclusions": [
+        "Общее объяснение языка запросов; исполнение запроса в живой базе"
+      ],
+      "boundary_examples": [
+        "Не путать с соседним результатом: Общее объяснение языка запросов; исполнение запроса в живой базе",
+        "Соседний маршрут: consultation"
+      ],
+      "modes": [
+        "explore",
+        "draft"
+      ],
+      "free_primary_skill": "flow1c-query-analysis",
+      "stage_policy": "query-analysis",
+      "sources": [
+        "chat",
+        "attachment",
+        "configuration",
+        "extension",
+        "git_snapshot"
+      ],
+      "substeps": [],
+      "output_contract": "schemas/query-check.schema.json",
+      "clarification": {
+        "question": "Какой результат и источник нужны для этой операции?",
+        "options": [
+          "Обсудить или проверить",
+          "Подготовить документ",
+          "Выполнить формальный этап"
+        ]
+      }
+    },
+    {
+      "route_id": "workflow-review",
+      "intent_family": "workflow-review",
+      "operation": "workflow-review",
+      "description": "Read-only проверка правил самого Flow1C",
+      "activation": [
+        "Проверь правила Flow1C на противоречия.",
+        "Подготовь черновой отчёт о структуре workflow."
+      ],
+      "exclusions": [
+        "Обновление установленного продукта; анализ конфигурации 1С"
+      ],
+      "boundary_examples": [
+        "Не путать с соседним результатом: Обновление установленного продукта; анализ конфигурации 1С",
+        "Соседний маршрут: update"
+      ],
+      "modes": [
+        "explore",
+        "draft"
+      ],
+      "free_primary_skill": "flow1c-consultation",
+      "stage_policy": "workflow-review",
+      "sources": [
+        "chat",
+        "attachment",
+        "workflow"
+      ],
+      "substeps": [],
+      "output_contract": "docs/dialogue.md",
+      "clarification": {
+        "question": "Какой результат и источник нужны для этой операции?",
+        "options": [
+          "Обсудить или проверить",
+          "Подготовить документ",
+          "Выполнить формальный этап"
+        ]
+      }
+    },
+    {
+      "route_id": "setup",
+      "intent_family": "setup",
+      "operation": "setup",
+      "description": "Настройка установки и локальных источников",
+      "activation": [
+        "Настрой Flow1C для проекта с выбранными путями.",
+        "Продолжи прерванную настройку проекта."
+      ],
+      "exclusions": [
+        "Обновление установленной версии; замена шаблона документа"
+      ],
+      "boundary_examples": [
+        "Не путать с соседним результатом: Обновление установленной версии; замена шаблона документа",
+        "Соседний маршрут: update"
+      ],
+      "modes": [
+        "formal"
+      ],
+      "free_primary_skill": null,
+      "stage_policy": "setup",
+      "sources": [
+        "chat",
+        "workflow",
+        "template_library"
+      ],
+      "substeps": [
+        "template-library"
+      ],
+      "output_contract": "schemas/agent-gate.schema.json",
+      "clarification": {
+        "question": "Какой результат и источник нужны для этой операции?",
+        "options": [
+          "Обсудить или проверить",
+          "Подготовить документ",
+          "Выполнить формальный этап"
+        ]
+      }
+    },
+    {
+      "route_id": "update",
+      "intent_family": "update",
+      "operation": "update",
+      "description": "Обновление установки с сохранением состояния",
+      "activation": [
+        "Обнови Flow1C с сохранением локальных настроек.",
+        "Продолжи незавершённое обновление продукта."
+      ],
+      "exclusions": [
+        "Изменение шаблона; изменение расширения 1С"
+      ],
+      "boundary_examples": [
+        "Не путать с соседним результатом: Изменение шаблона; изменение расширения 1С",
+        "Соседний маршрут: template-management"
+      ],
+      "modes": [
+        "formal"
+      ],
+      "free_primary_skill": null,
+      "stage_policy": "update",
+      "sources": [
+        "chat",
+        "workflow"
+      ],
+      "substeps": [
+        "template-library"
+      ],
+      "output_contract": "schemas/update-checkpoint.schema.json",
+      "clarification": {
+        "question": "Какой результат и источник нужны для этой операции?",
+        "options": [
+          "Обсудить или проверить",
+          "Подготовить документ",
+          "Выполнить формальный этап"
+        ]
+      }
+    },
+    {
+      "route_id": "registry",
+      "intent_family": "registry",
+      "operation": "registry",
+      "description": "Импорт реестра процессов и требований",
+      "activation": [
+        "Импортируй приложенный Excel-реестр требований.",
+        "Проверь структуру реестра перед нормализацией."
+      ],
+      "exclusions": [
+        "Создание вопросов интервью; выдумывание ID требований"
+      ],
+      "boundary_examples": [
+        "Не путать с соседним результатом: Создание вопросов интервью; выдумывание ID требований",
+        "Соседний маршрут: interview-preparation"
+      ],
+      "modes": [
+        "formal"
+      ],
+      "free_primary_skill": null,
+      "stage_policy": "registry",
+      "sources": [
+        "chat",
+        "attachment",
+        "registry",
+        "redmine"
+      ],
+      "substeps": [
+        "redmine-files",
+        "redmine-relations"
+      ],
+      "output_contract": "schemas/registry-status.schema.json",
+      "clarification": {
+        "question": "Какой результат и источник нужны для этой операции?",
+        "options": [
+          "Обсудить или проверить",
+          "Подготовить документ",
+          "Выполнить формальный этап"
+        ]
+      }
+    },
+    {
+      "route_id": "functional-spec",
+      "intent_family": "functional-spec",
+      "operation": "functional-spec",
+      "description": "Подготовка функциональной спецификации",
+      "activation": [
+        "Подготовь независимый черновик ФС по моему описанию.",
+        "Подготовь формальную ФС по рабочему элементу SYNTHETIC-FS-1."
+      ],
+      "exclusions": [
+        "Согласование готовой ФС; изменение исходников расширения"
+      ],
+      "boundary_examples": [
+        "Не путать с соседним результатом: Согласование готовой ФС; изменение исходников расширения",
+        "Соседний маршрут: functional-review"
+      ],
+      "modes": [
+        "explore",
+        "draft",
+        "formal"
+      ],
+      "free_primary_skill": "flow1c-consultation",
+      "stage_policy": "functional-spec",
+      "sources": [
+        "chat",
+        "attachment",
+        "configuration",
+        "extension",
+        "work_item",
+        "registry",
+        "template_library",
+        "redmine"
+      ],
+      "substeps": [
+        "redmine-files",
+        "redmine-relations",
+        "template-library"
+      ],
+      "output_contract": "schemas/manifest.schema.json",
+      "clarification": {
+        "question": "Какой результат и источник нужны для этой операции?",
+        "options": [
+          "Обсудить или проверить",
+          "Подготовить документ",
+          "Выполнить формальный этап"
+        ]
+      }
+    },
+    {
+      "route_id": "functional-section",
+      "intent_family": "functional-section",
+      "operation": "functional-section",
+      "description": "Подготовка и запись отдельного раздела ФС",
+      "activation": [
+        "Опиши только раздел технической реализации по моему тексту.",
+        "Подготовь раздел настроек системы независимого черновика."
+      ],
+      "exclusions": [
+        "Mutation расширения; полная ФС; approval не является поручением записи"
+      ],
+      "boundary_examples": [
+        "Не путать с соседним результатом: Mutation расширения; полная ФС; approval не является поручением записи",
+        "Соседний маршрут: development"
+      ],
+      "modes": [
+        "explore",
+        "draft",
+        "formal"
+      ],
+      "free_primary_skill": "flow1c-consultation",
+      "stage_policy": "functional-section",
+      "sources": [
+        "chat",
+        "attachment",
+        "work_item",
+        "configuration",
+        "extension"
+      ],
+      "substeps": [],
+      "output_contract": "schemas/functional-spec-section-state.schema.json",
+      "clarification": {
+        "question": "Какой результат и источник нужны для этой операции?",
+        "options": [
+          "Обсудить или проверить",
+          "Подготовить документ",
+          "Выполнить формальный этап"
+        ]
+      }
+    },
+    {
+      "route_id": "functional-review",
+      "intent_family": "functional-review",
+      "operation": "functional-review",
+      "description": "Ревью функциональной спецификации",
+      "activation": [
+        "Выполни формальное функциональное ревью ФС SYNTHETIC-FS-1.",
+        "Обсудим полноту приложенной ФС без формального согласования."
+      ],
+      "exclusions": [
+        "Разработка новой ФС; approval без точной версии"
+      ],
+      "boundary_examples": [
+        "Не путать с соседним результатом: Разработка новой ФС; approval без точной версии",
+        "Соседний маршрут: functional-spec"
+      ],
+      "modes": [
+        "explore",
+        "draft",
+        "formal"
+      ],
+      "free_primary_skill": "flow1c-consultation",
+      "stage_policy": "functional-review",
+      "sources": [
+        "chat",
+        "attachment",
+        "work_item",
+        "registry",
+        "redmine"
+      ],
+      "substeps": [
+        "redmine-files",
+        "redmine-relations"
+      ],
+      "output_contract": "schemas/evidence.schema.json",
+      "clarification": {
+        "question": "Какой результат и источник нужны для этой операции?",
+        "options": [
+          "Обсудить или проверить",
+          "Подготовить документ",
+          "Выполнить формальный этап"
+        ]
+      }
+    },
+    {
+      "route_id": "technical-design",
+      "intent_family": "technical-design",
+      "operation": "technical-design",
+      "description": "Подготовка технического дизайна",
+      "activation": [
+        "Подготовь формальный технический дизайн для SYNTHETIC-FS-1.",
+        "Объясни варианты технического решения по этому описанию."
+      ],
+      "exclusions": [
+        "ТЗ technical-assignment по шаблону; изменение расширения"
+      ],
+      "boundary_examples": [
+        "Не путать с соседним результатом: ТЗ technical-assignment по шаблону; изменение расширения",
+        "Соседний маршрут: template-document"
+      ],
+      "modes": [
+        "explore",
+        "draft",
+        "formal"
+      ],
+      "free_primary_skill": "flow1c-consultation",
+      "stage_policy": "technical-design",
+      "sources": [
+        "chat",
+        "attachment",
+        "work_item",
+        "configuration",
+        "extension",
+        "redmine"
+      ],
+      "substeps": [
+        "redmine-files",
+        "redmine-relations"
+      ],
+      "output_contract": "schemas/evidence.schema.json",
+      "clarification": {
+        "question": "Какой результат и источник нужны для этой операции?",
+        "options": [
+          "Обсудить или проверить",
+          "Подготовить документ",
+          "Выполнить формальный этап"
+        ]
+      }
+    },
+    {
+      "route_id": "development",
+      "intent_family": "development",
+      "operation": "development",
+      "description": "Изменение исходников расширения",
+      "activation": [
+        "Измени расширение по согласованному дизайну SYNTHETIC-FS-1.",
+        "Реализуй проверку ввода в текущей ветке расширения."
+      ],
+      "exclusions": [
+        "Read-only ревью; описание технической реализации в документе"
+      ],
+      "boundary_examples": [
+        "Не путать с соседним результатом: Read-only ревью; описание технической реализации в документе",
+        "Соседний маршрут: code-review"
+      ],
+      "modes": [
+        "formal"
+      ],
+      "free_primary_skill": null,
+      "stage_policy": "development",
+      "sources": [
+        "chat",
+        "work_item",
+        "configuration",
+        "extension",
+        "registry",
+        "redmine"
+      ],
+      "substeps": [
+        "redmine-files",
+        "redmine-relations"
+      ],
+      "output_contract": "schemas/evidence.schema.json",
+      "clarification": {
+        "question": "Какой результат и источник нужны для этой операции?",
+        "options": [
+          "Обсудить или проверить",
+          "Подготовить документ",
+          "Выполнить формальный этап"
+        ]
+      }
+    },
+    {
+      "route_id": "technical-implementation",
+      "intent_family": "technical-implementation",
+      "operation": "technical-implementation",
+      "description": "Документирование выполненной реализации",
+      "activation": [
+        "Документируй выполненную реализацию SYNTHETIC-FS-1 формально.",
+        "Объясни выполненные изменения по приложенному описанию."
+      ],
+      "exclusions": [
+        "Поручение изменить расширение; отдельный раздел ФС"
+      ],
+      "boundary_examples": [
+        "Не путать с соседним результатом: Поручение изменить расширение; отдельный раздел ФС",
+        "Соседний маршрут: development"
+      ],
+      "modes": [
+        "explore",
+        "draft",
+        "formal"
+      ],
+      "free_primary_skill": "flow1c-consultation",
+      "stage_policy": "technical-implementation",
+      "sources": [
+        "chat",
+        "attachment",
+        "work_item",
+        "configuration",
+        "extension",
+        "git_history",
+        "git_snapshot",
+        "redmine"
+      ],
+      "substeps": [
+        "redmine-files",
+        "redmine-relations"
+      ],
+      "output_contract": "schemas/evidence.schema.json",
+      "clarification": {
+        "question": "Какой результат и источник нужны для этой операции?",
+        "options": [
+          "Обсудить или проверить",
+          "Подготовить документ",
+          "Выполнить формальный этап"
+        ]
+      }
+    },
+    {
+      "route_id": "code-review",
+      "intent_family": "code-review",
+      "operation": "code-review",
+      "description": "Ревью кода, Git history и исторических источников",
+      "activation": [
+        "Проверь ветку synthetic-feature и покажи изменения.",
+        "Выполни формальное code review рабочего элемента SYNTHETIC-FS-1."
+      ],
+      "exclusions": [
+        "Ревью не разрешает исправление кода; номер задачи не является Git ref"
+      ],
+      "boundary_examples": [
+        "Не путать с соседним результатом: Ревью не разрешает исправление кода; номер задачи не является Git ref",
+        "Соседний маршрут: development"
+      ],
+      "modes": [
+        "explore",
+        "draft",
+        "formal"
+      ],
+      "free_primary_skill": "flow1c-consultation",
+      "stage_policy": "code-review",
+      "sources": [
+        "chat",
+        "attachment",
+        "work_item",
+        "configuration",
+        "extension",
+        "git_history",
+        "git_snapshot",
+        "redmine"
+      ],
+      "substeps": [
+        "redmine-files",
+        "redmine-relations"
+      ],
+      "output_contract": "schemas/git-analysis.schema.json",
+      "clarification": {
+        "question": "Какой результат и источник нужны для этой операции?",
+        "options": [
+          "Обсудить или проверить",
+          "Подготовить документ",
+          "Выполнить формальный этап"
+        ]
+      }
+    },
+    {
+      "route_id": "testing",
+      "intent_family": "testing",
+      "operation": "testing",
+      "description": "План и результаты проверки реализации",
+      "activation": [
+        "Подготовь формальный план тестирования SYNTHETIC-FS-1.",
+        "Обсудим тестовые сценарии по этому описанию."
+      ],
+      "exclusions": [
+        "Создание документа произвольного типа по шаблону; выдуманные runtime результаты"
+      ],
+      "boundary_examples": [
+        "Не путать с соседним результатом: Создание документа произвольного типа по шаблону; выдуманные runtime результаты",
+        "Соседний маршрут: template-document"
+      ],
+      "modes": [
+        "explore",
+        "draft",
+        "formal"
+      ],
+      "free_primary_skill": "flow1c-consultation",
+      "stage_policy": "testing",
+      "sources": [
+        "chat",
+        "attachment",
+        "work_item",
+        "registry",
+        "template_library",
+        "redmine"
+      ],
+      "substeps": [
+        "redmine-files",
+        "redmine-relations",
+        "template-library"
+      ],
+      "output_contract": "schemas/evidence.schema.json",
+      "clarification": {
+        "question": "Какой результат и источник нужны для этой операции?",
+        "options": [
+          "Обсудить или проверить",
+          "Подготовить документ",
+          "Выполнить формальный этап"
+        ]
+      }
+    },
+    {
+      "route_id": "status",
+      "intent_family": "status",
+      "operation": "status",
+      "description": "Состояние рабочих элементов проекта",
+      "activation": [
+        "Покажи состояние рабочих элементов проекта.",
+        "Обнови отчёт статуса по существующим manifests."
+      ],
+      "exclusions": [
+        "Публикация; изменение approvals; статус внешней базы"
+      ],
+      "boundary_examples": [
+        "Не путать с соседним результатом: Публикация; изменение approvals; статус внешней базы",
+        "Соседний маршрут: publish"
+      ],
+      "modes": [
+        "formal"
+      ],
+      "free_primary_skill": null,
+      "stage_policy": "status",
+      "sources": [
+        "chat",
+        "work_item",
+        "registry"
+      ],
+      "substeps": [],
+      "output_contract": "schemas/manifest.schema.json",
+      "clarification": {
+        "question": "Какой результат и источник нужны для этой операции?",
+        "options": [
+          "Обсудить или проверить",
+          "Подготовить документ",
+          "Выполнить формальный этап"
+        ]
+      }
+    },
+    {
+      "route_id": "publish",
+      "intent_family": "publish",
+      "operation": "publish",
+      "description": "Публикация проверенного результата через Git и Gitea",
+      "activation": [
+        "Опубликуй проверенный результат SYNTHETIC-FS-1 через PR.",
+        "Подготовь PR утверждённой версии спецификации."
+      ],
+      "exclusions": [
+        "Черновик не публикуется; подтверждение не отменяет validation и approvals"
+      ],
+      "boundary_examples": [
+        "Не путать с соседним результатом: Черновик не публикуется; подтверждение не отменяет validation и approvals",
+        "Соседний маршрут: functional-spec"
+      ],
+      "modes": [
+        "formal"
+      ],
+      "free_primary_skill": null,
+      "stage_policy": "publish",
+      "sources": [
+        "chat",
+        "work_item",
+        "registry"
+      ],
+      "substeps": [],
+      "output_contract": "schemas/evidence.schema.json",
+      "clarification": {
+        "question": "Какой результат и источник нужны для этой операции?",
+        "options": [
+          "Обсудить или проверить",
+          "Подготовить документ",
+          "Выполнить формальный этап"
+        ]
+      }
+    },
+    {
+      "route_id": "template-management",
+      "intent_family": "template-management",
+      "operation": "template-management",
+      "description": "Управление библиотекой пользовательских шаблонов",
+      "activation": [
+        "Добавь приложенный шаблон ТЗ в библиотеку проекта.",
+        "Обнови правило заполнения существующего шаблона."
+      ],
+      "exclusions": [
+        "Обновление Flow1C; генерация документа; автоматическая замена пользовательских данных"
+      ],
+      "boundary_examples": [
+        "Не путать с соседним результатом: Обновление Flow1C; генерация документа; автоматическая замена пользовательских данных",
+        "Соседний маршрут: update"
+      ],
+      "modes": [
+        "explore",
+        "formal"
+      ],
+      "free_primary_skill": "flow1c-document-templates",
+      "stage_policy": "template-management",
+      "sources": [
+        "chat",
+        "attachment",
+        "template_library"
+      ],
+      "substeps": [
+        "template-library"
+      ],
+      "output_contract": "schemas/document-template-operation.schema.json",
+      "clarification": {
+        "question": "Какой результат и источник нужны для этой операции?",
+        "options": [
+          "Обсудить или проверить",
+          "Подготовить документ",
+          "Выполнить формальный этап"
+        ]
+      }
+    },
+    {
+      "route_id": "template-document",
+      "intent_family": "template-document",
+      "operation": "template-document",
+      "description": "Создание документа по закреплённой ревизии шаблона",
+      "activation": [
+        "Создай ТЗ technical-assignment по нашему шаблону.",
+        "Подготовь инструкцию пользователя по библиотечному шаблону."
+      ],
+      "exclusions": [
+        "Технический дизайн; formal ФС/тестирование сохраняют специализированный primary"
+      ],
+      "boundary_examples": [
+        "Не путать с соседним результатом: Технический дизайн; formal ФС/тестирование сохраняют специализированный primary",
+        "Соседний маршрут: technical-design"
+      ],
+      "modes": [
+        "draft",
+        "formal"
+      ],
+      "free_primary_skill": "flow1c-document-templates",
+      "stage_policy": "template-document",
+      "sources": [
+        "chat",
+        "attachment",
+        "template_library",
+        "redmine"
+      ],
+      "substeps": [
+        "redmine-files",
+        "redmine-relations",
+        "template-library"
+      ],
+      "output_contract": "schemas/document-template-validation.schema.json",
+      "clarification": {
+        "question": "Какой результат и источник нужны для этой операции?",
+        "options": [
+          "Обсудить или проверить",
+          "Подготовить документ",
+          "Выполнить формальный этап"
+        ]
+      }
+    }
+  ],
+  "source_rules": {
+    "chat": {
+      "version": "provided",
+      "resolver": "conversation"
+    },
+    "attachment": {
+      "version": "provided",
+      "resolver": "accepted-intake"
+    },
+    "configuration": {
+      "version": "current",
+      "resolver": "gated-rlm"
+    },
+    "extension": {
+      "version": "current",
+      "resolver": "gated-rlm"
+    },
+    "git_history": {
+      "version": "historical",
+      "resolver": "gated-git-inspect"
+    },
+    "git_snapshot": {
+      "version": "historical",
+      "resolver": "gated-git-snapshot-and-rlm"
+    },
+    "workflow": {
+      "version": "current",
+      "resolver": "bounded-workflow-inspect"
+    },
+    "registry": {
+      "version": "current",
+      "resolver": "registry-import"
+    },
+    "work_item": {
+      "version": "current",
+      "resolver": "work-reference-resolver"
+    },
+    "template_library": {
+      "version": "current",
+      "resolver": "pinned-template-revision"
+    },
+    "redmine": {
+      "version": "current",
+      "resolver": "redmine-provenance"
+    }
+  },
+  "substeps": {
+    "redmine-files": {
+      "tool": "flow1c_redmine_files",
+      "pre_gate": true,
+      "access": "read-only"
+    },
+    "redmine-relations": {
+      "tool": "flow1c_redmine_relations",
+      "pre_gate": true,
+      "access": "read-only"
+    },
+    "template-library": {
+      "tool": "flow1c_template",
+      "pre_gate": false,
+      "access": "gated"
+    }
+  },
+  "compatibility": {
+    "operation_aliases": {},
+    "reference_fields": {
+      "code": "task_reference",
+      "g_number": "task_reference"
+    },
+    "git_actions": {
+      "integration": "merge-search"
+    },
+    "defaults_owner": "scripts.flow1c_policy.select_request_mode",
+    "query_remap_owner": "scripts.flow1c_query_policy.infer_query_request_intent"
+  }
+}

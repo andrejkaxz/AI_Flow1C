@@ -3,7 +3,15 @@
 Документ описывает текущую реализацию самостоятельного продуктового репозитория.
 `scripts/flow1c.py` — совместимый запускатель `flow1c.cli.main` из любого cwd.
 Parser, представление результата и exit codes находятся в `flow1c.cli`;
-бизнес-операции принадлежат сервисам пакета. Контрактные routes ещё не реализованы.
+бизнес-операции принадлежат сервисам пакета. Каталог и чистая проверка routes
+реализованы отдельно; подключение к CLI/gates и адаптерам ещё не включено.
+
+`flow1c.routing_policy` проверяет структурированный RouteProposal и возвращает
+детерминированный RouteDecision без I/O и permissions. `flow1c.routing` читает
+только продуктовый каталог и stage policies. Formal skill/role принадлежат
+`config/stages.json`; prerequisites и allowlists в routes не копируются.
+Источник содержит запрошенную версию и resolver, а доказанные commit/freshness
+появляются только в gated source tools. [Контракт и ограничения](route-contract.md).
 
 ## Границы Python-пакета
 

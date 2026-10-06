@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Flow1C RouteProposal v1",
+  "type": "object",
+  "required": ["schema_version", "expected_outcome"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"type": "integer", "const": 1},
+    "expected_outcome": {"type": "string", "maxLength": 4000},
+    "operation": {"$ref": "#/$defs/nullableIdentifier"},
+    "mode": {"$ref": "#/$defs/nullableIdentifier"},
+    "primary_skill": {"$ref": "#/$defs/nullableIdentifier"},
+    "role": {"$ref": "#/$defs/nullableIdentifier"},
+    "gate_id": {"$ref": "#/$defs/nullableIdentifier"},
+    "request_id": {"$ref": "#/$defs/nullableIdentifier"},
+    "references": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "task_reference": {"$ref": "#/$defs/reference"},
+        "project_reference": {"$ref": "#/$defs/reference"},
+        "git_ref": {"type": ["string", "null"], "minLength": 1, "maxLength": 256, "pattern": "^(?!\\s*-)(?=.*\\S)[^\\u0000-\\u001F\\u007F]+$"}
+      }
+    },
+    "sources": {"type": "array", "maxItems": 8, "items": {"$ref": "#/$defs/source"}},
+    "source_relation": {"enum": ["single", "compare"]},
+    "basis": {"type": "array", "maxItems": 16, "items": {"$ref": "#/$defs/shortText"}},
+    "ambiguities": {
+      "type": "array", "maxItems": 5,
+      "items": {"enum": ["operation", "mode", "source", "object", "outcome"]}
+    },
+    "substeps": {"type": "array", "maxItems": 3, "items": {"$ref": "#/$defs/shortText"}}
+  },
+  "$defs": {
+    "nullableIdentifier": {"type": ["string", "null"], "minLength": 1, "maxLength": 128, "pattern": "\\S"},
+    "shortText": {"type": "string", "minLength": 1, "maxLength": 256, "pattern": "\\S"},
+    "reference": {"type": ["string", "null"], "minLength": 1, "maxLength": 128, "pattern": "^(?=.*\\S)[^\\u0000-\\u001F\\u007F]+$"},
+    "source": {
+      "type": "object", "additionalProperties": false, "required": ["kind", "version"],
+      "properties": {
+        "kind": {"enum": ["chat", "attachment", "configuration", "extension", "git_history", "git_snapshot", "workflow", "registry", "work_item", "template_library", "redmine"]},
+        "selector": {"$ref": "#/$defs/shortText"},
+        "repository": {"enum": ["workflow", "extension"]},
+        "version": {"enum": ["provided", "current", "historical"]}
+      },
+      "if": {"required": ["repository"]},
+      "then": {"properties": {"kind": {"enum": ["git_history", "git_snapshot"]}}}
+    }
+  }
+}
