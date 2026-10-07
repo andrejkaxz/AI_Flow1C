@@ -288,7 +288,10 @@ def evidence_for_gate(gate: dict[str, Any], *, product_root: Path) -> tuple[Path
         raise WorkflowError("Evidence record is missing or invalid.")
     if evidence.get("gate_id") and evidence["gate_id"] != gate["gate_id"]:
         raise WorkflowError("Evidence belongs to a different gate")
-    if int(evidence.get("schema_version", 1) or 1) < 2:
+    version = evidence.get("schema_version", 1)
+    if type(version) is not int or version not in {1, 2}:
+        raise WorkflowError("Evidence record has an unsupported schema version; saved evidence is preserved.")
+    if version == 1:
         evidence["schema_version"] = 2
         migrated = []
         for item in evidence.get("git_analysis", []):

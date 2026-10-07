@@ -3,7 +3,7 @@
   "type": "object",
   "required": ["schema_version", "operation", "code", "artifacts", "rlm_queries", "source_reads", "changed_files"],
   "properties": {
-    "schema_version": {"const": 1},
+    "schema_version": {"type": "integer", "enum": [1, 2]},
     "operation": {"type": "string"},
     "code": {"type": ["string", "null"], "minLength": 1, "maxLength": 128, "pattern": "^[^\\u0000-\\u001F\\u007F]+$", "deprecated": true},
     "project_reference": {"type": ["string", "null"], "minLength": 1, "maxLength": 128, "pattern": "^[^\\u0000-\\u001F\\u007F]+$"},
