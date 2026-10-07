@@ -28,7 +28,11 @@ Index freshness is verified by the shared index runtime and doctor. Never patch
 RLM's database, globally disable age checks, or report READY from process exit
 code alone. Source, database and tool changes invalidate validation receipts.
 
-Report `READY` only from the updater's successful machine-readable result. On `BLOCKED`, preserve the local configuration and backup, state the exact failing step, and do not discard commits or files automatically.
+Update needs no work item or registry. A saved project_reference is project context, not a requirement to create a task. Legacy update gates retain obsolete work-item references in the versioned update_scope_migration history and resume on the same gate/update_id.
+
+Report `READY` only from the updater's successful machine-readable result. On `BLOCKED`, preserve the local configuration and original backup, state the exact failing step, then run `flow1c_action action=update-diagnose` with empty parameters. It returns only selected sanitized Git metadata; it performs no fetch, mutation or completion. Show configured/tracking repository identities. HTTPS/SSH and .git variants can match: when the original blocker was URL comparison and the diagnosis confirms that match, retry the same update without reconfiguration. Matching identities do not resolve other updater failures; follow the original blocker before retrying. On a real mismatch ask which repository is intended. Never repeat an unchanged failure, request the full config, use direct read/glob/bash, or call setup-configure within update.
+
+On OPENCODE_RESTART_REQUIRED, fully reopen OpenCode in the same project and diagnose the saved blocked gate before retrying. A restart reloads tools; it does not resolve the original updater error. Diagnostics are available after reload and remain read-only for BLOCKED gates.
 
 If `agent_runtime.restart_required` is true, complete the successful update gate
 first, then fully quit and reopen OpenCode in the same project before using new

@@ -678,7 +678,7 @@ export const action = tool({
   description: "Run a gated setup, update, registry, work-item, status or publish action. Mutating external actions require confirmed=true.",
   args: {
     gate_id: tool.schema.string(),
-    action: tool.schema.enum(["setup-audit", "setup-plan", "setup-bootstrap", "setup-configure", "setup-status", "setup-resume", "doctor", "update", "registry-import", "fs-start", "provisional-start", "registry-reconcile", "status", "publish"]),
+    action: tool.schema.enum(["setup-audit", "setup-plan", "setup-bootstrap", "setup-configure", "setup-status", "setup-resume", "doctor", "update", "update-diagnose", "registry-import", "fs-start", "provisional-start", "registry-reconcile", "status", "publish"]),
     parameters_json: tool.schema.string().default("{}"),
   },
   async execute(args, context) {

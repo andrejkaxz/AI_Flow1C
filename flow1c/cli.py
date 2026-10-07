@@ -440,6 +440,7 @@ def build_parser() -> argparse.ArgumentParser:
             "setup-resume",
             "doctor",
             "update",
+            "update-diagnose",
             "registry-import",
             "fs-start",
             "provisional-start",

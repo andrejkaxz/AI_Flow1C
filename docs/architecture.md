@@ -43,6 +43,9 @@ OS writer lock; services возвращают данные без вызовов
 - `system.py`, `git_runtime.py`, `sources.py` — проверки executable/source paths,
   Git документации и ограниченный RLM transport.
 - `setup.py`, `readiness.py` — setup checkpoints, запуск setup/update и readiness.
+- `update_policy.py` — идемпотентная миграция незавершённого update scope;
+  `update_diagnostics.py` — ограниченное чтение настроенных Git metadata без
+  секретов, fetch и mutation. Update gate не зависит от work-items.
 - `registry.py`, `work_items.py` — импорт/разрешение реестра, безопасные пути,
   manifest, создание и reconciliation рабочих элементов.
 - `intake.py`, `redmine.py` — intake/provenance и транзакции Redmine credentials.

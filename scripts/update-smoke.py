@@ -33,7 +33,7 @@ def run(command: list[str], cwd: Path, *, check: bool = True, timeout: float = 6
 def smoke(parent: Path, powershell: str = "powershell.exe") -> dict:
     seed, checkout = parent / "origin", parent / "clean checkout"
     (seed / "scripts").mkdir(parents=True)
-    for name in ("update.ps1", "rlm-index.ps1", "rlm_index_runtime.py", "rlm_index_policy.py", "migrate-local-config.py"):
+    for name in ("update.ps1", "git-identity.ps1", "rlm-index.ps1", "rlm_index_runtime.py", "rlm_index_policy.py", "migrate-local-config.py"):
         shutil.copy2(ROOT / "scripts" / name, seed / "scripts" / name)
     (seed / ".opencode/agents").mkdir(parents=True)
     (seed / ".opencode/agents/flow1c-controller.md").write_text("fixture v1", encoding="utf-8")
@@ -107,8 +107,22 @@ def smoke(parent: Path, powershell: str = "powershell.exe") -> dict:
         source.mkdir()
         (source / "Configuration.xml").write_text("<fixture/>")
         (source / "Module.bsl").write_text("// synthetic fixture only")
+    extension = sources[1]
+    git_run("init", "-b", "main", cwd=extension)
+    git_run("config", "user.name", "Update fixture", cwd=extension)
+    git_run("config", "user.email", "fixture@example.invalid", cwd=extension)
+    git_run("add", ".", cwd=extension)
+    git_run("commit", "-m", "extension fixture", cwd=extension)
+    extension_origin = parent / "extension-origin.git"
+    git_run("clone", "--bare", str(extension), str(extension_origin), cwd=parent)
+    extension_url = extension_origin.as_uri()
+    git_run("remote", "add", "origin", extension_url, cwd=extension)
+    git_run("fetch", "origin", cwd=extension)
+    git_run("branch", "--set-upstream-to=origin/main", cwd=extension)
+    git_run("remote", "set-url", "origin", (parent / "wrong-extension.git").as_uri(), cwd=extension)
     local = {"configuration_path": str(sources[0]), "extension_path": str(sources[1]),
-             "extension_mode": "local-export", "custom_user_setting": {"keep": "unchanged"}}
+             "extension_mode": "git", "extension_repository_url": extension_url,
+             "custom_user_setting": {"keep": "unchanged"}}
     config = checkout / ".flow1c.local.json"
     config.write_text(json.dumps(local), encoding="utf-8")
     before = config.read_bytes()
@@ -122,7 +136,15 @@ def smoke(parent: Path, powershell: str = "powershell.exe") -> dict:
         if result.returncode and data.get("state") != "BLOCKED":
             raise RuntimeError(f"Unexpected updater failure: {data}")
         return data
-    first = update()
+    blocked_extension = update()
+    assert blocked_extension["state"] == "BLOCKED" and "remote URL" in blocked_extension["error"], blocked_extension
+    blocked_backup = Path(blocked_extension["backup_directory"])
+    assert (blocked_backup / ".flow1c.local.json").read_bytes() == before
+    git_run("remote", "set-url", "origin", extension_url, cwd=extension)
+    first = update("-UpdateId", blocked_extension["update_id"])
+    assert first["update_id"] == blocked_extension["update_id"]
+    assert first["backup_directory"] == str(blocked_backup)
+    assert len(list((checkout / ".workspace/backups").glob("update-*"))) == 1
     if first["state"] != "WAITING_BACKGROUND":
         raise AssertionError(first)
     update_id, backup = first["update_id"], Path(first["backup_directory"])
@@ -184,6 +206,7 @@ def smoke(parent: Path, powershell: str = "powershell.exe") -> dict:
             "powershell": powershell, "clean_venv_bootstrap": True, "network_used": False,
             "external_boundaries": "synthetic RLM/service/tool fixtures",
             "checks": ["fast-forward upgrade", "legacy configuration migration", "user field preservation",
+                       "blocked extension recovery on the same checkpoint and original backup",
                        "two background sources", "same checkpoint and backup on resume",
                        "restart requirement preserved", "no repeated fetch/tool check on resume",
                        "zero-delta old-index validation", "idempotent repeat update",

@@ -190,6 +190,10 @@ class CliContractTests(unittest.TestCase):
             self.assertTrue(all(not a["required"] for a in added))
             self.assertEqual(next(a["default"] for a in added if a["dest"] == "view"), "full")
             actual["commands"][name]["actions"] = [a for a in actual["commands"][name]["actions"] if a["dest"] not in fields]
+        action = next(a for a in actual["commands"]["agent-action"]["actions"] if a["dest"] == "action")
+        legacy_action = next(a for a in expected["commands"]["agent-action"]["actions"] if a["dest"] == "action")
+        self.assertEqual(set(action["choices"]) - set(legacy_action["choices"]), {"update-diagnose"})
+        action["choices"].remove("update-diagnose")
         self.assertEqual(actual, expected)
 
     def test_help_runs_from_an_unrelated_directory(self) -> None:

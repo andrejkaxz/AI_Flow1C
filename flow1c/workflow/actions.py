@@ -378,7 +378,7 @@ def agent_action(args: argparse.Namespace, *, product_root: Path) -> OperationRe
             "setup-resume",
             "doctor",
         },
-        "update": {"update", "doctor"},
+        "update": {"update", "update-diagnose", "doctor"},
         "registry": {"registry-import"},
         "functional-spec": {"fs-start", "provisional-start", "registry-reconcile"},
         "functional-review": {"provisional-start", "registry-reconcile"},
@@ -491,6 +491,12 @@ def agent_action(args: argparse.Namespace, *, product_root: Path) -> OperationRe
             gate_state.save_gate(gate, product_root=product_root)
         _value = result
         return OperationResult(_value, exit_code)
+    if action == "update-diagnose":
+        if parameters:
+            raise WorkflowError("Update diagnostics accept no paths, commands or configuration changes.")
+        from flow1c.update_diagnostics import diagnose_update
+
+        return OperationResult(diagnose_update(gate, product_root=product_root), 0)
     if action in {
         "setup-status",
         "setup-resume",

@@ -13,6 +13,7 @@ from flow1c import routing
 from flow1c import storage as storage
 from flow1c import work_items as work_items
 from flow1c.errors import WorkflowError
+from flow1c.update_policy import migrate_update_scope
 from flow1c.routing_policy import ROUTE_POLICY_VERSION
 from scripts import flow1c_git_policy as git_policy
 from scripts import flow1c_policy as policy
@@ -154,6 +155,9 @@ def load_gate(
         raise WorkflowError(
             "Legacy gate requires re-assessment: call flow1c_begin with the saved operation, code and summary. Existing evidence is preserved."
         )
+    scoped_gate = migrate_update_scope(gate)
+    scope_changed = scoped_gate is not gate
+    gate = scoped_gate
     route_changed = False
     saved_decision = gate.get("route_decision")
     if saved_decision is not None and (
@@ -180,7 +184,7 @@ def load_gate(
         route_changed = gate.get("route_decision") != decision
         gate["route_decision"] = decision
     refresh_gate_actions(gate, persist=True, product_root=product_root)
-    if route_changed:
+    if route_changed or scope_changed:
         save_gate(gate, product_root=product_root)
     return gate
 

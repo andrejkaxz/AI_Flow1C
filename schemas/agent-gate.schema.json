@@ -38,6 +38,15 @@
     "registry_resolution": {"type": ["object", "null"]},
     "traceability_mode": {"enum": ["registry", "provisional"]},
     "work_item_exists": {"type": "boolean"},
+    "update_scope_migration": {
+      "type": "object",
+      "required": ["schema_version", "previous_work_item_context"],
+      "properties": {
+        "schema_version": {"const": 1},
+        "previous_work_item_context": {"type": "object"}
+      },
+      "additionalProperties": false
+    },
     "state": {"enum": ["NEEDS_CODE", "NEEDS_INPUT", "NEEDS_CONFIRMATION", "WAITING_USER", "WAITING_BACKGROUND", "READY", "READY_WITH_DEVIATIONS", "BLOCKED", "UNVERIFIED_DRAFT", "COMPLETE", "COMPLETE_WITH_DEVIATIONS", "CONSULTATION_COMPLETE", "DRAFT_COMPLETE", "SUPERSEDED", "NON_COMPLIANT"]},
     "deviations": {
       "type": "array",

@@ -19,6 +19,24 @@ from flow1c.workflow import state as gate_state
 SETUP_VALIDATION_VERSION = 1
 
 
+def begin_update_gate(
+    *, summary: str, project_reference: str | None, mode_selection: dict[str, Any],
+    route_metadata: dict[str, Any], product_root: Path,
+) -> OperationResult:
+    """Authorize installation maintenance independently of work-item state."""
+    skill = "flow1c-project-update"
+    skill_path = product_root / ".agents" / "skills" / skill / "SKILL.md"
+    gate = gate_state.new_gate(
+        "update", None, "READY", product_root=product_root,
+        summary=summary, project_reference=project_reference, task_reference=None,
+        work_reference=None, reference_source="none", work_item_exists=False,
+        mode_selection=mode_selection, mode_history=[mode_selection], skill=skill,
+        skill_instructions=skill_path.read_text(encoding="utf-8") if skill_path.is_file() else "",
+        output=None, errors=[], **route_metadata,
+    )
+    return OperationResult(gate, 0)
+
+
 def _contains_secret(value: Any, path: str = "") -> bool:
     if isinstance(value, dict):
         for key, child in value.items():
@@ -450,10 +468,24 @@ def execute_action(
         gate["update_id"] = structured["update_id"]
         gate["update_result"] = structured
         gate.pop("action_completed", None)
-        if structured.get("state") == "WAITING_BACKGROUND":
-            gate["state"] = "WAITING_BACKGROUND"
-        elif gate.get("state") == "WAITING_BACKGROUND":
+        update_state = structured.get("state")
+        if update_state == "READY" and structured.get("ready") is True:
             gate["state"] = "READY"
+        elif update_state == "WAITING_BACKGROUND":
+            gate["state"] = "WAITING_BACKGROUND"
+        elif update_state in {"NEEDS_CONFIRMATION", "UPDATE_AVAILABLE", "REVIEW_REQUIRED"}:
+            gate["state"] = "NEEDS_CONFIRMATION"
+        else:
+            gate["state"] = "BLOCKED"
+        # Older update gates can contain unrelated registry/work-item blockers.
+        # The updater result is authoritative for installation maintenance.
+        gate["errors"] = [structured["error"]] if structured.get("error") else []
+        gate["conditions"] = []
+        gate["remaining_blockers"] = []
+        gate["clarification"] = None
+        gate["awaiting_user_input"] = gate["state"] in {"BLOCKED", "NEEDS_CONFIRMATION"}
+        gate["user_message"] = structured.get("error") or "Continue the saved update according to its next_actions."
+        gate_state.refresh_gate_actions(gate, product_root=product_root)
         gate_state.save_gate(gate, product_root=product_root)
     if (
         action == "setup-configure"

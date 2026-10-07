@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Flow1C read-only update diagnosis",
+  "type": "object",
+  "required": ["schema_version", "state", "ready", "gate_state", "extension_repository", "next_action"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "state": {"const": "DIAGNOSTIC"},
+    "ready": {"const": false},
+    "gate_state": {"type": "string"},
+    "update_id": {"type": ["string", "null"]},
+    "updater_state": {"type": ["string", "null"]},
+    "phase": {"type": ["string", "null"]},
+    "extension_repository": {
+      "type": "object",
+      "required": ["state"],
+      "properties": {
+        "state": {"enum": ["SKIPPED", "UNAVAILABLE", "DETACHED_OR_UNAVAILABLE", "NO_TRACKING_REMOTE", "LINKED_WORKTREE", "MATCH", "MISMATCH"]},
+        "configured_url": {"type": "string"},
+        "actual_url": {"type": "string"},
+        "configured_identity": {"type": "string"},
+        "actual_identity": {"type": "string"},
+        "branch": {"type": "string"},
+        "remote": {"type": "string"},
+        "matches": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "next_action": {"type": "string"}
+  },
+  "additionalProperties": false
+}

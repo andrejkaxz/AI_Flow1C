@@ -281,6 +281,30 @@ test("background update survives restart and compaction and still requires compl
   assert.equal(f.warnings(), 1)
 })
 
+test("blocked update diagnostics survive restart without closing the gate or allowing direct reads", async t => {
+  const f = fixture(t)
+  let guard = await Flow1CGuard({ client: f.client, worktree: f.root })
+  await f.after(guard, "flow1c_begin", f.gate("READY", {mode: "formal", operation: "update"}))
+  const updateID = "33333333-3333-4333-8333-333333333333"
+  f.gate("BLOCKED", {mode: "formal", operation: "update", update_id: updateID})
+  await f.after(guard, "flow1c_action", {schema_version: 2, state: "BLOCKED", ready: false, update_id: updateID})
+  guard = await Flow1CGuard({ client: f.client, worktree: f.root })
+  await guard["tool.execute.before"]({sessionID: f.sessionID, tool: "flow1c_action"}, {args: {gate_id: f.id, action: "update-diagnose", parameters_json: "{}"}})
+  await f.after(guard, "flow1c_action", {schema_version: 1, state: "DIAGNOSTIC", ready: false})
+  await assert.rejects(guard["tool.execute.before"]({sessionID: f.sessionID, tool: "read"}, {args: {filePath: "config"}}), /direct read is forbidden/)
+  const context = {context: []}
+  await guard["experimental.session.compacting"]({sessionID: f.sessionID}, context)
+  assert.match(context.context.join(""), /state: BLOCKED/)
+  assert.match(context.context.join(""), /update-diagnose/)
+  assert.match(context.context.join(""), new RegExp(updateID))
+  await guard.event({event: {type: "session.idle", properties: {sessionID: f.sessionID}}})
+  assert.equal(f.warnings(), 0)
+  f.gate("READY", {mode: "formal", operation: "update", update_id: updateID})
+  await f.after(guard, "flow1c_action", {state: "READY", ready: true, update_id: updateID})
+  await guard.event({event: {type: "session.idle", properties: {sessionID: f.sessionID}}})
+  assert.equal(f.warnings(), 1)
+})
+
 test("guard allows independently validated read-only Git and grep pipeline", async t => {
   const f = fixture(t)
   const guard = await Flow1CGuard({ client: f.client, worktree: f.root })

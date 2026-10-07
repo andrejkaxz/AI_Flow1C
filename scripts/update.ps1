@@ -164,7 +164,8 @@ function Update-Extension([object]$LocalConfig) {
     if (-not $Remote -or $Remote -eq ".") { throw "Extension branch '$Branch' has no remote tracking repository." }
     $ExpectedUrl = [string]$LocalConfig.extension_repository_url
     $ActualUrl = Invoke-Git @("remote", "get-url", $Remote) $Repository
-    if (-not $ExpectedUrl -or $ActualUrl.TrimEnd('/') -ne $ExpectedUrl.TrimEnd('/')) { throw "Extension remote URL does not match extension_repository_url. Correct the local configuration or Git remote before updating." }
+    . (Join-Path $PSScriptRoot "git-identity.ps1")
+    if (-not $ExpectedUrl -or (Normalize-GitUrl $ActualUrl) -ne (Normalize-GitUrl $ExpectedUrl)) { throw "Extension remote URL does not match extension_repository_url. Use update-diagnose to compare the repository identities before choosing a repair." }
     $Upstream = Invoke-Git @("rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{upstream}") $Repository
     $Before = Invoke-Git @("rev-parse", "HEAD") $Repository
     $null = Invoke-Git @("fetch", "--prune", $Remote) $Repository
@@ -250,10 +251,29 @@ try {
         $CurrentVersion = Get-ProductVersion; $PreviousVersion = $CurrentVersion
         if ($ResumeSnapshot -and $ResumeSnapshot.previous_version) { $PreviousVersion = [string]$ResumeSnapshot.previous_version }
         Add-Step "Update source" "OK" "$Branch tracks $Upstream"
-        $Timestamp = [DateTimeOffset]::Now.ToString("yyyyMMdd-HHmmss-fff"); $BackupDirectory = Join-Path $Root ".workspace\backups\update-$Timestamp-$UpdateId"
-        $null = New-Item -ItemType Directory -Force -Path $BackupDirectory
-        Copy-Item -LiteralPath $LocalConfigPath -Destination (Join-Path $BackupDirectory ".flow1c.local.json")
-        Set-Content -LiteralPath (Join-Path $BackupDirectory "previous-commit.txt") -Value $PreviousCommit -Encoding ascii; Add-Step "Backup" "OK" $BackupDirectory
+        if ($ResumeValidated -and $ResumeSnapshot.backup_directory) {
+            $BackupDirectory = [IO.Path]::GetFullPath([string]$ResumeSnapshot.backup_directory)
+            $BackupPrefix = [IO.Path]::GetFullPath((Join-Path $Root ".workspace\backups")) + [IO.Path]::DirectorySeparatorChar
+            if (-not $BackupDirectory.StartsWith($BackupPrefix, [StringComparison]::OrdinalIgnoreCase) -or
+                -not (Test-Path -LiteralPath (Join-Path $BackupDirectory ".flow1c.local.json") -PathType Leaf)) {
+                throw "Saved update backup is missing or outside the backup directory. Preserve the checkpoint and repair the backup before resuming."
+            }
+            $BackupProbe = Join-Path $BackupDirectory ".flow1c.local.json"
+            while ($BackupProbe) {
+                if ((Get-Item -LiteralPath $BackupProbe -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) {
+                    throw "Saved update backup contains a symlink or junction."
+                }
+                $BackupParent = Split-Path -Parent $BackupProbe
+                if (-not $BackupParent -or $BackupParent -eq $BackupProbe) { break }
+                $BackupProbe = $BackupParent
+            }
+        } else {
+            $Timestamp = [DateTimeOffset]::Now.ToString("yyyyMMdd-HHmmss-fff"); $BackupDirectory = Join-Path $Root ".workspace\backups\update-$Timestamp-$UpdateId"
+            $null = New-Item -ItemType Directory -Force -Path $BackupDirectory
+            Copy-Item -LiteralPath $LocalConfigPath -Destination (Join-Path $BackupDirectory ".flow1c.local.json")
+            Set-Content -LiteralPath (Join-Path $BackupDirectory "previous-commit.txt") -Value $PreviousCommit -Encoding ascii
+        }
+        Add-Step "Backup" "OK" $BackupDirectory
         $null = Invoke-Git @("fetch", "--prune", "--tags", $Remote); Add-Step "Fetch" "OK" $Remote
         $Parts = (Invoke-Git @("rev-list", "--left-right", "--count", "HEAD...$Upstream")) -split "\s+"
         if ($Parts.Count -lt 2) { throw "Cannot parse Git divergence." }

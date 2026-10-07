@@ -240,6 +240,14 @@ def _begin_checked_request(args: argparse.Namespace, *, product_root: Path) -> O
     except ValueError as exc:
         raise WorkflowError(str(exc)) from exc
     reference = runtime.resolve_reference_args(args, product_root=product_root)
+    if operation == "update":
+        return setup_service.begin_update_gate(
+            summary=str(args.summary or ""),
+            project_reference=reference.get("project_reference"),
+            mode_selection=mode_selection,
+            route_metadata=getattr(args, "_route_metadata", {}),
+            product_root=product_root,
+        )
     code = reference["work_reference"]
     registry_resolution: dict[str, Any] | None = None
     if code and stage.get("code_required"):

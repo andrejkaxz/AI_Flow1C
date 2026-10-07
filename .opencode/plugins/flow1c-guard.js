@@ -295,13 +295,19 @@ export const Flow1CGuard = async ({ client, worktree }) => {
       state.gateState = "PENDING_CONTINUATION"
     } else if (input.tool === "flow1c_action" && payload?.state === "WAITING_BACKGROUND") {
       state.gateState = "WAITING_BACKGROUND"
+      state.waitingForUser = false
       state.setupID = payload.setup_id ?? state.setupID
       state.pendingJobs = payload.jobs ?? []
+      state.updateID = payload.update_id ?? state.updateID
+    } else if (input.tool === "flow1c_action" && state.operation === "update" && payload?.schema_version === 2 && ["BLOCKED", "RECOVERY_REQUIRED", "NEEDS_CONFIRMATION", "UPDATE_AVAILABLE", "REVIEW_REQUIRED"].includes(payload.state)) {
+      state.gateState = ["BLOCKED", "RECOVERY_REQUIRED"].includes(payload.state) ? "BLOCKED" : "NEEDS_CONFIRMATION"
+      state.waitingForUser = true
       state.updateID = payload.update_id ?? state.updateID
     } else if (input.tool === "flow1c_action" && payload?.state === "ACTION_COMPLETE") {
       state.gateState = payload.next ? "PENDING_CONTINUATION" : "READY"
     } else if (input.tool === "flow1c_action" && payload?.state === "READY" && payload?.ready === true) {
       state.gateState = "READY"
+      state.waitingForUser = false
       state.pendingJobs = []
     }
     saveSession(input.sessionID, state)
@@ -325,7 +331,7 @@ Available actions: ${JSON.stringify(gate?.available_actions ?? [])}.
 Structured conditions: ${JSON.stringify(compactConditions)}.
 Recorded deviations: ${JSON.stringify(compactDeviations)}.
 Setup resume state: ${JSON.stringify({ setup_id: state?.setupID ?? gate?.setup_id, profile: gate?.requested_profile, pending_jobs: state?.pendingJobs ?? [] })}.
-Update resume state: ${JSON.stringify({ update_id: state?.updateID ?? gate?.update_id, phase: gate?.update_result?.phase, pending_jobs: state?.pendingJobs ?? [] })}. Continue a pending update with flow1c_action action=update on the same gate and wait_seconds=30; do not create another gate or call flow1c_complete before READY.
+Update resume state: ${JSON.stringify({ update_id: state?.updateID ?? gate?.update_id, phase: gate?.update_result?.phase, pending_jobs: state?.pendingJobs ?? [] })}. For WAITING_BACKGROUND continue flow1c_action action=update on the same gate with wait_seconds=30. For BLOCKED run flow1c_action action=update-diagnose with empty parameters first; do not repeat an unchanged failure or use setup-configure. Never create another gate or call flow1c_complete before READY.
 Resume the same request using flow1c_dialogue after the real user reply; do not repeat resolved questions.
 Do not reuse remembered claims as evidence. Resume only through flow1c_* tools. If no valid gate exists, call flow1c_begin. Only flow1c_complete may close the operation.
 `)
