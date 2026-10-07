@@ -1,9 +1,11 @@
 # Контракт маршрута: каталог и проверка
 
-Первая итерация реализует каталог и проверку структурированного предложения.
-Действующие CLI, gates и инструкции клиентов продолжают использовать прежнюю
-маршрутизацию. Команды `route-catalog`/`route-check`, подключение к `agent-begin`
-и инструменты адаптеров будут включены отдельным этапом.
+Каталог и проверка подключены к CLI и адаптеру OpenCode. `route-catalog --json`
+читает только продуктовые правила; `route-check --json-stdin` принимает прямой
+RouteProposal и не создаёт gate. `agent-begin --json-stdin` принимает необязательное
+поле `route_proposal`, заново проверяет его и сохраняет решение с первой записью gate.
+Каталог возвращает точную `proposal_schema`, чтобы исправить формат предложения
+через разрешённый pre-gate интерфейс без чтения файлов или угадывания полей.
 
 Адаптер определяет смысл просьбы и передаёт поля. Чистая политика проверяет их
 совместимость; она не классифицирует произвольный текст и не подтверждает
@@ -87,17 +89,63 @@ descriptors. Решение возвращает resolver для каждой с
 проверка evidence обеих сторон остаются обязанностью gate integration.
 
 Redmine files/relations остаются опубликованными read-only исключениями до gate.
-Template library является gated substep и сохраняет primary маршрута. Сам
-каталог и решение не меняют guard или доступность инструментов.
+Template library является gated substep и сохраняет primary маршрута. Guard
+разрешает до gate только новые `flow1c_route_catalog` / `flow1c_route_check` и
+прежние ограниченные исключения. Они не открывают read/bash, source или mutation.
 
 ## Совместимость и проверка
 
 `tests/fixtures/routing-baseline.json` фиксирует defaults, узкое исправление
 consultation → query-analysis и фактические runtime versions. Comparison bridge
 `check_legacy_route` переиспользует прежние mode/query policies и сохраняет
-`requested_operation`; он пока не подключён к CLI. Brand/operation aliases
+`requested_operation`; он подключён к legacy begin. Brand/operation aliases
 не добавляются. `code`/`g_number` остаются reference aliases, а Git action
 `integration` — alias `merge-search`.
+
+## CLI и продолжение
+
+```json
+{
+  "operation": "functional-spec",
+  "mode": "draft",
+  "summary": "Подготовить черновик приёмки",
+  "route_proposal": {
+    "schema_version": 1,
+    "expected_outcome": "Подготовить черновик приёмки",
+    "operation": "functional-spec",
+    "mode": "draft",
+    "sources": [{"kind": "chat", "version": "provided"}]
+  }
+}
+```
+
+Передай объект через stdin в `python scripts/flow1c.py agent-begin --json-stdin`.
+В OpenCode proposal передаётся JSON-строкой: `flow1c_route_check(proposal_json=...)`,
+затем `flow1c_begin(route_proposal_json=...)`. Outer operation/mode/summary и
+пересекающиеся references должны совпадать. Proposal не принимает digest,
+permissions, approvals или identity другого gate; resume выполняется dialogue.
+`route-check` возвращает exit code 0 / 1 / 2 для VALID / CLARIFICATION_REQUIRED /
+INVALID. Неоднозначный или несовместимый structured begin не создаёт состояние.
+
+Gate schema version 1 и POLICY_VERSION сохранены. Additive `route_origin`,
+`route_proposal` и `route_decision` не требуют миграции старых записей. Legacy
+вызовы сохраняют defaults/query remap и получают `route_origin=legacy`; decision
+описывает совместимость, но не меняет прежнюю assessment пустого/неполного запроса.
+Старые gates без route fields загружаются как прежде. При загрузке structured
+gate proposal проверяется по текущему каталогу; сохранённый digest не закрепляет
+permissions. Несовместимость возвращает `ROUTE_RECOVERY_REQUIRED` и сохраняет
+state/answers/evidence. Явная смена свободного mode через dialogue обновляет
+proposal/decision на том же gate.
+
+`python scripts/generate-route-projections.py` обновляет только помеченные блоки
+AGENTS/CLAUDE, controller, docs и canonical/Claude skills. `--check` не пишет
+файлы и возвращает 1 при drift. Текст вне блоков сохраняется. Изменение catalog,
+proposal/decision schemas входит в OpenCode runtime identity и требует перезапуска
+загруженного клиента, после которого продолжается сохранённый gate.
+
+Детерминированные тесты и smoke не подтверждают точность модели. Handoff,
+compact context и target-client/model acceptance
+остаются отдельными этапами.
 
 Generic formal template gates сохранены в каталоге как существующая возможность
 legacy begin. Запись template-document требует `draft` либо специализированного

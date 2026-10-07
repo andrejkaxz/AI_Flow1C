@@ -9,6 +9,7 @@ from typing import Any
 from flow1c import context as runtime
 from flow1c import intake as intake_service
 from flow1c import registry as registry_service
+from flow1c import routing
 from flow1c import setup as setup_service
 from flow1c import storage as storage
 from flow1c import system as system
@@ -16,6 +17,7 @@ from flow1c import templates as templates_service
 from flow1c import work_items as work_items
 from flow1c.errors import WorkflowError
 from flow1c.results import OperationResult
+from flow1c.routing_policy import legacy_proposal
 from flow1c.workflow import state as gate_state
 from scripts import flow1c_policy as policy
 from scripts import flow1c_query_policy as query_policy
@@ -118,6 +120,7 @@ def begin_free_request(args: argparse.Namespace, *, product_root: Path) -> Opera
         notes=[],
         artifacts=[],
         product_root=product_root,
+        **getattr(args, "_route_metadata", {}),
     )
     gate["request_id"] = gate["gate_id"]
     gate["storage_kind"] = (
@@ -173,18 +176,37 @@ def begin_free_request(args: argparse.Namespace, *, product_root: Path) -> Opera
 
 
 def agent_begin(args: argparse.Namespace, *, product_root: Path) -> OperationResult:
+    inputs = {field: getattr(args, field, None) for field in (
+        "operation", "summary", "mode", "task_reference", "project_reference", "git_ref", "code", "g_number",
+    )}
+    decision, metadata = routing.begin_route(getattr(args, "route_proposal", None), inputs,
+                                            product_root=product_root)
+    structured = getattr(args, "route_proposal", None) is not None
+    if structured and decision["status"] != "VALID":
+        return OperationResult(decision, 1 if decision["status"] == "CLARIFICATION_REQUIRED" else 2)
+    # Preserve legacy mode-selection reasons and the narrow query remap through their owners.
+    if structured:
+        args.operation = decision["operation"]
+        args.mode = decision["mode"]
+        args.summary = args.route_proposal["expected_outcome"]
+        for field, value in decision["references"].items():
+            setattr(args, field, value)
+    else:
+        requested = str(args.operation).strip().casefold()
+        resolved = legacy_proposal(requested, str(getattr(args, "summary", "") or ""),
+                                   getattr(args, "mode", None))
+        args.operation = resolved["operation"]
+        if args.operation != requested:
+            args.requested_operation = requested
+    args._route_metadata = {**metadata, "route_decision": decision}
+    return _begin_checked_request(args, product_root=product_root)
+
+
+def _begin_checked_request(args: argparse.Namespace, *, product_root: Path) -> OperationResult:
     stages = runtime.load_stages(product_root=product_root)
     operation = str(args.operation).strip().casefold()
-    if operation == "consultation" and getattr(args, "mode", None) != "draft":
-        inferred_intent = query_policy.infer_query_request_intent(
-            str(getattr(args, "summary", "") or "")
-        )
-        if inferred_intent:
-            args.requested_operation = operation
-            operation = "query-analysis"
-            args.operation = operation
-            if not getattr(args, "query_intent", None):
-                args.query_intent = inferred_intent
+    if getattr(args, "requested_operation", None) and not getattr(args, "query_intent", None):
+        args.query_intent = query_policy.infer_query_request_intent(str(args.summary or ""))
     try:
         mode_selection = policy.select_request_mode(
             operation, str(getattr(args, "summary", "") or ""), getattr(args, "mode", None)
@@ -209,6 +231,7 @@ def agent_begin(args: argparse.Namespace, *, product_root: Path) -> OperationRes
             presented_paths=list(getattr(args, "path", []) or []),
             user_message="Намерение неоднозначно. Задайте пользователю один вопрос, различающий возможные операции.",
             product_root=product_root,
+            **getattr(args, "_route_metadata", {}),
         )
         _value = payload
         return OperationResult(_value, 1)
@@ -243,6 +266,7 @@ def agent_begin(args: argparse.Namespace, *, product_root: Path) -> OperationRes
                 },
                 user_message="Требуется выбрать однозначную реестровую ссылку.",
                 product_root=product_root,
+                **getattr(args, "_route_metadata", {}),
             )
             _value = payload
             return OperationResult(_value, 1)
@@ -272,6 +296,7 @@ def agent_begin(args: argparse.Namespace, *, product_root: Path) -> OperationRes
             **reference,
             **{k: v for k, v in assessment.items() if k != "state"},
             product_root=product_root,
+            **getattr(args, "_route_metadata", {}),
         )
         _value = payload
         return OperationResult(_value, 1)
@@ -314,6 +339,7 @@ def agent_begin(args: argparse.Namespace, *, product_root: Path) -> OperationRes
                 }
             ],
             product_root=product_root,
+            **getattr(args, "_route_metadata", {}),
         )
         _value = payload
         return OperationResult(_value, 2)
@@ -341,6 +367,7 @@ def agent_begin(args: argparse.Namespace, *, product_root: Path) -> OperationRes
                 },
                 user_message="Какой уровень работы нужен? Рекомендуемый профиль — analysis; full автоматически не выбирается.",
                 product_root=product_root,
+                **getattr(args, "_route_metadata", {}),
             )
             _value = payload
             return OperationResult(_value, 1)
@@ -357,6 +384,7 @@ def agent_begin(args: argparse.Namespace, *, product_root: Path) -> OperationRes
                 errors=[str(exc)],
                 user_message=f"Настройка заблокирована: {exc}",
                 product_root=product_root,
+                **getattr(args, "_route_metadata", {}),
             )
             _value = payload
             return OperationResult(_value, 2)
@@ -381,6 +409,7 @@ def agent_begin(args: argparse.Namespace, *, product_root: Path) -> OperationRes
             action_completed="setup-audit" if setup_ready else None,
             user_message=setup_service.setup_user_message(setup_state),
             product_root=product_root,
+            **getattr(args, "_route_metadata", {}),
         )
         _value = payload
         return OperationResult(_value, 1)
@@ -447,6 +476,7 @@ def agent_begin(args: argparse.Namespace, *, product_root: Path) -> OperationRes
                     }
                 ],
                 product_root=product_root,
+                **getattr(args, "_route_metadata", {}),
             )
             _value = payload
             return OperationResult(_value, 2)
@@ -697,6 +727,7 @@ def agent_begin(args: argparse.Namespace, *, product_root: Path) -> OperationRes
             )
         ),
         product_root=product_root,
+        **getattr(args, "_route_metadata", {}),
     )
     if traceability_mode == "provisional":
         bypass = manifest.get("registry", {}).get("bypass", {})

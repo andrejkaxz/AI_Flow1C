@@ -17,6 +17,11 @@ from flow1c import publication as publication
 from flow1c import readiness as readiness
 from flow1c import redmine as redmine
 from flow1c import registry as registry_service
+from flow1c import routing
+from flow1c import handoff
+from flow1c import context_manifest
+from flow1c.context_policy import ContextError
+from flow1c.routing_policy import MAX_PROPOSAL_BYTES, RoutingError
 from flow1c import storage as storage
 from flow1c import templates as templates_service
 from flow1c import work_items as work_items
@@ -63,6 +68,12 @@ def read_json_stdin() -> dict[str, Any]:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Flow1C CLI")
     subparsers = parser.add_subparsers(dest="command", required=True)
+    catalog = subparsers.add_parser("route-catalog", help="Read the product route catalog")
+    catalog.add_argument("--json", action="store_true")
+    catalog.set_defaults(handler=cmd_route_catalog)
+    route_check = subparsers.add_parser("route-check", help="Check one bounded RouteProposal without a gate")
+    route_check.add_argument("--json-stdin", action="store_true", required=True)
+    route_check.set_defaults(handler=cmd_route_check)
     doctor = subparsers.add_parser("doctor", help="Check local prerequisites and paths")
     doctor.add_argument(
         "--json", action="store_true", help="Emit a machine-readable readiness gate"
@@ -119,6 +130,8 @@ def build_parser() -> argparse.ArgumentParser:
     context = subparsers.add_parser("context-build", help="Build a compact role-specific context")
     context.add_argument("--code", required=True)
     context.add_argument("--role", required=True, choices=runtime.VALID_ROLES)
+    context.add_argument("--view", choices=("full", "compact"), default="full")
+    context.add_argument("--gate-id")
     context.set_defaults(handler=cmd_context_build)
     agent_begin = subparsers.add_parser(
         "agent-begin", help="Create a machine-readable gate for a natural-language request"
@@ -149,7 +162,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Observed semantic mismatch; ask instead of silently remapping",
     )
     agent_begin.add_argument("--profile", choices=runtime.PROFILE_NAMES)
-    agent_begin.set_defaults(handler=cmd_agent_begin)
+    agent_begin.set_defaults(handler=cmd_agent_begin, route_proposal=None)
     dialogue = subparsers.add_parser(
         "agent-dialogue", help="Persist a question, user answer or decision on the same request"
     )
@@ -292,7 +305,22 @@ def build_parser() -> argparse.ArgumentParser:
     )
     agent_context.add_argument("--json-stdin", action="store_true")
     agent_context.add_argument("--gate-id")
+    agent_context.add_argument("--view", choices=("full", "compact"), default="full")
+    agent_context.add_argument("--action", choices=("build", "read"), default="build")
+    agent_context.add_argument("--entry-id", default="")
+    agent_context.add_argument("--section-id", default="")
+    agent_context.add_argument("--cursor", default="")
+    agent_context.add_argument("--max-chars", type=int)
     agent_context.set_defaults(handler=cmd_agent_context)
+
+    context_read = subparsers.add_parser("context-read", help="Read one gate-owned context manifest entry or part")
+    context_read.add_argument("--json-stdin", action="store_true")
+    context_read.add_argument("--gate-id")
+    context_read.add_argument("--entry-id", default="")
+    context_read.add_argument("--section-id", default="")
+    context_read.add_argument("--cursor", default="")
+    context_read.add_argument("--max-chars", type=int)
+    context_read.set_defaults(action="read", handler=cmd_context_read)
     agent_diff = subparsers.add_parser(
         "agent-diff", help="Return and record a bounded extension diff"
     )
@@ -393,6 +421,11 @@ def build_parser() -> argparse.ArgumentParser:
     complete.add_argument("--output")
     complete.add_argument("--summary", default="")
     complete.set_defaults(handler=cmd_agent_complete)
+    transfer = subparsers.add_parser("agent-handoff", help="Read or recover a completed gate handoff without replaying actions")
+    transfer.add_argument("--json-stdin", action="store_true")
+    transfer.add_argument("--gate-id")
+    transfer.add_argument("--action", choices=("read", "recover"), default="read")
+    transfer.set_defaults(handler=cmd_agent_handoff)
     action = subparsers.add_parser("agent-action", help="Run a gated workflow action")
     action.add_argument("--json-stdin", action="store_true")
     action.add_argument("--gate-id")
@@ -615,8 +648,18 @@ def main(argv: Iterable[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
     try:
+        if args.command == "route-check":
+            return cmd_route_check(args)
         if getattr(args, "json_stdin", False):
             request = read_json_stdin()
+            if args.command == "agent-handoff" and set(request) - {"gate_id", "action"}:
+                raise WorkflowError("Handoff input accepts only gate_id and action")
+            if args.command in {"agent-context", "context-read"}:
+                context_fields = {"gate_id", "entry_id", "section_id", "cursor", "max_chars"}
+                if args.command == "agent-context":
+                    context_fields |= {"action", "view"}
+                if set(request) - context_fields:
+                    raise ContextError("CONTEXT_INVALID", "Unknown context input field")
             args._json_input_fields = set(request)
             for key, value in request.items():
                 attribute = str(key).replace("-", "_")
@@ -629,6 +672,10 @@ def main(argv: Iterable[str] | None = None) -> int:
                 file=sys.stderr,
             )
         return int(args.handler(args))
+    except (RoutingError, ContextError) as exc:
+        print(json.dumps({"schema_version": 1, "state": "BLOCKED", "ready": False,
+                          "errors": [exc.as_dict()]}, ensure_ascii=False, indent=2))
+        return 2
     except redmine.RedmineOperationError as exc:
         print(json.dumps(exc.payload, ensure_ascii=False, indent=2))
         return 2
@@ -705,6 +752,24 @@ def cmd_agent_action(args: argparse.Namespace) -> int:
     return emit_result(result)
 
 
+def cmd_route_catalog(args: argparse.Namespace) -> int:
+    return emit_result(OperationResult(routing.route_catalog(product_root=ROOT)))
+
+
+def cmd_route_check(args: argparse.Namespace) -> int:
+    # Read a bounded direct proposal rather than assigning its keys to CLI attributes.
+    raw = sys.stdin.read(MAX_PROPOSAL_BYTES + 1)
+    try:
+        if len(raw.encode("utf-8")) > MAX_PROPOSAL_BYTES:
+            raise ValueError("RouteProposal exceeds 32768 bytes")
+        proposal = json.loads(raw)
+    except (ValueError, UnicodeError, RecursionError) as exc:
+        raise WorkflowError("Invalid bounded RouteProposal JSON stdin") from exc
+    decision = routing.check_proposal(proposal, product_root=ROOT)
+    return emit_result(OperationResult(decision, 0 if decision["status"] == "VALID" else
+                                      1 if decision["status"] == "CLARIFICATION_REQUIRED" else 2))
+
+
 def cmd_agent_analyze_bsl(args: argparse.Namespace) -> int:
     result = source_actions.agent_analyze_bsl(args, product_root=ROOT)
     return emit_result(result)
@@ -720,9 +785,17 @@ def cmd_agent_complete(args: argparse.Namespace) -> int:
     return emit_result(result)
 
 
+def cmd_agent_handoff(args: argparse.Namespace) -> int:
+    return emit_result(handoff.command(args.gate_id, args.action, product_root=ROOT))
+
+
 def cmd_agent_context(args: argparse.Namespace) -> int:
     result = dialogue_service.agent_context(args, product_root=ROOT)
     return emit_result(result)
+
+
+def cmd_context_read(args: argparse.Namespace) -> int:
+    return emit_result(context_manifest.command(args, product_root=ROOT))
 
 
 def cmd_agent_dialogue(args: argparse.Namespace) -> int:

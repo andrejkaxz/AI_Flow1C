@@ -10,6 +10,8 @@ from pathlib import Path
 from typing import Any
 
 from flow1c import context as runtime
+from flow1c import context_manifest
+from flow1c.context_policy import ROLE_FILES, ContextError
 from flow1c import intake as intake_service
 from flow1c import storage as storage
 from flow1c import work_items as work_items
@@ -37,20 +39,6 @@ def build_role_context(
     traceability_mode = str(manifest.get("traceability_mode") or "registry")
     snapshot = storage.read_json(item_root / "input" / "requirements.snapshot.yaml", {})
     brief_path = item_root / "input" / "user-brief.md"
-    role_files = {
-        "analyst": ["analysis/questions.md", "analysis/answers.md", "analysis/decisions.md"],
-        "functional-architect": ["analysis/traceability.md", "specification/functional-spec.md"],
-        "technical-architect": [
-            "analysis/traceability.md",
-            "specification/functional-spec.md",
-            "specification/technical-design.md",
-        ],
-        "tester": [
-            "analysis/traceability.md",
-            "specification/functional-spec.md",
-            "testing/test-plan.md",
-        ],
-    }
     lines = [
         f"# Context: {code} — {role}",
         "",
@@ -99,7 +87,7 @@ def build_role_context(
                 ]
             )
     lines.extend(["## Work item excerpts", ""])
-    for relative in role_files[role]:
+    for relative in ROLE_FILES[role]:
         path = item_root / relative
         if path.exists():
             value = path.read_text(encoding="utf-8").strip()
@@ -118,6 +106,26 @@ def build_role_context(
     target = item_root / "context" / f"{role}.md"
     storage.write_text(target, "\n".join(lines))
     return target
+
+
+def update_route_mode(gate: dict[str, Any], mode: str, *, product_root: Path) -> None:
+    """Keep an explicitly changed request mode compatible with its saved proposal."""
+    if "route_proposal" not in gate:
+        return
+    from flow1c.routing import check_proposal
+
+    proposal = {**gate["route_proposal"], "mode": mode}
+    proposal.pop("primary_skill", None)
+    proposal.pop("role", None)
+    decision = check_proposal(proposal, product_root=product_root)
+    if decision["status"] != "VALID":
+        raise WorkflowError("ROUTE_RECOVERY_REQUIRED: the requested mode is incompatible")
+    gate["route_proposal"] = proposal
+    gate["route_decision"] = decision
+    gate["skill"] = decision["primary_skill"]
+    gate["skill_instructions"] = (
+        product_root / ".agents/skills" / decision["primary_skill"] / "SKILL.md"
+    ).read_text(encoding="utf-8")
 
 
 def agent_dialogue(args: argparse.Namespace, *, product_root: Path) -> OperationResult:
@@ -139,6 +147,7 @@ def agent_dialogue(args: argparse.Namespace, *, product_root: Path) -> Operation
         ):
             raise WorkflowError("Select independent-draft and provide the user's explicit answer")
         reference = str(gate.get("work_reference") or gate.get("code") or "")
+        update_route_mode(gate, "draft", product_root=product_root)
         selection = {
             "mode": "draft",
             "actor": "user",
@@ -407,6 +416,7 @@ def agent_dialogue(args: argparse.Namespace, *, product_root: Path) -> Operation
                     product_root=product_root,
                 )
             if args.resolution == "independent-draft":
+                update_route_mode(gate, "draft", product_root=product_root)
                 gate.update(mode="draft", code=None, reference_code=None, output="result.md")
             elif args.resolution == "correct-code":
                 code = str(args.code or "").strip()
@@ -442,6 +452,7 @@ def agent_dialogue(args: argparse.Namespace, *, product_root: Path) -> Operation
             }
             gate["mode_selection"] = selection
             gate.setdefault("mode_history", []).append(selection)
+        update_route_mode(gate, args.mode, product_root=product_root)
         gate["mode"] = args.mode
         gate["output"] = "result.md" if args.mode == "draft" else None
     if gate.get("mode", "formal") != "formal":
@@ -469,11 +480,23 @@ def build_context_for_reference(code: str, role: str, *, product_root: Path) -> 
 
 
 def context_build(args: argparse.Namespace, *, product_root: Path) -> OperationResult:
+    if getattr(args, "view", "full") == "compact":
+        if not getattr(args, "gate_id", None):
+            raise ContextError("CONTEXT_SCOPE_REQUIRED", "Compact context-build requires a matching gate_id")
+        gate = gate_state.load_gate(args.gate_id, product_root=product_root)
+        if str(gate.get("work_reference") or gate.get("code")) != args.code or gate.get("context_role") != args.role:
+            raise ContextError("CONTEXT_INVALID", "Context-build code/role must match the gate")
+        result = context_manifest.command(args, product_root=product_root)
+        return OperationResult(Path(result.value["path"]), result.exit_code)
     _value = build_context_for_reference(args.code, args.role, product_root=product_root)
     return OperationResult(_value, 0)
 
 
 def agent_context(args: argparse.Namespace, *, product_root: Path) -> OperationResult:
+    if getattr(args, "action", "build") == "read" or getattr(args, "view", "full") == "compact":
+        return context_manifest.command(args, product_root=product_root)
+    if getattr(args, "view", "full") != "full" or getattr(args, "action", "build") != "build":
+        raise ContextError("CONTEXT_INVALID", "Unknown context view/action")
     gate = gate_state.load_gate(
         args.gate_id,
         states={"READY", "READY_WITH_DEVIATIONS", "UNVERIFIED_DRAFT"},
@@ -484,8 +507,10 @@ def agent_context(args: argparse.Namespace, *, product_root: Path) -> OperationR
     role = str(gate.get("context_role") or "")
     if not code or role not in runtime.VALID_ROLES:
         raise WorkflowError("This operation does not define a role context.")
-    target = build_context_for_reference(code, role, product_root=product_root).resolve()
     evidence_path, evidence = gate_state.evidence_for_gate(gate, product_root=product_root)
+    if "context_manifest" in evidence:
+        raise ContextError("CONTEXT_INVALID", "A compact gate retains its coverage contract; continue compact reads on this gate")
+    target = build_context_for_reference(code, role, product_root=product_root).resolve()
     isolated_target = evidence_path.parent / f"context-{gate['gate_id']}.md"
     shutil.copy2(target, isolated_target)
     target = isolated_target

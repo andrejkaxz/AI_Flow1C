@@ -237,6 +237,8 @@ class RegistryImportTests(unittest.TestCase):
         self.assertEqual(manifest["registry"]["source_status"], "partial")
 
     def test_formal_gate_resolves_requirement_to_fs_before_work_item_creation(self) -> None:
+        from routing_fixture import install_route_assets
+        install_route_assets(self.root)
         source = self.root / "partial.xlsx"
         make_registry(source, missing_link=True)
         self.assertEqual(flow1c.cmd_registry_import(Args(source)), 1)
@@ -613,7 +615,9 @@ class NaturalLanguageGateTests(unittest.TestCase):
         flow1c.ROOT = self.root
         (self.root / "config").mkdir()
         shutil.copy2(self.old_root / "config" / "stages.json", self.root / "config" / "stages.json")
-        (self.root / ".agents" / "skills" / "flow1c-functional-spec").mkdir(parents=True)
+        from routing_fixture import install_route_assets
+        install_route_assets(self.root)
+        (self.root / ".agents" / "skills" / "flow1c-functional-spec").mkdir(parents=True, exist_ok=True)
         (self.root / ".agents" / "skills" / "flow1c-functional-spec" / "SKILL.md").write_text(
             "---\nname: flow1c-functional-spec\ndescription: test\n---\nTest skill\n",
             encoding="utf-8",

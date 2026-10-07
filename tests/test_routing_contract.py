@@ -114,7 +114,8 @@ class RoutingContractTests(unittest.TestCase):
         self.assertEqual(fixture["runtime_versions"]["gate_schema"], gate_state.AGENT_GATE_SCHEMA_VERSION)
         self.assertEqual(fixture["runtime_versions"]["gate_policy"], gate_state.POLICY_VERSION)
         self.assertEqual(fixture["runtime_versions"]["evidence_written"], [1, 2])
-        self.assertEqual(fixture["runtime_versions"]["evidence_declared_schema"], read("schemas/evidence.schema.json")["properties"]["schema_version"]["const"])
+        self.assertEqual(fixture["runtime_versions"]["evidence_declared_schema"], 1)  # Historical baseline.
+        self.assertEqual(read("schemas/evidence.schema.json")["properties"]["schema_version"]["enum"], [1, 2])
 
     def test_error_decisions_validate_and_diagnostics_do_not_echo_materials(self) -> None:
         values = [None, {}, {"schema_version": True, "expected_outcome": "secret-material"},

@@ -41,13 +41,20 @@
     "gate_id": {"type": "string"},
     "validation_snapshot": {"type": "object"},
     "context_sha256": {"type": "string"},
+    "context_manifest": {"type": "object", "required": ["schema_version", "path", "sha256", "coverage"], "properties": {
+      "schema_version": {"const": 1}, "path": {"type": "string"}, "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+      "coverage": {"type": "object", "required": ["schema_version", "path", "sha256"], "properties": {"schema_version": {"const": 1}, "path": {"type": "string"}, "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}}
+    }},
     "context_evidence_id": {"type": "string", "pattern": "^CTX-[a-f0-9]{12}$"},
     "artifacts": {"type": "array"},
     "diff": {"type": ["object", "null"]},
     "rlm_queries": {"type": "array"},
     "source_reads": {"type": "array"},
     "bsl_ls": {"type": ["object", "null"]},
-    "changed_files": {"type": "array"}
+    "changed_files": {"type": "array"},
+    "handoff": {"type": "object", "required": ["schema_version", "path", "sha256"],
+                "properties": {"schema_version": {"const": 1}, "path": {"type": "string"},
+                               "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}}
   },
   "additionalProperties": true
 }

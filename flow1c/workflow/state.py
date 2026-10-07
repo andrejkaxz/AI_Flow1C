@@ -9,9 +9,11 @@ from pathlib import Path
 from typing import Any
 
 from flow1c import context as runtime
+from flow1c import routing
 from flow1c import storage as storage
 from flow1c import work_items as work_items
 from flow1c.errors import WorkflowError
+from flow1c.routing_policy import ROUTE_POLICY_VERSION
 from scripts import flow1c_git_policy as git_policy
 from scripts import flow1c_policy as policy
 
@@ -73,7 +75,8 @@ def validate_json_record(value: Any, schema_path: Path) -> list[str]:
         expected = rules.get("type")
         names = expected if isinstance(expected, list) else [expected] if expected else []
         expected_types = tuple((type_map[name] for name in names if name in type_map))
-        if expected_types and (not isinstance(current, expected_types)):
+        if expected_types and (not isinstance(current, expected_types) or
+                               isinstance(current, bool) and "integer" in names):
             errors.append(f"property {key} has an invalid type")
             continue
         if "const" in rules and current != rules["const"]:
@@ -151,7 +154,34 @@ def load_gate(
         raise WorkflowError(
             "Legacy gate requires re-assessment: call flow1c_begin with the saved operation, code and summary. Existing evidence is preserved."
         )
+    route_changed = False
+    saved_decision = gate.get("route_decision")
+    if saved_decision is not None and (
+        not isinstance(saved_decision, dict)
+        or type(saved_decision.get("schema_version")) is not int
+        or saved_decision["schema_version"] != 1
+        or type(saved_decision.get("policy_version")) is not int
+        or saved_decision["policy_version"] != ROUTE_POLICY_VERSION
+    ):
+        raise WorkflowError("ROUTE_RECOVERY_REQUIRED: unsupported saved RouteDecision version; state is preserved")
+    if gate.get("route_origin") == "structured" and "route_proposal" not in gate:
+        raise WorkflowError("ROUTE_RECOVERY_REQUIRED: structured gate has no saved proposal")
+    if "route_proposal" in gate:
+        decision = routing.check_proposal(gate["route_proposal"], product_root=product_root)
+        if decision["status"] != "VALID" or any(
+            decision[field] != gate.get(target) for field, target in (
+                ("operation", "operation"), ("mode", "mode"), ("primary_skill", "skill"),
+            )
+        ):
+            raise WorkflowError(
+                "ROUTE_RECOVERY_REQUIRED: saved proposal is incompatible with the current gate; "
+                "preserve answers/evidence and reassess the route before continuing."
+            )
+        route_changed = gate.get("route_decision") != decision
+        gate["route_decision"] = decision
     refresh_gate_actions(gate, persist=True, product_root=product_root)
+    if route_changed:
+        save_gate(gate, product_root=product_root)
     return gate
 
 
@@ -201,6 +231,8 @@ def new_gate(
     }
     stage = runtime.load_stages(product_root=product_root)["operations"].get(operation, {})
     mode = str(gate.get("mode", "formal"))
+    if gate.get("route_decision", {}).get("status") == "VALID":
+        gate.setdefault("skill", gate["route_decision"]["primary_skill"])
     gate.setdefault("conditions", [])
     gate.setdefault("remaining_blockers", [])
     gate.setdefault(

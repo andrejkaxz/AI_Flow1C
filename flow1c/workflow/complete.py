@@ -8,6 +8,9 @@ from pathlib import Path
 from typing import Any
 
 from flow1c import context as runtime
+from flow1c import handoff
+from flow1c import context_manifest
+from flow1c.handoff_policy import COMPLETED_STATES, HandoffError
 from flow1c import publication as publication
 from flow1c import storage as storage
 from flow1c import system as system
@@ -127,7 +130,6 @@ def complete_free_request(
             }
         gate.update(state="CONSULTATION_COMPLETE", result_summary=summary)
     gate["completed_at"] = storage.utc_now()
-    gate_state.save_request(gate, product_root=product_root)
     result = {
         "state": gate["state"],
         "document_status": gate.get("document_status"),
@@ -143,7 +145,9 @@ def complete_free_request(
             .decode("utf-8")
         )
     _value = result
-    return OperationResult(_value, 0)
+    result = OperationResult(_value, 0)
+    handoff.save_completion(gate, result, product_root=product_root)
+    return result
 
 
 def output_has_unverified_claims(text: str, evidence: dict[str, Any]) -> bool:
@@ -174,7 +178,7 @@ def output_has_unverified_claims(text: str, evidence: dict[str, Any]) -> bool:
     return not any((evidence_id and evidence_id in text for evidence_id in evidence_ids))
 
 
-def agent_complete(args: argparse.Namespace, *, product_root: Path) -> OperationResult:
+def _agent_complete(args: argparse.Namespace, *, product_root: Path) -> OperationResult:
     gate = gate_state.load_gate(
         args.gate_id,
         states={"READY", "READY_WITH_DEVIATIONS", "UNVERIFIED_DRAFT", "NON_COMPLIANT"},
@@ -192,6 +196,13 @@ def agent_complete(args: argparse.Namespace, *, product_root: Path) -> Operation
         raise WorkflowError("Agent gate state NON_COMPLIANT is not allowed for this action.")
     if not legacy_update_retry:
         gate_state.require_gate_tool(gate, "flow1c_complete", product_root=product_root)
+    if gate.get("evidence_path"):
+        context_errors = context_manifest.completion_errors(gate, product_root=product_root)
+        if context_errors:
+            return OperationResult({"state": gate["state"], "ready": False,
+                                    "code": "CONTEXT_SCOPE_REQUIRED", "errors": context_errors,
+                                    "gate_id": gate["gate_id"], "preserved_state": True,
+                                    "next_action": "Rebuild changed compact context or read remaining mandatory parts, then retry complete on this gate."}, 2)
     if gate.get("mode", "formal") != "formal":
         return complete_free_request(gate, args, product_root=product_root)
     stages = runtime.load_stages(product_root=product_root)
@@ -363,15 +374,13 @@ def agent_complete(args: argparse.Namespace, *, product_root: Path) -> Operation
     gate["state"] = state
     gate["completed_at"] = storage.utc_now()
     gate["completion_errors"] = errors
-    gate_state.save_gate(gate, product_root=product_root)
+    evidence_patch: dict[str, Any] = {}
     if evidence_path is not None:
-        evidence["completed_at"] = gate["completed_at"]
-        evidence["completion_state"] = state
-        evidence["completion_errors"] = errors
+        evidence_patch.update(completed_at=gate["completed_at"], completion_state=state,
+                              completion_errors=errors)
         if state == "COMPLETE":
-            evidence["validation_snapshot"] = snapshot
-            evidence["validated_output"] = str(output_path) if output_path else None
-        storage.write_json(evidence_path, evidence)
+            evidence_patch.update(validation_snapshot=snapshot,
+                                  validated_output=str(output_path) if output_path else None)
     result = {
         "state": state,
         "ready": state == "COMPLETE",
@@ -385,6 +394,48 @@ def agent_complete(args: argparse.Namespace, *, product_root: Path) -> Operation
         "output": str(output_path) if output_path else None,
     }
     _value = result
-    return OperationResult(
+    result = OperationResult(
         _value, 0 if state in {"COMPLETE", "COMPLETE_WITH_DEVIATIONS", "UNVERIFIED_DRAFT"} else 2
     )
+    if result.exit_code == 0:
+        handoff.save_completion(gate, result, product_root=product_root, evidence_patch=evidence_patch)
+    else:
+        gate_state.save_gate(gate, product_root=product_root)
+        if evidence_path is not None:
+            evidence.update(evidence_patch)
+            storage.write_json(evidence_path, evidence)
+    return result
+
+
+def agent_complete(args: argparse.Namespace, *, product_root: Path) -> OperationResult:
+    """Commit once; retries only repair the sealed transfer and persisted copies."""
+    result = None
+    try:
+        with handoff.writer(args.gate_id, product_root=product_root):
+            gate = handoff.load_producer(args.gate_id, product_root=product_root)
+            if gate.get("completion_record") or (gate.get("state") in COMPLETED_STATES and
+                    (gate.get("state") != "UNVERIFIED_DRAFT" or gate.get("completed_at"))):
+                receipt = gate.get("completion_record")
+                if receipt:
+                    handoff.verify_completion(gate, receipt, product_root=product_root)
+                    result = OperationResult(receipt["result"], receipt["exit_code"])
+            else:
+                result = _agent_complete(args, product_root=product_root)
+                if result.exit_code:
+                    return result
+                gate = handoff.load_producer(args.gate_id, product_root=product_root)
+            if gate.get("handoff_status") == "READY":
+                handoff.read_locked(gate, product_root=product_root)
+            else:
+                handoff.recover_locked(gate, product_root=product_root)
+            if result is None:
+                result = OperationResult(gate["completion_record"]["result"], gate["completion_record"]["exit_code"])
+            return OperationResult({**result.value, "handoff": gate["handoff"],
+                                    "handoff_status": "READY"}, result.exit_code)
+    except HandoffError as exc:
+        exc.gate_id = args.gate_id
+        return OperationResult({**(result.value if result else {}), "handoff_error": exc.payload()}, 2)
+    except OSError:
+        # Do not roll back a durable completion or leak full paths/materials in diagnostics.
+        exc = HandoffError("HANDOFF_RECOVERY_REQUIRED", "Transfer persistence interrupted; recover the same gate", args.gate_id)
+        return OperationResult({**(result.value if result else {}), "handoff_error": exc.payload()}, 2)

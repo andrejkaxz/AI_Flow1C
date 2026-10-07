@@ -321,6 +321,8 @@ class ReferencePolicyTests(unittest.TestCase):
                 shutil.copy2(
                     ROOT / "config" / "stages.json", flow1c.ROOT / "config" / "stages.json"
                 )
+                from routing_fixture import install_route_assets
+                install_route_assets(flow1c.ROOT)
                 output = io.StringIO()
                 args = argparse.Namespace(
                     operation="functional-spec",

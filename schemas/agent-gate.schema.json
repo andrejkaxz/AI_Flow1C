@@ -8,6 +8,9 @@
     "operation": {"type": "string"},
     "requested_operation": {"type": "string"},
     "routing_reason": {"type": "string"},
+    "route_origin": {"enum": ["legacy", "structured"]},
+    "route_proposal": {"type": "object", "$ref": "route-proposal.schema.json"},
+    "route_decision": {"type": "object", "$ref": "route-decision.schema.json"},
     "query_intent": {"enum": ["create", "review", "optimize"]},
     "query_contract_version": {"enum": [0, 1]},
     "query_verification": {"type": "object"},
@@ -84,7 +87,14 @@
     "created_at": {"type": "string"},
     "completed_at": {"type": "string"},
     "context_sha256": {"type": "string"},
-    "evidence_path": {"type": "string"}
+    "evidence_path": {"type": "string"},
+    "completion_record": {"type": "object", "required": ["schema_version", "result", "exit_code", "seal"],
+                           "properties": {"schema_version": {"const": 1}, "result": {"type": "object"},
+                                          "exit_code": {"type": "integer"}, "seal": {"type": "object"}}},
+    "handoff_status": {"enum": ["RECOVERY_REQUIRED", "READY"]},
+    "handoff": {"type": "object", "required": ["schema_version", "path", "sha256"],
+                "properties": {"schema_version": {"const": 1}, "path": {"type": "string"},
+                               "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}}
   },
   "additionalProperties": true
 }

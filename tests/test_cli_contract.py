@@ -12,6 +12,7 @@ import unittest
 from pathlib import Path
 from typing import Any
 from flow1c import cli
+from routing_fixture import install_route_assets
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "tests" / "fixtures" / "cli-baseline"
@@ -65,13 +66,14 @@ class CliScenario:
                 shutil.copytree(
                     source, self.root / name, ignore=shutil.ignore_patterns("__pycache__", "*.pyc")
                 )
+        install_route_assets(self.root)
         self.gate_id: str | None = None
 
     def run(self, arguments: list[str], request: Any = None, *, outside: bool = False) -> dict:
         environment = os.environ.copy()
         environment.pop("PYTHONPATH", None)
         result = subprocess.run(
-            [sys.executable, str(self.root / "scripts" / "flow1c.py"), *arguments],
+            [sys.executable, "-B", str(self.root / "scripts" / "flow1c.py"), *arguments],
             cwd=self.outside if outside else self.root,
             input=json.dumps(request, ensure_ascii=False) if request is not None else None,
             text=True,
@@ -174,7 +176,20 @@ class CliContractTests(unittest.TestCase):
 
     def test_all_parser_contracts_match_baseline(self) -> None:
         expected = json.loads((FIXTURES / "parser.json").read_text(encoding="utf-8"))
-        self.assertEqual(parser_contract(cli.build_parser()), expected)
+        actual = parser_contract(cli.build_parser())
+        self.assertEqual(set(actual["commands"]) - set(expected["commands"]), {"route-catalog", "route-check", "agent-handoff", "context-read"})
+        for name in ("route-catalog", "route-check", "agent-handoff", "context-read"):
+            actual["commands"].pop(name)
+        # New explicit context options are additive; every legacy option/default is exact.
+        additions = {"context-build": {"view", "gate_id"},
+                     "agent-context": {"view", "action", "entry_id", "section_id", "cursor", "max_chars"}}
+        for name, fields in additions.items():
+            added = [a for a in actual["commands"][name]["actions"] if a["dest"] in fields]
+            self.assertEqual({a["dest"] for a in added}, fields)
+            self.assertTrue(all(not a["required"] for a in added))
+            self.assertEqual(next(a["default"] for a in added if a["dest"] == "view"), "full")
+            actual["commands"][name]["actions"] = [a for a in actual["commands"][name]["actions"] if a["dest"] not in fields]
+        self.assertEqual(actual, expected)
 
     def test_help_runs_from_an_unrelated_directory(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -224,7 +239,16 @@ class CliContractTests(unittest.TestCase):
             self.assertEqual(
                 actual["saved_request"]["notes"][0]["text"], "Количество сверяют с накладной."
             )
-            self.assertEqual(actual, expected)
+            def legacy_fields(value, parent=""):
+                if isinstance(value, dict):
+                    return {key: legacy_fields(item, key) for key, item in value.items()
+                            if key not in {"route_decision", "route_origin", "completion_record", "handoff", "handoff_status"}}
+                if isinstance(value, list):
+                    if parent in {"available_actions", "allowed_tools"}:
+                        value = [item for item in value if item != "flow1c_context"]
+                    return [legacy_fields(item) for item in value]
+                return value
+            self.assertEqual(legacy_fields(actual), expected)
 
 
 if __name__ == "__main__":

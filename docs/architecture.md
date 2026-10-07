@@ -4,7 +4,24 @@
 `scripts/flow1c.py` — совместимый запускатель `flow1c.cli.main` из любого cwd.
 Parser, представление результата и exit codes находятся в `flow1c.cli`;
 бизнес-операции принадлежат сервисам пакета. Каталог и чистая проверка routes
-реализованы отдельно; подключение к CLI/gates и адаптерам ещё не включено.
+реализованы отдельно. Read-only CLI/tools проверяют proposal до gate; begin
+пересчитывает и сохраняет решение, gate сохраняет прежние проверки полномочий.
+
+`flow1c.handoff_policy` владеет чистыми identities и контрактом передачи.
+`flow1c.handoff` сохраняет completion receipt, проверяет sealed results и
+authoritative records, пишет неизменяемые версии/журнал и восстанавливает
+передачу. Completion фиксируется перед дописыванием evidence; повторный вызов
+не повторяет завершённые действия. Терминальный producer остаётся историческими
+данными после смены policy, а новые действия проверяются текущим gate.
+[Хранение, восстановление и ограничения](handoff.md).
+
+`flow1c.context_policy` выбирает управляемые документы и определяет identities,
+обязательные диапазоны, coverage и бюджеты без I/O. `flow1c.context_manifest`
+сохраняет immutable manifests/coverage, проверяет provenance и обслуживает
+ограниченный reader по entry IDs. Один atomic evidence reference фиксирует
+покрытие после каждой страницы. Контекст и completion разделяют существующую
+OS writer lock; services возвращают данные без вызовов CLI. Legacy full view
+сохранён, compact включается явно. [Контракт, полнота и resume](context.md).
 
 `flow1c.routing_policy` проверяет структурированный RouteProposal и возвращает
 детерминированный RouteDecision без I/O и permissions. `flow1c.routing` читает

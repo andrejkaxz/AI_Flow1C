@@ -67,6 +67,8 @@ def allowed_tools_for_mode(mode: str, operation: str | None = None) -> list[str]
         result.insert(-1, "flow1c_interview")
     if operation == "code-review" and mode != "formal":
         result.insert(-1, "flow1c_analyze_bsl")
+    if operation in FREE_OPERATIONS:
+        result.insert(-1, "flow1c_context")
     return result
 
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 from flow1c import storage as svc_storage
 from contextlib import ExitStack
 from flow1c import templates as svc_templates
+from flow1c import handoff as svc_handoff
 from flow1c import context as svc_context
 from flow1c import documents as svc_documents
 from flow1c import publication as svc_publication
@@ -701,6 +702,8 @@ class TemplateIntegrationTests(unittest.TestCase):
             ),
             "publication_snapshot": mock.Mock(return_value={}),
             "save_gate": mock.Mock(),
+            "save_completion": mock.Mock(),
+            "recover_locked": mock.Mock(side_effect=lambda gate, **kwargs: gate.update(handoff={})),
         }
         owners = {
             "load_gate": svc_workflow_state,
@@ -713,6 +716,8 @@ class TemplateIntegrationTests(unittest.TestCase):
             "_load_section_current": svc_documents,
             "publication_snapshot": svc_publication,
             "save_gate": svc_workflow_state,
+            "save_completion": svc_handoff,
+            "recover_locked": svc_handoff,
         }
         with ExitStack() as stack:
             for name, replacement in patches.items():

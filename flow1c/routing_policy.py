@@ -336,7 +336,7 @@ def check_route(proposal: Any, rules: dict[str, Any]) -> dict[str, Any]:
 
 def check_legacy_route(operation: str, summary: str, mode: str | None,
                        rules: dict[str, Any]) -> dict[str, Any]:
-    """Comparison-only bridge for defaults and the existing narrow query remap."""
+    """Compatibility bridge for defaults and the existing narrow query remap."""
     proposed = legacy_proposal(operation, summary, mode)
     decision = check_route(proposed, rules)
     decision["requested_operation"] = operation.strip().casefold()
@@ -347,4 +347,47 @@ def check_legacy_route(operation: str, summary: str, mode: str | None,
             decision["reason_codes"].append("EXPLICIT_1C_QUERY_REQUEST")
     decision.pop("fingerprint")
     decision["fingerprint"] = fingerprint(decision)
+    return decision
+
+
+def check_begin_route(proposal: Any, inputs: dict[str, Any], rules: dict[str, Any]) -> dict[str, Any]:
+    """Pure binding of proposal fields to explicit begin inputs, before state creation."""
+    operation = str(inputs.get("operation") or "").strip().casefold()
+    summary = str(inputs.get("summary") or "")
+    mode = inputs.get("mode")
+    if proposal is None:
+        return check_legacy_route(operation, summary, mode, rules)
+    decision = check_route(proposal, rules)
+    if decision["status"] != "VALID":
+        return decision
+    conflicts = []
+    if operation and operation != decision["operation"]:
+        conflicts.append("operation")
+    if mode is not None and mode != decision["mode"]:
+        conflicts.append("mode")
+    if summary and summary != proposal["expected_outcome"]:
+        conflicts.append("expected_outcome")
+    for field, value in decision["references"].items():
+        current = inputs.get(field)
+        if current is not None and current != value:
+            conflicts.append(field)
+    for alias in ("code", "g_number"):
+        if inputs.get(alias) and decision["references"].get("task_reference") not in (
+            None, inputs[alias],
+        ):
+            conflicts.append(alias)
+    # A new request must not impersonate an existing gate/request. Resume uses dialogue.
+    if proposal.get("gate_id") or proposal.get("request_id"):
+        conflicts.append("resume identity; use dialogue")
+    if conflicts:
+        decision.update(status="INVALID", reason_codes=["ROUTE_INVALID_COMBINATION"],
+                        next_actions=["correct-proposal"], errors=[{
+                            "code": "ROUTE_INVALID_COMBINATION", "component": "routing-policy",
+                            "message": "Begin inputs conflict with proposal: " + ", ".join(conflicts),
+                            "recoverable": True, "preserved_state": True,
+                            "next_actions": ["correct-proposal"],
+                        }])
+        decision.pop("fingerprint")
+        decision["fingerprint"] = fingerprint(decision)
+        return decision
     return decision

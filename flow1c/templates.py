@@ -442,6 +442,7 @@ def begin(args: argparse.Namespace, *, product_root: Path) -> OperationResult:
         mode_selection=args.mode_selection,
         storage_kind="documentation" if local.get("documentation_path") else "workspace",
         product_root=product_root,
+        **getattr(args, "_route_metadata", {}),
     )
     gate["request_id"] = gate["gate_id"]
     skill = product_root / ".agents/skills/flow1c-document-templates/SKILL.md"
@@ -508,11 +509,14 @@ def complete(gate: dict, args: argparse.Namespace, *, product_root: Path) -> Ope
         gate.update(
             state="DRAFT_COMPLETE", document_status="UNVERIFIED_DRAFT", output=result["output"]
         )
-    gate_state.save_gate(gate, product_root=product_root)
     _value = {
         "state": gate["state"],
         "output": gate.get("output"),
         "document_status": gate.get("document_status"),
         "ready": True,
     }
-    return OperationResult(_value, 0)
+    from flow1c import handoff
+
+    result = OperationResult(_value, 0)
+    handoff.save_completion(gate, result, product_root=product_root)
+    return result
