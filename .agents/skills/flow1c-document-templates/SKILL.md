@@ -17,6 +17,11 @@ Resolve the type from user intent/content, not the filename alone. Types come
 from config/document-types.json; never require all types before making one
 document. A request to update a template does not update Flow1C.
 
+Project users can place source templates in `Шаблоны документов` as described
+in docs/project-materials.md. Reuse their selected file; do not ask for another
+upload or treat that folder as the managed library. Skip its README instruction.
+Template-only configure does not create the full project scaffold.
+
 1. Reuse documentation_path. If missing, ask once for an accessible external
    folder and use template configure. Do not require Git, RLM or 1C setup.
 2. list and resolve the user's variant. If missing, intake only the requested

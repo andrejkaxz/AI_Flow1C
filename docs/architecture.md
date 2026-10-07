@@ -80,6 +80,11 @@ Flow1C repo
     ├─ rules, skills, CLI, schemas
     └─ bootstrap
           ├─ project documentation repo
+          │     ├─ README.md (user entry point)
+          │     ├─ Материалы встреч
+          │     ├─ Шаблоны документов
+          │     ├─ Реестр процессов и требований
+          │     ├─ Документы для анализа
           │     ├─ inbox
           │     ├─ registry
           │     ├─ work-items/<safe-reference-slug>
@@ -87,6 +92,13 @@ Flow1C repo
           ├─ extension source (Git clone or local XML/BSL export)
           └─ configuration XML/BSL (local path only)
 ```
+
+Пользователь передаёт исходные материалы через четыре понятных входных папки;
+их структура задана в `templates/project-documentation/`. Configure создаёт
+недостающие файлы через `scripts/project-documentation.ps1` без замены
+существующих документов. Intake, registry и template library используют
+прежние служебные пути после явного запроса пользователя; помещение файла
+во входную папку не запускает обработку. [Контракт](project-materials.md).
 
 ## Модель данных MVP
 

@@ -362,21 +362,8 @@ Set-JsonProperty $ExistingGitea "repository" $GiteaRepository
 Set-JsonProperty $ExistingGitea "token_env" "FLOW1C_GITEA_TOKEN"
 Set-JsonProperty $LocalConfig "gitea" $ExistingGitea
 
-$SeedFiles = @{
-    "inbox\README.md" = "# Incoming artifacts`n`nAdd new registry files, meeting notes, and transcripts here until they are assigned to a user-selected work item.`n"
-    "registry\README.md" = "# Requirements registry`n`nThe accepted workbook is stored as source/requirements.xlsx. Flow1C generates normalized indexes and import-report.md.`n"
-    "work-items\README.md" = "# Functional specifications`n`nEach development item is stored under a safe directory slug derived from its opaque user reference.`n"
-    "wiki\status.md" = "# Project status`n`n| FS | Title | Status | Requirements | Functional approval | Technical approval |`n|---|---|---|---|---|---|`n| N/A | No work items | N/A | N/A | N/A | N/A |`n"
-}
-$CreatedSeedFiles = @()
-foreach ($RelativePath in $SeedFiles.Keys) {
-    $Target = Join-Path $DocumentationPath $RelativePath
-    if (-not (Test-Path -LiteralPath $Target)) {
-        $null = New-Item -ItemType Directory -Force -Path (Split-Path -Parent $Target)
-        Set-Content -LiteralPath $Target -Value $SeedFiles[$RelativePath] -Encoding utf8
-        $CreatedSeedFiles += $RelativePath
-    }
-}
+. (Join-Path $PSScriptRoot "project-documentation.ps1")
+$CreatedSeedFiles = @(Initialize-Flow1CDocumentation -DocumentationPath $DocumentationPath)
 
 git -C $DocumentationPath rev-parse --verify --quiet HEAD | Out-Null
 if ($LASTEXITCODE -ne 0) {
