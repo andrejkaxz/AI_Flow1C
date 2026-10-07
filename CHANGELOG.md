@@ -7,6 +7,13 @@
   исключены из текущего объёма. Model evals используются для диагностики
   конкретных проблем; массовая приёмка не является условием текущей поставки.
 
+- Добавлены model routing evals по независимым аннотациям: первое решение,
+  отдельные operation/mode/primary/source scores, реальные уточнения до gate,
+  baseline regressions и отказ при неполных/fixture-only прогонах. Reports
+  фиксируют prompts, hashes, raw events и точные model/variant. OpenCode E2E
+  поддерживает явный reasoning variant и общий внешний каталог fixtures.
+  Selection acceptance не заменяет исполнение, resume и условия выпуска.
+
 - Исправлены CI fixtures пилота: interview smoke включает route output docs,
   shallow clone явно выбирает main, Redmine credential mock ограничен сервисом,
   а CLI baseline проверяет фактические SHA-256 с учётом LF/CRLF. Исторические

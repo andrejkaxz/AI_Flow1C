@@ -325,7 +325,8 @@ def assess_run(case, messages, questions, *, timed_out=False, server_exit=None, 
             "questions": len(questions), "time_to_question_seconds": questions[0]["elapsed_seconds"] if questions else None, "tokens": tokens}
 
 
-def run_case(executable, model, case, destination, *, timeout, baseline_ref=None):
+def run_case(executable, model, case, destination, *, timeout, baseline_ref=None,
+             assessor=assess_run, observation_complete=None, model_variant=None):
     workflow, docs, extension, materials = build_fixture(destination, case, baseline_ref=baseline_ref)
     original_extension = tree_hash(extension)
     with socket.socket() as sock:
@@ -380,7 +381,10 @@ def run_case(executable, model, case, destination, *, timeout, baseline_ref=None
             prompt = case["prompt"].replace("{materials}", str(materials)).replace("{template}", str(materials / "Template.xml"))
             start = time.monotonic()
             phase = "prompt submission"
-            request("POST", f"/session/{session}/prompt_async", {"agent": "flow1c-controller", "model": {"providerID": provider, "modelID": model_id}, "parts": [{"type": "text", "text": prompt}]})
+            prompt_body = {"agent": "flow1c-controller", "model": {"providerID": provider, "modelID": model_id}, "parts": [{"type": "text", "text": prompt}]}
+            if model_variant:
+                prompt_body["variant"] = model_variant
+            request("POST", f"/session/{session}/prompt_async", prompt_body)
             seen_questions, last_snapshot = set(), None
             answers = iter(case.get("answers", []))
             while time.monotonic() - start < timeout:
@@ -388,19 +392,14 @@ def run_case(executable, model, case, destination, *, timeout, baseline_ref=None
                     break
                 phase = "question polling"
                 pending = request("GET", "/question", request_timeout=10)
+                unanswered = []
                 for question in pending:
                     if question.get("sessionID") != session or question["id"] in seen_questions:
                         continue
                     seen_questions.add(question["id"])
                     record = {**question, "elapsed_seconds": time.monotonic() - start, "observed_epoch_ms": time.time() * 1000}
                     questions.append(record)
-                    answer = next(answers, None)
-                    if answer is None:
-                        raise RuntimeError("Scenario has no answer for an additional question")
-                    if len(question.get("questions", [])) != 1:
-                        raise RuntimeError("Scenario expects one focused question at a time")
-                    phase = "question reply"
-                    request("POST", f"/question/{question['id']}/reply", {"answers": [[answer]]})
+                    unanswered.append(question)
                 phase = "permission polling"
                 permissions = request("GET", "/permission", request_timeout=10)
                 if any(p.get("sessionID") == session for p in permissions):
@@ -412,6 +411,16 @@ def run_case(executable, model, case, destination, *, timeout, baseline_ref=None
                 if digest != last_snapshot:
                     snapshots.append({"elapsed_seconds": time.monotonic() - start, "messages": messages})
                     last_snapshot = digest
+                if observation_complete and observation_complete(messages, questions):
+                    break
+                for question in unanswered:
+                    answer = next(answers, None)
+                    if answer is None:
+                        raise RuntimeError("Scenario has no answer for an additional question")
+                    if len(question.get("questions", [])) != 1:
+                        raise RuntimeError("Scenario expects one focused question at a time")
+                    phase = "question reply"
+                    request("POST", f"/question/{question['id']}/reply", {"answers": [[answer]]})
                 phase = "status polling"
                 statuses = request("GET", "/session/status", request_timeout=10)
                 completed = any(m.get("info", {}).get("role") == "assistant" and m.get("info", {}).get("time", {}).get("completed") for m in messages)
@@ -420,7 +429,7 @@ def run_case(executable, model, case, destination, *, timeout, baseline_ref=None
                 time.sleep(0.25)
             else:
                 timeout_hit = True
-            result = assess_run(case, messages, questions, timed_out=timeout_hit, server_exit=server.poll(), extension_unchanged=tree_hash(extension) == original_extension)
+            result = assessor(case, messages, questions, timed_out=timeout_hit, server_exit=server.poll(), extension_unchanged=tree_hash(extension) == original_extension)
             result.update(opencode_version=health.get("version"), elapsed_seconds=time.monotonic() - start)
         except (OSError, ValueError, RuntimeError) as exc:
             result = {"passed": False, "failures": [f"{phase}: {exc}"], "elapsed_seconds": time.monotonic() - start, "server_exit": server.poll()}
@@ -449,6 +458,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--opencode", default=shutil.which("opencode"))
     parser.add_argument("--model", required=True, help="Exact provider/model-id selected by the user")
+    parser.add_argument("--variant", help="Exact configured reasoning variant")
     parser.add_argument("--runs", type=int, default=20)
     parser.add_argument("--scenario")
     parser.add_argument("--timeout", type=int, default=180)
@@ -467,7 +477,7 @@ def main():
         parser.error("no scenarios selected")
     output = args.output_dir or ROOT / ".workspace/opencode-evals" / (time.strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:8])
     output.mkdir(parents=True)
-    summary = {"schema_version": 2, "model": args.model, "machine": platform.platform(), "runs_per_scenario": args.runs,
+    summary = {"schema_version": 2, "model": args.model, "variant": args.variant, "machine": platform.platform(), "runs_per_scenario": args.runs,
                "baseline_ref": args.baseline_ref, "fixture_only": args.fixture_only, "results": [],
                "expected_results": len(cases) * args.runs * (2 if args.baseline_ref else 1),
                "completed": False, "passed": True}
@@ -480,7 +490,8 @@ def main():
                     build_fixture(destination, case, baseline_ref=revision)
                     result = {"fixture_created": True, "passed": None}
                 else:
-                    result = run_case(args.opencode, args.model, case, destination, timeout=args.timeout, baseline_ref=revision)
+                    result = run_case(args.opencode, args.model, case, destination, timeout=args.timeout, baseline_ref=revision,
+                                      model_variant=args.variant)
                 summary["results"].append({"case": case["id"], "variant": variant, "run": run + 1, **result})
                 if variant == "candidate" and result["passed"] is False:
                     summary["passed"] = False

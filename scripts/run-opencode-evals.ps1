@@ -7,7 +7,11 @@ param(
     [string]$Scenario = "",
     [int]$TimeoutSeconds = 180,
     [string]$BaselineRef = "",
-    [switch]$FixtureOnly
+    [switch]$FixtureOnly,
+    [string]$Variant = "",
+    [string]$OutputDirectory = "",
+    [switch]$Routing,
+    [ValidateSet("all", "development", "held-out")][string]$Split = "all"
 )
 $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent $PSScriptRoot
@@ -30,9 +34,20 @@ if (-not $OpenCodePath -and -not $FixtureOnly) {
         }
     }
 }
-$Arguments = @("-B", (Join-Path $PSScriptRoot "opencode_evals.py"), "--model", $Model, "--runs", "$Runs", "--timeout", "$TimeoutSeconds")
+$Evaluator = "opencode_evals.py"
+if ($Routing) {
+    if (-not $OutputDirectory) { throw "Routing evals require a new -OutputDirectory outside the product checkout" }
+    $Evaluator = "routing_evals.py"
+}
+$Arguments = @("-B", (Join-Path $PSScriptRoot $Evaluator), "--model", $Model, "--runs", "$Runs", "--timeout", "$TimeoutSeconds")
 if ($OpenCodePath) { $Arguments += @("--opencode", $OpenCodePath) }
-if ($Scenario) { $Arguments += @("--scenario", $Scenario) }
+if ($Scenario) {
+    if ($Routing) { $Arguments += @("--case", $Scenario) }
+    else { $Arguments += @("--scenario", $Scenario) }
+}
+if ($Routing) { $Arguments += @("--split", $Split) }
+if ($Variant) { $Arguments += @("--variant", $Variant) }
+if ($OutputDirectory) { $Arguments += @("--output-dir", $OutputDirectory) }
 if ($BaselineRef) { $Arguments += @("--baseline-ref", $BaselineRef) }
 if ($FixtureOnly) { $Arguments += "--fixture-only" }
 & $PythonPath @Arguments
