@@ -27,6 +27,24 @@ function fixture(t) {
   return { root, id, sessionID, client, gate, after, warnings: () => warnings }
 }
 
+test("documentation layout 2 keeps writes behind the same gate and tools", async t => {
+  const f = fixture(t)
+  const guard = await Flow1CGuard({ client: f.client, worktree: f.root })
+  const outputPath = path.join(f.root, "documentation", ".flow1c", "drafts", f.id, "result.md")
+  await f.after(guard, "flow1c_begin", f.gate("READY", {
+    available_actions: ["flow1c_write", "flow1c_complete"], output: outputPath,
+  }))
+  for (const tool of ["write", "edit", "apply_patch"]) {
+    await assert.rejects(guard["tool.execute.before"](
+      { sessionID: f.sessionID, tool }, { args: { path: outputPath, content: "unsafe" } },
+    ))
+  }
+  await assert.doesNotReject(guard["tool.execute.before"](
+    { sessionID: f.sessionID, tool: "flow1c_write" },
+    { args: { gate_id: f.id, target: "draft", path: "result.md", content: "controlled" } },
+  ))
+})
+
 test("waiting and answers survive plugin restart and compaction", async t => {
   const f = fixture(t)
   const first = await Flow1CGuard({ client: f.client, worktree: f.root })

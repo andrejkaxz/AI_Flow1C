@@ -2227,6 +2227,7 @@ class RedmineWorkflowTests(unittest.TestCase):
             with (
                 mock.patch.object(flow1c, "ROOT", root),
                 mock.patch.object(svc_context, "project_root", return_value=docs),
+                mock.patch.object(svc_context, "project_data_root", return_value=docs),
             ):
                 result = svc_intake.persist_intake_files(
                     files,
@@ -2279,6 +2280,7 @@ class RedmineWorkflowTests(unittest.TestCase):
             with (
                 mock.patch.object(flow1c, "ROOT", root),
                 mock.patch.object(svc_context, "project_root", return_value=docs),
+                mock.patch.object(svc_context, "project_data_root", return_value=docs),
                 mock.patch.object(svc_work_items, "work_item_root", return_value=item),
                 mock.patch.object(svc_intake, "artifact_index_path", return_value=index_path),
                 mock.patch.object(svc_intake, "load_artifact_index", return_value=index),

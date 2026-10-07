@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 from flow1c import context as runtime
+from flow1c import documentation as documentation_layout
 from flow1c import documents as documents
 from flow1c import setup as setup_service
 from flow1c import storage as storage
@@ -78,7 +79,7 @@ def save_library_config(
         current.update(schema_version=2, documentation_path=str(documentation))
         current.setdefault("template_library", {}).update(
             schema_version=1,
-            product_root="document-templates",
+            root=(documentation_layout.data_root(documentation) / "document-templates").relative_to(documentation.resolve()).as_posix(),
             storage_kind="documentation",
             library_id=library_id,
         )
@@ -89,7 +90,7 @@ def document_root(
     gate: dict, service: template_library.TemplateService, *, product_root: Path
 ) -> Path:
     if gate.get("mode") == "draft" and gate.get("operation") == "template-document":
-        return service.documentation / "drafts" / gate["gate_id"]
+        return documentation_layout.data_root(service.documentation) / "drafts" / gate["gate_id"]
     if gate.get("mode") == "formal" and gate.get("operation") in {"functional-spec", "testing"}:
         reference = gate.get("work_reference") or gate.get("code")
         if not reference:
@@ -274,13 +275,17 @@ def handle(args: argparse.Namespace, *, product_root: Path) -> OperationResult:
                     / ("local-config-template-" + template_store.new_id() + ".json")
                 )
                 storage.write_json(backup, local)
+            documentation_layout.initialize(
+                path, product_root / "templates/project-documentation",
+                preserve_legacy=bool(local.get("documentation_path")),
+            )
             local.update(schema_version=2, documentation_path=str(path))
             local.setdefault(
                 "template_library",
                 {
                     "schema_version": 1,
                     "storage_kind": "documentation",
-                    "root": "document-templates",
+                    "root": (documentation_layout.data_root(path) / "document-templates").relative_to(path).as_posix(),
                     "library_id": None,
                 },
             )
@@ -504,7 +509,7 @@ def complete(gate: dict, args: argparse.Namespace, *, product_root: Path) -> Ope
             product_root, storage.read_json(product_root / runtime.LOCAL_CONFIG_FILE, {})
         )
         result = service.document_validate(
-            {"plan_id": result["plan_id"]}, service.documentation / "drafts" / gate["gate_id"]
+            {"plan_id": result["plan_id"]}, document_root(gate, service, product_root=product_root)
         )
         gate.update(
             state="DRAFT_COMPLETE", document_status="UNVERIFIED_DRAFT", output=result["output"]

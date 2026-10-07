@@ -75,12 +75,12 @@ def smoke(checkout: Path, docs: Path, *, bootstrap: bool, format_name: str) -> d
     legacy_path = docs / "legacy.docx"
     local.update(schema_version=1, functional_spec_template=str(legacy_path), custom_preserved={"value": "retain"})
     local_path.write_text(json.dumps(local), encoding="utf-8")
-    before_index = (docs / "document-templates/library.json").read_bytes()
+    before_index = (docs / ".flow1c/document-templates/library.json").read_bytes()
     migrated = run([python, str(checkout / "scripts/migrate-local-config.py"), "--path", str(local_path), "--json"])
     updated = json.loads(local_path.read_text(encoding="utf-8"))
     if updated["custom_preserved"] != {"value": "retain"} or updated["functional_spec_template"] != str(legacy_path):
         raise RuntimeError("Migration lost local values")
-    if before_index != (docs / "document-templates/library.json").read_bytes():
+    if before_index != (docs / ".flow1c/document-templates/library.json").read_bytes():
         raise RuntimeError("Migration changed the library")
     return {"format": format_name, "bootstrap": bootstrap, "doctor": doctor, "active": active["state"],
             "document": complete["state"], "layout_state": output["layout_state"], "migration": migrated["state"],

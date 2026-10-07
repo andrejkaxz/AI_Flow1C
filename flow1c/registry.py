@@ -90,7 +90,7 @@ def registry_import(args: argparse.Namespace, *, product_root: Path) -> Operatio
     source = Path(args.file).expanduser().resolve()
     if not source.is_file():
         raise WorkflowError(f"Registry file not found: {source}")
-    report_path = runtime.project_root(product_root=product_root) / "registry" / "import-report.md"
+    report_path = runtime.project_data_root(product_root=product_root) / "registry" / "import-report.md"
 
     def fail_import(kind: str, message: str) -> int:
         storage.write_text(
@@ -287,7 +287,7 @@ def registry_import(args: argparse.Namespace, *, product_root: Path) -> Operatio
                     membership[requirement_id] = code
             if code not in specifications:
                 specifications[code] = specification_record
-    data_root = runtime.project_root(product_root=product_root)
+    data_root = runtime.project_data_root(product_root=product_root)
     normalized_dir = data_root / "registry" / "normalized"
     previous_requirements = storage.read_json(normalized_dir / "requirements.json", {})
     previous_specifications = storage.read_json(normalized_dir / "specifications.json", {})
@@ -409,7 +409,7 @@ def registry_import(args: argparse.Namespace, *, product_root: Path) -> Operatio
 
 def registry_scope_index(data_root: Path | None = None, *, product_root: Path) -> dict[str, Any]:
     """Load the latest usable registry view without replacing the last verified indexes."""
-    root = data_root or runtime.project_root(product_root=product_root)
+    root = data_root or runtime.project_data_root(product_root=product_root)
     status = storage.read_json(root / "registry" / "status.json", {})
     source_status = str(status.get("status") or "absent")
     if source_status == "invalid":

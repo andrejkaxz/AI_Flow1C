@@ -126,8 +126,14 @@ def exclusive(root: Path) -> Iterator[None]:
 
 class LibraryStore:
     def __init__(self, documentation: Path):
+        from flow1c import documentation as documentation_layout
+        from flow1c.errors import WorkflowError
         self.documentation = safe_path(documentation)
-        self.root = safe_path(documentation / "document-templates", documentation)
+        try:
+            self.data = documentation_layout.data_root(self.documentation)
+        except WorkflowError as exc:
+            raise TemplateError("TEMPLATE_STORAGE_UNAVAILABLE", str(exc), component="template-store") from exc
+        self.root = safe_path(self.data / "document-templates", self.documentation)
 
     def index(self, *, create: bool = False, project_reference: str | None = None) -> dict:
         path = safe_path(self.root / "library.json", self.root)
@@ -191,7 +197,13 @@ class LibraryStore:
 
     def relocate(self, destination: Path, operation_id: str) -> dict:
         """Keep the old library; resume partial transfer using a deterministic staging path."""
-        target = safe_path(destination / "document-templates", destination)
+        from flow1c import documentation as documentation_layout
+        from flow1c.errors import WorkflowError
+        try:
+            destination_data = documentation_layout.data_root(destination)
+        except WorkflowError as exc:
+            raise TemplateError("TEMPLATE_STORAGE_UNAVAILABLE", str(exc), component="template-store") from exc
+        target = safe_path(destination_data / "document-templates", destination)
         index = self.index()
         if self.documentation == destination.resolve():
             return {"library_id": index["library_id"], "root": str(self.root), "old_root": str(self.root), "old_copy_preserved": True}
@@ -199,8 +211,8 @@ class LibraryStore:
             raise TemplateError("TEMPLATE_STORAGE_UNAVAILABLE", "Relocation destination cannot be inside the source library.")
         if not index["library_id"]:
             raise TemplateError("TEMPLATE_SOURCE_REQUIRED", "There is no library to relocate.")
-        staging = safe_path(destination / (".template-transfer-" + identifier(operation_id)), destination)
-        with exclusive(self.root), exclusive(destination):
+        staging = safe_path(destination_data / (".template-transfer-" + identifier(operation_id)), destination)
+        with exclusive(self.root), exclusive(destination_data):
             if target.exists():
                 if read_json(target / "library.json").get("library_id") != index["library_id"]:
                     raise TemplateError("TEMPLATE_REVISION_CONFLICT", "Destination already contains a different library.")

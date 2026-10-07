@@ -44,7 +44,7 @@ def _roots(gate: dict[str, Any], product_root: Path) -> tuple[Path, Path, dict[s
     local = storage.read_json(product_root / runtime.LOCAL_CONFIG_FILE, {})
     if local.get("documentation_path"):
         _no_links(Path(local["documentation_path"]).expanduser())
-    documentation = Path(local["documentation_path"]).expanduser() if local.get("documentation_path") else product_root
+    documentation = runtime.project_data_root(local, product_root=product_root)
     if gate.get("mode", "formal") == "formal":
         reference = str(gate.get("work_reference") or gate.get("code") or "")
         if not reference:
@@ -85,7 +85,7 @@ def _specs(root: Path, gate: dict[str, Any], manifest: dict[str, Any], evidence:
                 value = selected.get(field)
                 if isinstance(value, str) and value.startswith(prefix):
                     selected[field] = value[len(prefix):]
-                elif isinstance(value, str) and value.startswith("work-items/"):
+                elif isinstance(value, str) and value.startswith(("work-items/", ".flow1c/work-items/")):
                     raise ContextError("CONTEXT_INVALID", "Accepted context artifact belongs to another work-item")
             normalized.append(selected)
         artifacts = normalized

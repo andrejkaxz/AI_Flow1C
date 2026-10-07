@@ -37,6 +37,8 @@ OS writer lock; services возвращают данные без вызовов
 - `errors.py` — общий `WorkflowError` с прежним контрактом CLI-ошибок;
 - `storage.py` — чтение и запись JSON/текста, атомарная замена, обработка Unicode,
   SHA-256, containment и проверка symlink/reparse points;
+- `documentation_policy.py`, `documentation.py` — versioned layout, корень
+  служебных данных и non-destructive scaffold документации.
 - `context.py` — `RuntimeContext` с корнем checkout и загруженной конфигурацией,
   явная загрузка настроек и выбор корня пользовательской документации;
 - `results.py` — данные операции и код результата; форматирование выполняет CLI.
@@ -88,10 +90,11 @@ Flow1C repo
           │     ├─ Шаблоны документов
           │     ├─ Реестр процессов и требований
           │     ├─ Документы для анализа
-          │     ├─ inbox
-          │     ├─ registry
-          │     ├─ work-items/<safe-reference-slug>
-          │     └─ wiki
+          │     └─ .flow1c (layout 2; прежний layout хранит области в корне)
+          │           ├─ layout.json
+          │           ├─ inbox, registry, document-templates
+          │           ├─ work-items/<safe-reference-slug>
+          │           └─ drafts, requests, wiki, .workspace
           ├─ extension source (Git clone or local XML/BSL export)
           └─ configuration XML/BSL (local path only)
 ```
@@ -100,8 +103,9 @@ Flow1C repo
 их структура задана в `templates/project-documentation/`. Configure создаёт
 недостающие файлы через `scripts/project-documentation.ps1` без замены
 существующих документов. Intake, registry и template library используют
-прежние служебные пути после явного запроса пользователя; помещение файла
-во входную папку не запускает обработку. [Контракт](project-materials.md).
+версионированный служебный корень после явного запроса пользователя; помещение файла
+во входную папку не запускает обработку. [Входные материалы](project-materials.md),
+[версии структуры и совместимость](documentation-layout.md).
 
 ## Модель данных MVP
 
@@ -117,7 +121,7 @@ Flow1C repo
 
 В OpenCode запрос поступает в `flow1c-controller`. Уточняющий вопрос допустим до gate. Режимы explore и draft используют чат и необязательные материалы; formal применяет условия этапа. Чистая функция оценки и переходы диалога находятся в `scripts/flow1c_policy.py`, I/O — в `flow1c.workflow`, CLI — в `flow1c.cli`. Ограниченное чтение доступно через flow1c_inspect; конфигурация — через RLM. Подробности: [диалог и черновики](dialogue.md).
 
-Материалы без назначенной задачи сохраняются в `inbox/<intake-id>/`. После назначения ссылки оригиналы попадают в `work-items/<safe-reference-slug>/input/meetings/` или `input/attachments/`, производный текст — в `input/derived/`, а хеши и категории — в `input/artifacts.json`. Исходная ссылка сохраняется в manifest и никогда не используется как путь напрямую.
+Следующие пути указаны относительно служебного корня документации. Материалы без назначенной задачи сохраняются в `inbox/<intake-id>/`. После назначения ссылки оригиналы попадают в `work-items/<safe-reference-slug>/input/meetings/` или `input/attachments/`, производный текст — в `input/derived/`, а хеши и категории — в `input/artifacts.json`. Исходная ссылка сохраняется в manifest и никогда не используется как путь напрямую.
 
 | Роль | Минимальный контекст |
 |---|---|
@@ -134,7 +138,7 @@ Flow1C repo
 - Redmine — необязательный read-only источник задач и вложений. Его API key хранится вне репозитория; полученные файлы проходят тот же контролируемый intake и сохраняют source provenance.
 - SonarQube — отложен за пределы MVP.
 
-Абсолютный путь к репозиторию документации хранится только в `.flow1c.local.json`. CLI использует его как рабочий корень для реестра, рабочих элементов, wiki, коммитов и PR; сам Flow1C остаётся неизменяемым набором правил и инструментов.
+Абсолютный путь к репозиторию документации хранится только в `.flow1c.local.json`. CLI использует его для Git и пользовательских материалов; registry, work-items, wiki и другие хранилища используют отдельный versioned data root; сам Flow1C остаётся неизменяемым набором правил и инструментов.
 
 Evidence изолировано по gate_id. Состояние диалога и ответы хранятся на диске; guard восстанавливает их после перезапуска. Независимые запросы сохраняются отдельно от work-items и присоединяются с provenance без изменения согласований.
 
@@ -173,7 +177,7 @@ Git evidence records use schema version 2. Legacy `integration` is normalized to
 
 Подсистема разделов разделена на три границы: `flow1c_sections_policy.py` содержит чистые правила каталога, полноты, SHA-256 и состояний; `flow1c_sections.py` сохраняет версии и audit evidence; `flow1c_docx.py` является единственным адаптером чтения/изменения OOXML. CLI связывает их, но не дублирует смысловые правила.
 
-Файлы draft: `.workspace/drafts/<request-id>/sections/<section-id>/` при отсутствии documentation repository либо `drafts/<request-id>/...` в настроенном documentation repository. Для work-item используется `work-items/<safe-reference-slug>/specification/sections/<section-id>/`. Исходный DOCX не перезаписывается.
+Файлы draft: `.workspace/drafts/<request-id>/sections/<section-id>/` при отсутствии documentation repository либо `drafts/<request-id>/...` относительно служебного корня настроенной документации. Для work-item используется `work-items/<safe-reference-slug>/specification/sections/<section-id>/`. Исходный DOCX не перезаписывается.
 ## Document template modules
 
 `config/document-types.json` registers types and product policy references. The

@@ -2,6 +2,15 @@
 
 ## В разработке
 
+- Новые проекты собирают служебные области документации в `.flow1c/`, оставляя
+  четыре пользовательские входные папки и README в корне. Добавлен versioned
+  layout v2 с общим resolver для registry, intake, work-items, drafts, sections,
+  template library, context и handoff. Git и относительные ссылки сохраняют
+  корень documentation_path. Configure и template-only configure создают
+  недостающие инструкции; update/resume сохраняют layout и данные. Старые
+  проекты работают по прежним путям; автоматический перенос не выполняется.
+  [Версии структуры и совместимость](docs/documentation-layout.md).
+
 - Исправлена команда guard/OpenCode тестов Windows CI для Node 22:
   используется поддерживаемый `--experimental-test-isolation=none`.
 

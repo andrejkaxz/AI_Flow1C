@@ -120,7 +120,16 @@ def smoke(parent: Path, powershell: str = "powershell.exe") -> dict:
     git_run("fetch", "origin", cwd=extension)
     git_run("branch", "--set-upstream-to=origin/main", cwd=extension)
     git_run("remote", "set-url", "origin", (parent / "wrong-extension.git").as_uri(), cwd=extension)
-    local = {"configuration_path": str(sources[0]), "extension_path": str(sources[1]),
+    documentation = parent / "project documentation"
+    (documentation / ".flow1c/drafts/saved-request").mkdir(parents=True)
+    (documentation / ".flow1c/layout.json").write_text(json.dumps({"schema_version": 1, "layout_version": 2}))
+    (documentation / ".flow1c/drafts/saved-request/evidence.json").write_text(json.dumps({"answers": ["saved"], "state": "WAITING_USER"}))
+    legacy_documentation = parent / "legacy documentation"
+    (legacy_documentation / "work-items/USER-1").mkdir(parents=True)
+    (legacy_documentation / "work-items/USER-1/manifest.yaml").write_text(json.dumps({"approvals": {"user": "approved"}}))
+    preserved_documents = {path: path.read_bytes() for folder in (documentation, legacy_documentation)
+                           for path in folder.rglob("*") if path.is_file()}
+    local = {"documentation_path": str(documentation), "configuration_path": str(sources[0]), "extension_path": str(sources[1]),
              "extension_mode": "git", "extension_repository_url": extension_url,
              "custom_user_setting": {"keep": "unchanged"}}
     config = checkout / ".flow1c.local.json"
@@ -168,6 +177,9 @@ def smoke(parent: Path, powershell: str = "powershell.exe") -> dict:
     assert repeated["state"] == "READY", repeated
     assert len((cache / "invocations.txt").read_text().splitlines()) == 2
     assert config.read_bytes() == migrated_bytes
+    assert all(path.read_bytes() == content for path, content in preserved_documents.items())
+    assert not (documentation / "drafts").exists()
+    assert not (legacy_documentation / ".flow1c").exists()
     # Hold the same exclusive Windows file handle as another updater call.
     import ctypes
     from ctypes import wintypes
@@ -205,7 +217,7 @@ def smoke(parent: Path, powershell: str = "powershell.exe") -> dict:
     return {"schema_version": 1, "state": "PASSED", "platform": sys.platform,
             "powershell": powershell, "clean_venv_bootstrap": True, "network_used": False,
             "external_boundaries": "synthetic RLM/service/tool fixtures",
-            "checks": ["fast-forward upgrade", "legacy configuration migration", "user field preservation",
+            "checks": ["fast-forward upgrade", "legacy configuration migration", "user field preservation", "v2 documentation and legacy approvals preserved",
                        "blocked extension recovery on the same checkpoint and original backup",
                        "two background sources", "same checkpoint and backup on resume",
                        "restart requirement preserved", "no repeated fetch/tool check on resume",

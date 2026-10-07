@@ -127,7 +127,7 @@ def validate_publication(code: str, phase: str, *, product_root: Path) -> None:
 def render_status(*, product_root: Path) -> str:
     rows = []
     for path in sorted(
-        (runtime.project_root(product_root=product_root) / "work-items").glob("*/manifest.yaml")
+        (runtime.project_data_root(product_root=product_root) / "work-items").glob("*/manifest.yaml")
     ):
         manifest = storage.read_json(path, {})
         rows.append(
@@ -160,7 +160,7 @@ def render_status(*, product_root: Path) -> str:
 def status(args: argparse.Namespace, *, product_root: Path) -> OperationResult:
     value = render_status(product_root=product_root)
     if args.write:
-        target = runtime.project_root(product_root=product_root) / "wiki" / "status.md"
+        target = runtime.project_data_root(product_root=product_root) / "wiki" / "status.md"
         storage.write_text(target, value)
         _value = target
     else:
@@ -178,9 +178,11 @@ def git_commit(args: argparse.Namespace, *, product_root: Path) -> OperationResu
         .relative_to(runtime.project_root(product_root=product_root))
         .as_posix()
     )
-    allowed = [item_relative, "wiki/status.md"]
+    repository = runtime.project_root(product_root=product_root)
+    data = runtime.project_data_root(product_root=product_root)
+    allowed = [item_relative, (data / "wiki/status.md").relative_to(repository).as_posix()]
     if args.include_registry:
-        allowed.append("registry")
+        allowed.append((data / "registry").relative_to(repository).as_posix())
     git_runtime.run_git(["add", "--", *allowed], product_root=product_root)
     staged = git_runtime.run_git(
         ["diff", "--cached", "--name-only"], product_root=product_root

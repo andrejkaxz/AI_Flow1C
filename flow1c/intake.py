@@ -61,7 +61,7 @@ def load_artifact_index(code: str | None, *, product_root: Path) -> dict[str, An
         artifacts: list[dict[str, Any]] = []
         confirmed_absent: set[str] = set()
         for manifest_path in sorted(
-            (runtime.project_root(product_root=product_root) / "inbox").glob("*/intake.json")
+            (runtime.project_data_root(product_root=product_root) / "inbox").glob("*/intake.json")
         ):
             manifest = storage.read_json(manifest_path, {})
             if isinstance(manifest, dict) and manifest.get("code") is None:
@@ -154,7 +154,7 @@ def free_intake_target(root: Path, digest: str, source: Path) -> Path:
 def intake_destination(
     code: str | None, category: str, intake_id: str, stages: dict[str, Any], *, product_root: Path
 ) -> Path:
-    data_root = runtime.project_root(product_root=product_root)
+    data_root = runtime.project_data_root(product_root=product_root)
     category_config = stages.get("artifact_categories", {}).get(category, {})
     destination = category_config.get("destination", "attachments")
     if not code or destination == "inbox":
@@ -303,7 +303,7 @@ def intake_free_request(
             raise WorkflowError("Use either promote_intake_id or source paths in one intake call")
         if not re.fullmatch("[A-Za-z0-9-]{8,64}", promote_intake_id):
             raise WorkflowError("Invalid intake ID")
-        inbox_root = runtime.project_root(product_root=product_root) / "inbox" / promote_intake_id
+        inbox_root = runtime.project_data_root(product_root=product_root) / "inbox" / promote_intake_id
         manifest = storage.read_json(inbox_root / "intake.json")
         if not isinstance(manifest, dict) or manifest.get("code") is not None:
             raise WorkflowError("Inbox intake is unavailable for this request")
@@ -463,7 +463,7 @@ def artifact_intake(args: argparse.Namespace, *, product_root: Path) -> Operatio
             raise WorkflowError("Inbox promotion requires a user-assigned task reference.")
         if not re.fullmatch("[A-Za-z0-9-]{8,64}", promote_intake_id):
             raise WorkflowError("Invalid intake ID for promotion.")
-        inbox_root = runtime.project_root(product_root=product_root) / "inbox" / promote_intake_id
+        inbox_root = runtime.project_data_root(product_root=product_root) / "inbox" / promote_intake_id
         inbox_manifest_path = inbox_root / "intake.json"
         inbox_manifest = storage.read_json(inbox_manifest_path)
         if not isinstance(inbox_manifest, dict) or inbox_manifest.get("code") is not None:

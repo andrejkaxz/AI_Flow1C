@@ -152,10 +152,10 @@ def draft_promote(args: argparse.Namespace, *, product_root: Path) -> OperationR
     if mismatch:
         raise WorkflowError(mismatch)
     links = storage.read_json(
-        runtime.project_root(product_root=product_root) / "registry/normalized/links.json", {}
+        runtime.project_data_root(product_root=product_root) / "registry/normalized/links.json", {}
     ).get("requirement_to_specification", {})
     known = storage.read_json(
-        runtime.project_root(product_root=product_root) / "registry/normalized/requirements.json",
+        runtime.project_data_root(product_root=product_root) / "registry/normalized/requirements.json",
         {},
     )
     if any((req not in known or (links.get(req) and links[req] != code) for req in requirements)):

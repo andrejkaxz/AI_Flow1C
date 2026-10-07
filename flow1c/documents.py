@@ -31,7 +31,7 @@ def _sections_catalog(*, product_root: Path) -> dict[str, Any]:
 def _sections_root(work_reference: str | None, *, product_root: Path) -> Path:
     local = storage.read_json(product_root / runtime.LOCAL_CONFIG_FILE, {}) or {}
     configured = (
-        runtime.project_root(local, product_root=product_root)
+        runtime.project_data_root(local, product_root=product_root)
         if local.get("documentation_path")
         else None
     )

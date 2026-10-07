@@ -4,6 +4,8 @@ import base64
 import json
 import os
 from pathlib import Path
+
+from flow1c.documentation import SERVICE_FOLDERS
 import shutil
 import subprocess
 import tempfile
@@ -75,12 +77,20 @@ class ProjectDocumentationTests(unittest.TestCase):
             "-DocumentationPath $env:FLOW1C_TEST_DESTINATION)"
         ))
         self.assertEqual(result.returncode, 0, result.stderr)
-        expected = {str(path.relative_to(TEMPLATES)) for path in TEMPLATES.rglob("*.md")}
+        expected = {
+            str((Path(".flow1c") / path.relative_to(TEMPLATES))
+                if path.relative_to(TEMPLATES).parts[0] in SERVICE_FOLDERS
+                else path.relative_to(TEMPLATES))
+            for path in TEMPLATES.rglob("*.md")
+        } | {str(Path(".flow1c/layout.json"))}
         self.assertEqual(set(json.loads(result.stdout)), expected)
         for relative in expected:
-            self.assertEqual(
-                (self.destination / relative).read_bytes(), (TEMPLATES / relative).read_bytes()
-            )
+            self.assertTrue((self.destination / relative).is_file())
+        self.assertEqual(
+            {p.name for p in self.destination.iterdir()},
+            {*USER_FOLDERS, "README.md", ".flow1c"},
+        )
+        self.assertIn("(.flow1c/wiki/status.md)", (self.destination / "README.md").read_text(encoding="utf-8"))
         for name in USER_FOLDERS:
             self.assertTrue((self.destination / name / "README.md").is_file())
 

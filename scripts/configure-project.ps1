@@ -309,9 +309,10 @@ else {
 }
 Set-JsonProperty $LocalConfig "schema_version" 2
 if (-not ($LocalConfig.PSObject.Properties.Name -contains "template_library")) {
-    Set-JsonProperty $LocalConfig "template_library" ([ordered]@{ schema_version = 1; storage_kind = "documentation"; root = "document-templates"; library_id = $null })
+    Set-JsonProperty $LocalConfig "template_library" ([pscustomobject][ordered]@{ schema_version = 1; storage_kind = "documentation"; root = "document-templates"; library_id = $null })
 }
 if ($ProjectReference) { Set-JsonProperty $LocalConfig "project_reference" $ProjectReference.Trim() }
+$PreserveLegacyDocumentationLayout = $LocalConfig.documentation_path -and ([IO.Path]::GetFullPath($LocalConfig.documentation_path) -eq [IO.Path]::GetFullPath($DocumentationPath))
 Set-JsonProperty $LocalConfig "documentation_path" $DocumentationPath
 Set-JsonProperty $LocalConfig "documentation_repository_url" $DocumentationRepositoryUrl
 Set-JsonProperty $LocalConfig "extension_path" $ExtensionPath
@@ -348,7 +349,15 @@ Set-JsonProperty $ExistingGitea "token_env" "FLOW1C_GITEA_TOKEN"
 Set-JsonProperty $LocalConfig "gitea" $ExistingGitea
 
 . (Join-Path $PSScriptRoot "project-documentation.ps1")
-$CreatedSeedFiles = @(Initialize-Flow1CDocumentation -DocumentationPath $DocumentationPath)
+$CreatedSeedFiles = @(Initialize-Flow1CDocumentation -DocumentationPath $DocumentationPath -PreserveLegacyLayout:$PreserveLegacyDocumentationLayout)
+$LayoutPath = Join-Path $DocumentationPath ".flow1c\layout.json"
+if (Test-Path -LiteralPath $LayoutPath -PathType Leaf) {
+    $DocumentationLayout = Get-Content -LiteralPath $LayoutPath -Raw -Encoding utf8 | ConvertFrom-Json
+    if ($DocumentationLayout.layout_version -eq 2) {
+        Set-JsonProperty $LocalConfig.template_library "root" ".flow1c/document-templates"
+    }
+}
+
 
 git -C $DocumentationPath rev-parse --verify --quiet HEAD | Out-Null
 if ($LASTEXITCODE -ne 0) {

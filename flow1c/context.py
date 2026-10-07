@@ -9,6 +9,7 @@ from typing import Any
 
 from flow1c import storage as storage
 from flow1c.errors import WorkflowError
+from flow1c import documentation
 from scripts import flow1c_policy as policy
 
 CONFIG_FILE = ".flow1c.json"
@@ -59,6 +60,15 @@ def project_root(local: dict[str, Any] | None = None, *, product_root: Path) -> 
     if local is None:
         local = storage.read_json(product_root / LOCAL_CONFIG_FILE, {})
     return documentation_root(product_root, local)
+
+
+def project_data_root(local: dict[str, Any] | None = None, *, product_root: Path) -> Path:
+    """Managed data root; Git and persisted relative references retain project_root."""
+    if local is None:
+        local = storage.read_json(product_root / LOCAL_CONFIG_FILE, {})
+    if not local.get("documentation_path"):
+        return product_root
+    return documentation.data_root(Path(str(local["documentation_path"])).expanduser())
 
 
 def load_capabilities(*, product_root: Path) -> dict[str, Any]:

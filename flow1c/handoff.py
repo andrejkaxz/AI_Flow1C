@@ -66,7 +66,7 @@ def writer(gate_id: str, *, product_root: Path) -> Iterator[None]:
 def _roots(gate: dict[str, Any], product_root: Path) -> tuple[Path, Path]:
     _no_links(product_root)
     local = storage.read_json(product_root / runtime.LOCAL_CONFIG_FILE, {})
-    documentation = Path(str(local["documentation_path"])).expanduser() if local.get("documentation_path") else product_root
+    documentation = runtime.project_data_root(local, product_root=product_root)
     _no_links(documentation)
     if gate.get("mode", "formal") != "formal":
         base = (product_root / ".workspace" / "drafts" if gate.get("storage_kind") == "workspace" or
@@ -81,7 +81,7 @@ def _roots(gate: dict[str, Any], product_root: Path) -> tuple[Path, Path]:
         root = work_items.work_item_root(str(gate.get("work_reference") or gate["code"]), product_root=product_root)
         store = root / "evidence" / "handoffs" / gate["gate_id"]
     else:
-        root = runtime.project_root(product_root=product_root)
+        root = runtime.project_data_root(product_root=product_root)
         store = product_root / ".workspace" / "agent-handoffs" / gate["gate_id"]
     _no_links(root)
     _no_links(store)

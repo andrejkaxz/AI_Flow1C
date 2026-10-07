@@ -254,7 +254,7 @@ def _agent_complete(args: argparse.Namespace, *, product_root: Path) -> Operatio
                 str(gate.get("work_reference") or gate["code"]), product_root=product_root
             )
             if gate.get("work_reference") or gate.get("code")
-            else runtime.project_root(product_root=product_root)
+            else runtime.project_data_root(product_root=product_root)
         )
         output_path = (
             (root / output_raw).resolve()

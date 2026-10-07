@@ -274,7 +274,7 @@ def request_root(gate: dict[str, Any], *, product_root: Path) -> Path:
         base = product_root / ".workspace" / "drafts"
     else:
         base = (
-            runtime.project_root(local, product_root=product_root) / "drafts"
+            runtime.project_data_root(local, product_root=product_root) / "drafts"
             if local.get("documentation_path")
             else product_root / ".workspace" / "drafts"
         )

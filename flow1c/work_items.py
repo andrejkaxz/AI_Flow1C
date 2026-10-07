@@ -27,7 +27,7 @@ def work_item_root(reference: str, *, for_create: bool = False, product_root: Pa
     except ValueError as exc:
         raise WorkflowError(str(exc)) from exc
     assert exact is not None
-    parent = runtime.project_root(product_root=product_root) / "work-items"
+    parent = runtime.project_data_root(product_root=product_root) / "work-items"
     slug = policy.reference_slug(exact)
     direct = parent / slug
     if direct.exists():
@@ -58,7 +58,7 @@ def fs_start(args: argparse.Namespace, *, product_root: Path) -> OperationResult
         raise WorkflowError(
             "A user-supplied project or task reference is required; it is never generated automatically."
         )
-    data_root = runtime.project_root(product_root=product_root)
+    data_root = runtime.project_data_root(product_root=product_root)
     resolution = registry_service.resolve_registry_reference(
         str(requested_reference),
         str(getattr(args, "reference_kind", "auto") or "auto"),
@@ -290,7 +290,7 @@ def reference_mismatch(code: str | None, requirements: list[str], *, product_roo
         work_item_root(code, product_root=product_root) / "manifest.yaml", {}
     )
     registered = storage.read_json(
-        runtime.project_root(product_root=product_root) / "registry/normalized/specifications.json",
+        runtime.project_data_root(product_root=product_root) / "registry/normalized/specifications.json",
         {},
     ).get(code, {})
     item = manifest or registered
@@ -314,7 +314,7 @@ def reconcile_registry(
     if exit_code:
         return (exit_code, import_result)
     known = storage.read_json(
-        runtime.project_root(product_root=product_root)
+        runtime.project_data_root(product_root=product_root)
         / "registry"
         / "normalized"
         / "requirements.json",
