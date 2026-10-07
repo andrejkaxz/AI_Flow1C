@@ -2,6 +2,41 @@
 
 ## В разработке
 
+- Подготовлен публичный пилот установки через агента с отдельного Git clone.
+  README и [порядок пилота](docs/pilot-setup.md) описывают setup, профили,
+  подключение источников, библиотеку шаблонов и resume. Полная release acceptance
+  остаётся открытой.
+
+- Добавлен ContextManifest v1 и явный compact view для role context и свободных
+  запросов без work-item. Ограниченный reader принимает manifest entry IDs,
+  проверяет SHA-256 оригиналов/извлечений и сохраняет coverage/cursors атомарно.
+  Изменения источника/scope отклоняют старый cursor; restart/reinstall сохраняет
+  чтение. Compact functional review не завершается до чтения обязательных частей;
+  gate остаётся активным для дозагрузки. Legacy full view и публичные fixtures
+  сохранены. [Лимиты, контракты и восстановление](docs/context.md).
+
+- Добавлен AgentHandoff v1: immutable версии, managed result paths, SHA-256,
+  ссылки на authoritative decisions/evidence/approvals и recovery journal.
+  Completion receipt сохраняется перед дописыванием evidence. Повторный complete
+  восстанавливает передачу без повторного выполнения этапа; изменённые результаты
+  и approvals отклоняются с сохранением завершённого состояния.
+- CLI `agent-handoff` и OpenCode `flow1c_handoff` читают/восстанавливают только
+  завершённый producer. Legacy transfer помечается incomplete; смена policy
+  не превращает чтение исторического результата в разрешение новых действий.
+  [Совместимость, миграция и ограничения](docs/handoff.md).
+
+- Подключены bounded read-only `route-catalog` / `route-check` и OpenCode tools
+  до gate. Structured begin пересчитывает proposal, отклоняет конфликт до записи
+  состояния и сохраняет decision вместе с gate. Legacy defaults/remap сохранены.
+- Structured gates перепроверяют proposal при загрузке; старые gates без route
+  полей продолжаются. Свободная смена mode через dialogue сохраняет один gate.
+- Инструкции каталога генерируются в помеченных блоках canonical/Claude skills,
+  AGENTS/CLAUDE и OpenCode controller; CI проверяет drift. Catalog/contracts
+  входят в cached adapter identity. Решение не заменяет prerequisites/permissions.
+- Исправлено расхождение evidence writer v2 и declaration v1: schema принимает
+  обе версии, reader сохраняет данные при нормализации v1 и отклоняет будущие
+  версии без перезаписи evidence. Добавлены version/resume regressions.
+
 - Подготовлен самостоятельный продуктовый checkout со своими AGENTS/CLAUDE,
   README, contributor instructions, tests и CI.
 - Пользовательские инструкции и установка не зависят от внешнего workspace автора.
@@ -26,8 +61,7 @@
 - Зафиксированы 69 синтетических routing cases и 19 legacy default/remap cases,
   версии runtime и расхождение legacy evidence schema v1 с runtime v1/v2.
 - Добавлены routing contract regressions и smoke сравнения аннотаций с policy.
-  Подключение к CLI/gates, адаптерам, handoff и compact context ещё не включено;
-  model accuracy этой итерацией не измеряется.
+  Точность целевых моделей этой детерминированной проверкой не измеряется.
 
 ## 0.1.0-dev.1 — 2026-10-06
 
