@@ -58,5 +58,5 @@ jobs:
         with:
           name: routing-contract-${{ runner.os }}
           path: routing-smoke-evidence.json
-      - run: node --test --test-isolation=none tests/test_guard.mjs
-      - run: node --test --test-isolation=none tests/test_opencode_runtime.mjs
+      - run: node --test --experimental-test-isolation=none tests/test_guard.mjs
+      - run: node --test --experimental-test-isolation=none tests/test_opencode_runtime.mjs

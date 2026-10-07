@@ -2,6 +2,9 @@
 
 ## В разработке
 
+- Исправлена команда guard/OpenCode тестов Windows CI для Node 22:
+  используется поддерживаемый `--experimental-test-isolation=none`.
+
 - Исправлено восстановление Windows/OpenCode update: сохранённый проект больше
   не требует work-item, SSH/HTTPS URL расширения проверяются по общей identity
   policy setup. `flow1c_action action=update-diagnose` возвращает безопасную
