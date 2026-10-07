@@ -2,6 +2,16 @@
 
 ## В разработке
 
+- Обязательный CI сокращён до одного Windows job: регрессии, установка/update,
+  сохранность задач и guard/OpenCode. Linux и дополнительные матрицы версий
+  исключены из текущего объёма. Model evals используются для диагностики
+  конкретных проблем; массовая приёмка не является условием текущей поставки.
+
+- Исправлены CI fixtures пилота: interview smoke включает route output docs,
+  shallow clone явно выбирает main, Redmine credential mock ограничен сервисом,
+  а CLI baseline проверяет фактические SHA-256 с учётом LF/CRLF. Исторические
+  fixtures и runtime safety checks сохранены.
+
 - Подготовлен публичный пилот установки через агента с отдельного Git clone.
   README и [порядок пилота](docs/pilot-setup.md) описывают setup, профили,
   подключение источников, библиотеку шаблонов и resume. Полная release acceptance
@@ -54,7 +64,7 @@
   smoke реального Git update проверяет backup, пользовательские данные и
   продолжение прежнего gate в отдельном clone.
 - Smoke установки интервью включает новый Python-пакет; compileall в CI
-  проверяет `flow1c/` на обеих платформах.
+  проверяет `flow1c/` на Windows.
 - Добавлена основа route contract: каталог 19 операций, schemas предложения и
   решения, pure policy и явная загрузка продуктовых правил без пользовательского
   состояния. Formal skills/roles берутся из stage policies; решение не выдаёт permissions.

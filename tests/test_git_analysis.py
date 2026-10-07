@@ -356,10 +356,12 @@ class GitAnalysisTests(unittest.TestCase):
             git(self.repository, "remote", "add", "publish", bare.as_uri())
             git(self.repository, "push", "publish", "main")
             subprocess.run(
-                ["git", "clone", "--depth", "1", bare.as_uri(), str(shallow)],
+                ["git", "clone", "--depth", "1", "--branch", "main", bare.as_uri(), str(shallow)],
                 check=True, capture_output=True, text=True, encoding="utf-8",
             )
 
+            self.assertEqual(git(shallow, "rev-parse", "--is-shallow-repository"), "true")
+            self.assertEqual(git(shallow, "symbolic-ref", "--short", "HEAD"), "main")
             result = flow1c_git.merge_search(shallow, ["missing-source"], "main")[0]
 
             self.assertEqual(result["integration_status"], "REFRESH_REQUIRED")

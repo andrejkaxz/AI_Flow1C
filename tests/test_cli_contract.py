@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 import argparse
+import hashlib
 import json
 import os
 import shutil
@@ -239,6 +240,17 @@ class CliContractTests(unittest.TestCase):
             self.assertEqual(
                 actual["saved_request"]["notes"][0]["text"], "Количество сверяют с накладной."
             )
+            document_path = scenario.root / ".workspace/drafts" / str(scenario.gate_id) / "result.md"
+            # Persisted evidence must match actual bytes on both platforms. The
+            # historical fixture was captured with Windows CRLF; keep it intact
+            # and derive its expected digest for the native text writer.
+            actual_digest = hashlib.sha256(document_path.read_bytes()).hexdigest()
+            self.assertEqual(actual["saved_evidence"]["changed_files"][0]["sha256"], actual_digest)
+            windows_digest = hashlib.sha256(expected["document"].replace("\n", "\r\n").encode("utf-8")).hexdigest()
+            self.assertEqual(expected["saved_evidence"]["changed_files"][0]["sha256"], windows_digest)
+            expected["saved_evidence"]["changed_files"][0]["sha256"] = hashlib.sha256(
+                expected["document"].replace("\n", os.linesep).encode("utf-8")
+            ).hexdigest()
             def legacy_fields(value, parent=""):
                 if isinstance(value, dict):
                     return {key: legacy_fields(item, key) for key, item in value.items()

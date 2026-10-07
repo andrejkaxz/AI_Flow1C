@@ -21,6 +21,7 @@ from contextlib import ExitStack, contextmanager
 from ctypes import wintypes
 from pathlib import Path
 from typing import Any
+from types import SimpleNamespace
 from unittest import mock
 from scripts import redmine_client, redmine_credentials
 from flow1c import cli as flow1c
@@ -61,7 +62,9 @@ def fake_credential_manager(
         return backups.pop(transaction_id, None) is not None
 
     with ExitStack() as stack:
-        stack.enter_context(mock.patch.object(sys, "platform", "win32"))
+        # Only the service's credential selection is Windows-specific. Changing
+        # process-wide sys.platform breaks urllib's proxy setup on Linux.
+        stack.enter_context(mock.patch.object(svc_redmine, "sys", SimpleNamespace(platform="win32")))
         stack.enter_context(
             mock.patch.object(getpass, "getpass", return_value="credential-test-key")
         )
@@ -1570,6 +1573,14 @@ class RedmineWorkflowTests(unittest.TestCase):
             self.assertNotIn("very-secret", json.dumps(config))
             self.assertNotIn("very-secret", output.getvalue())
             store.assert_not_called()
+
+    def test_fake_manager_preserves_process_platform_and_transport_initialization(self) -> None:
+        original_platform = sys.platform
+        with fake_credential_manager({}):
+            self.assertEqual(sys.platform, original_platform)
+            self.assertEqual(svc_redmine.sys.platform, "win32")
+            client = ext_scripts_redmine_client.RedmineClient("https://redmine.example.org", "synthetic-key")
+            self.assertEqual(client.base_url, "https://redmine.example.org")
 
     def test_first_and_same_url_configuration_are_atomic_and_preserve_unknown_fields(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

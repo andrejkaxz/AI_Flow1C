@@ -28,7 +28,7 @@ def call(python: Path, checkout: Path, command: str, data: dict | None = None, e
 def smoke(parent: Path, bootstrap: bool) -> dict:
     checkout = parent / "checkout"
     checkout.mkdir()
-    for name in ("scripts", "flow1c", "config", "schemas", "standards"):
+    for name in ("scripts", "flow1c", "config", "schemas", "standards", "docs"):
         shutil.copytree(ROOT / name, checkout / name, ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
     skills = checkout / ".agents/skills"
     skills.mkdir(parents=True)
