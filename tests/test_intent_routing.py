@@ -7,6 +7,20 @@ from scripts.opencode_evals import assess_run
 
 
 class IntentRoutingEvalTests(unittest.TestCase):
+    def test_pre_gate_route_checks_do_not_replace_begin(self) -> None:
+        case = {"expected_states": [], "requires_completion": False}
+
+        def trace(names):
+            return [{"parts": [{"type": "tool", "callID": str(index), "tool": name,
+                                 "state": {"status": "completed", "input": {}}}
+                                for index, name in enumerate(names)]}]
+
+        permitted = assess_run(case, trace(["flow1c_route_catalog", "flow1c_route_check",
+                                            "flow1c_redmine_files", "flow1c_begin", "flow1c_context"]), [])
+        rejected = assess_run(case, trace(["flow1c_route_check", "flow1c_context"]), [])
+        self.assertTrue(permitted["passed"])
+        self.assertIn("gate operation was called before flow1c_begin", rejected["failures"])
+
     def test_query_eval_checks_completed_candidate_not_final_prose(self) -> None:
         case = {"expected_states": ["CONSULTATION_COMPLETE"],
                 "required_tool_sequence": ["flow1c_begin", "flow1c_query_check", "flow1c_complete"],

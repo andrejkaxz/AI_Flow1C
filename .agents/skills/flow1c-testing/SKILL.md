@@ -19,3 +19,19 @@ as a shared substep in this gate per docs/document-templates.md. Preserve the
 existing work item/evidence requirements. Example test results, signatures and
 approvals never become actual outcomes. Record missing execution evidence as
 unknown and continue the same request after user answers.
+
+<!-- flow1c:routes:start -->
+Generated from `config/intent-routes.json` and `config/stages.json`.
+
+Interpret the user's goal, then check a RouteProposal before begin. A route grants no permissions.
+CLI: `route-catalog --json`, `route-check --json-stdin` (direct proposal), then `agent-begin --json-stdin` (nested `route_proposal`).
+OpenCode: `flow1c_route_catalog`, `flow1c_route_check(proposal_json)`, then `flow1c_begin(route_proposal_json)`; operation/mode/summary must match.
+Minimal proposal shape: `{"schema_version":1,"expected_outcome":"user goal","operation":"consultation","mode":"explore","sources":[{"kind":"chat","version":"provided"}]}`. Replace operation/mode/sources for the actual request; `summary` and `route_id` are not proposal fields.
+The pre-gate catalog returns `proposal_schema`; use it to correct invalid inputs without read/grep/bash. Do not retry the same invalid proposal unchanged.
+Reuse saved answers; clarify one unresolved choice before gate. Do not launch subagents or a next formal stage automatically.
+For large accepted documents use `flow1c_context(view=compact)` / `agent-context --view compact`. Read entries with `flow1c_context(action=read,entry_id=...,cursor=...)` / `context-read`; `scope` contains exact saved decisions and `index` lists every source/part. Continue cursors until mandatory coverage is complete. Summaries grant no evidence or permissions; changed sources require rebuilding on the same gate. Legacy full view remains the default.
+
+| Operation | Mode → primary skill / role | Apply when | Exclude | Sources / output |
+|---|---|---|---|---|
+| testing | explore → flow1c-consultation / —; draft → flow1c-consultation / —; formal → flow1c-testing / tester | Подготовь формальный план тестирования SYNTHETIC-FS-1.; Обсудим тестовые сценарии по этому описанию. | Создание документа произвольного типа по шаблону; выдуманные runtime результаты | chat, attachment, work_item, registry, template_library, redmine / schemas/evidence.schema.json |
+<!-- flow1c:routes:end -->

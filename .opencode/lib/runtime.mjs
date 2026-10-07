@@ -7,6 +7,9 @@ const runtimeFiles = [
   ".opencode/tools/flow1c.ts", ".opencode/plugins/flow1c-guard.js",
   ".opencode/lib/runtime.mjs", ".opencode/agents/flow1c-controller.md",
   ".opencode/agents/flow1c-setup.md", ".opencode/agents/flow1c-update.md", "opencode.json",
+  "config/intent-routes.json", "schemas/route-proposal.schema.json", "schemas/route-decision.schema.json",
+  "schemas/agent-handoff.schema.json",
+  "config/context.json", "schemas/context-manifest.schema.json",
 ]
 
 function snapshot(root) {

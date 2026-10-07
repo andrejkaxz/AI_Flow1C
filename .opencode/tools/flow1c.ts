@@ -193,11 +193,30 @@ function loadFallbackGate(worktree: string, gateID: string): any {
   return JSON.parse(readFileSync(gatePath, "utf8"))
 }
 
+export const route_catalog = tool({
+  description: "Read the compact product route catalog before begin. Reads no user files and creates no gate.",
+  args: {},
+  async execute(args, context) {
+    return runCli(context.worktree, ["route-catalog", "--json"])
+  },
+})
+
+export const route_check = tool({
+  description: "Check a bounded RouteProposal before begin. Returns a decision or one clarification; grants no permissions.",
+  args: {
+    proposal_json: tool.schema.string().max(32768).describe("One JSON object: schema_version=1, expected_outcome=string, operation=string, mode=explore|draft|formal, sources=[{kind,version,selector?}]. Read proposal_schema from route_catalog. No route_id, summary, digest or permissions."),
+  },
+  async execute(args, context) {
+    return runCli(context.worktree, ["route-check", "--json-stdin"], args.proposal_json)
+  },
+})
+
 export const begin = tool({
   description: "Start a work request after clarifying its goal. Git refs and work-item references are separate. Ordinary code review defaults to explore; formal is only for governed work.",
   args: {
     operation: tool.schema.enum(operations),
     mode: tool.schema.enum(["explore", "draft", "formal"]).optional(),
+    route_proposal_json: tool.schema.string().max(32768).optional().describe("RouteProposal checked before begin; CLI recomputes it and requires matching operation/mode/summary"),
     git_ref: tool.schema.string().optional().describe("Branch, tag or commit to inspect; never use as task_reference unless the user explicitly says it is both"),
     git_refs: tool.schema.array(tool.schema.string()).max(20).optional(),
     target_ref: tool.schema.string().optional(),
@@ -214,6 +233,9 @@ export const begin = tool({
     mismatch: tool.schema.string().optional().describe("Explain an observed mismatch between the request and the referenced work item"),
   },
   async execute(args, context) {
+    if (args.route_proposal_json !== undefined && !await pythonCommand(context.worktree)) {
+      throw new Error("Structured routing requires Python; restore the runtime and retry without substituting a legacy setup/update fallback")
+    }
     if (!await pythonCommand(context.worktree)) {
       if (args.operation === "setup") {
         if (!args.profile) return JSON.stringify({ state: "NEEDS_CONFIRMATION", clarification: { reason: "profile", question: "Какой уровень работы нужен? Рекомендуется analysis; full выбирается только явно." } })
@@ -223,6 +245,7 @@ export const begin = tool({
     }
     return runCli(context.worktree, ["agent-begin", "--json-stdin"], JSON.stringify({
       operation: args.operation,
+      route_proposal: args.route_proposal_json === undefined ? undefined : JSON.parse(args.route_proposal_json),
       mode: args.mode,
       git_ref: args.git_ref,
       git_refs: args.git_refs,
@@ -379,8 +402,16 @@ export const redmine_fetch = tool({
 })
 
 export const context = tool({
-  description: "Build and return the role-specific context for a valid gate, including accepted artifact inventory.",
-  args: { gate_id: tool.schema.string() },
+  description: "Build legacy full or explicit compact document context. Compact works on free requests without a work-item. Read manifest entry_id (scope/index/src-...) with action=read and saved cursor; complete requires mandatory review coverage. XML/BSL facts still require source tools.",
+  args: {
+    gate_id: tool.schema.string(),
+    view: tool.schema.enum(["full", "compact"]).optional(),
+    action: tool.schema.enum(["build", "read"]).optional(),
+    entry_id: tool.schema.string().optional(),
+    section_id: tool.schema.string().optional(),
+    cursor: tool.schema.string().optional(),
+    max_chars: tool.schema.number().int().positive().optional(),
+  },
   async execute(args, context) {
     return runCli(context.worktree, ["agent-context", "--json-stdin"], JSON.stringify(args))
   },
@@ -503,10 +534,18 @@ export const analyze_bsl = tool({
 })
 
 export const complete = tool({
-  description: "Record the result: consultation summary, completed draft (still UNVERIFIED_DRAFT), or formally validated output. A document requires a nonempty recorded file.",
+  description: "Record and seal the result with a handoff: consultation summary, completed draft (still UNVERIFIED_DRAFT), or formally validated output. Retry the same completed gate to recover transfer persistence without repeating actions.",
   args: { gate_id: tool.schema.string(), output: tool.schema.string().optional(), summary: tool.schema.string().optional() },
   async execute(args, context) {
     return runCli(context.worktree, ["agent-complete", "--json-stdin"], JSON.stringify(args))
+  },
+})
+
+export const handoff = tool({
+  description: "Read or recover the saved handoff of a completed gate. Checks hashes, evidence ownership and current approvals. Returns data and the next proposal; never starts a stage or repeats a completed action.",
+  args: { gate_id: tool.schema.string(), action: tool.schema.enum(["read", "recover"]).optional() },
+  async execute(args, context) {
+    return runCli(context.worktree, ["agent-handoff", "--json-stdin"], JSON.stringify(args))
   },
 })
 

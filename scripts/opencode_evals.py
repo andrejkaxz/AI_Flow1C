@@ -56,7 +56,7 @@ def build_fixture(destination: Path, case: dict, *, source=ROOT, baseline_ref=No
                     raise ValueError("Unsafe baseline archive path")
             bundle.extractall(workflow)
     else:
-        for name in (".agents", ".opencode", "scripts", "config", "schemas", "standards", "templates", "docs", "README.md", "AGENTS.md", "CLAUDE.md", "opencode.json", ".gitignore"):
+        for name in (".agents", ".claude", ".opencode", "flow1c", "scripts", "config", "schemas", "standards", "templates", "docs", "README.md", "AGENTS.md", "CLAUDE.md", "opencode.json", ".gitignore"):
             src = source / name
             if src.is_dir():
                 shutil.copytree(src, workflow / name, ignore=shutil.ignore_patterns("__pycache__", "node_modules"))
@@ -178,6 +178,18 @@ def assess_run(case, messages, questions, *, timed_out=False, server_exit=None, 
         failures.append("assistant/provider returned an error")
     if any(c.get("tool") in FORBIDDEN for c in calls):
         failures.append("forbidden direct tool was called")
+    pre_gate_tools = {"flow1c_route_catalog", "flow1c_route_check", "flow1c_redmine_files",
+                      "flow1c_redmine_relations", "flow1c_redmine_upload"}
+    begun = False
+    for call in calls:
+        tool_name = str(call.get("tool", ""))
+        if tool_name == "flow1c_begin":
+            begun = True
+        elif tool_name.startswith("flow1c_") and not begun and tool_name not in pre_gate_tools:
+            arguments = call.get("state", {}).get("input", {})
+            if tool_name != "flow1c_redmine_fetch" or arguments.get("gate_id") or arguments.get("code"):
+                failures.append("gate operation was called before flow1c_begin")
+                break
     if len(calls) > int(case.get("max_tool_calls", 80)):
         failures.append("tool-call budget exceeded")
     git_calls = [call for call in calls if call.get("tool") in {"flow1c_git_refresh", "flow1c_git_inspect", "flow1c_git_snapshot"}]
@@ -442,6 +454,7 @@ def main():
     parser.add_argument("--timeout", type=int, default=180)
     parser.add_argument("--baseline-ref", help="Compare with a local Git revision on the same model and machine")
     parser.add_argument("--fixture-only", action="store_true")
+    parser.add_argument("--output-dir", type=Path, help="New output/fixture directory; use outside the author workspace for client isolation")
     args = parser.parse_args()
     if args.runs < 1 or args.timeout < 1 or "/" not in args.model:
         parser.error("positive runs/timeout and provider/model-id are required")
@@ -452,7 +465,7 @@ def main():
         cases = [c for c in cases if c["id"] == args.scenario]
     if not cases:
         parser.error("no scenarios selected")
-    output = ROOT / ".workspace/opencode-evals" / (time.strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:8])
+    output = args.output_dir or ROOT / ".workspace/opencode-evals" / (time.strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:8])
     output.mkdir(parents=True)
     summary = {"schema_version": 2, "model": args.model, "machine": platform.platform(), "runs_per_scenario": args.runs,
                "baseline_ref": args.baseline_ref, "fixture_only": args.fixture_only, "results": [],

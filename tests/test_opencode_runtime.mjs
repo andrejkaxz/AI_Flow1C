@@ -45,6 +45,30 @@ test("configuration additions and deletions require a reload; user data changes 
   assert.throws(() => reloaded.assertCurrent(), /OPENCODE_RESTART_REQUIRED/)
 })
 
+test("route catalog and contracts belong to adapter runtime identity", t => {
+  const root = fixture(t)
+  const runtime = createRuntimeCheck(root)
+  mkdirSync(path.join(root, "config"))
+  writeFileSync(path.join(root, "config/intent-routes.json"), "{}")
+  assert.throws(() => runtime.assertCurrent(), /config\/intent-routes.json/)
+  const reloaded = createRuntimeCheck(root)
+  mkdirSync(path.join(root, "schemas"))
+  writeFileSync(path.join(root, "schemas/route-proposal.schema.json"), "{}")
+  assert.throws(() => reloaded.assertCurrent(), /route-proposal.schema.json/)
+})
+
+test("context contracts and character budgets invalidate cached adapters", t => {
+  const root = fixture(t)
+  mkdirSync(path.join(root, "config"))
+  mkdirSync(path.join(root, "schemas"))
+  let runtime = createRuntimeCheck(root)
+  writeFileSync(path.join(root, "config/context.json"), '{"page_chars":8000}')
+  assert.throws(() => runtime.assertCurrent(), /config\/context.json/)
+  runtime = createRuntimeCheck(root)
+  writeFileSync(path.join(root, "schemas/context-manifest.schema.json"), '{"schema_version":1}')
+  assert.throws(() => runtime.assertCurrent(), /context-manifest.schema.json/)
+})
+
 test("a saved index continuation may finish after adapter changes without authorizing new updates", t => {
   const root = fixture(t)
   const gateID = "22222222-2222-4222-8222-222222222222"

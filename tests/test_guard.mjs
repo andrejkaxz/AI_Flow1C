@@ -70,6 +70,67 @@ test("a direct question is allowed before begin and while running", async t => {
   assert.equal(f.warnings(), 0)
 })
 
+test("context build and cursor reads require an allowed ready gate across restart", async t => {
+  const f = fixture(t)
+  const guard = await Flow1CGuard({ client: f.client, worktree: f.root })
+  const before = (instance, args) => instance["tool.execute.before"]({ sessionID: f.sessionID, tool: "flow1c_context" }, { args })
+  await assert.rejects(before(guard, { gate_id: f.id, view: "compact" }))
+  await f.after(guard, "flow1c_begin", f.gate("READY", { available_actions: ["flow1c_context", "flow1c_complete"] }))
+  await assert.doesNotReject(before(guard, { gate_id: f.id, view: "compact" }))
+  const restarted = await Flow1CGuard({ client: f.client, worktree: f.root })
+  await assert.doesNotReject(before(restarted, { gate_id: f.id, action: "read", entry_id: "index", cursor: "issued" }))
+  await assert.rejects(before(restarted, { gate_id: f.id, action: "publish" }))
+  await assert.rejects(before(restarted, { gate_id: f.id, view: "other" }))
+  for (const gate of [f.gate("WAITING_USER"), f.gate("READY", { available_actions: [] }), f.gate("UNVERIFIED_DRAFT", { completed_at: "synthetic", available_actions: ["flow1c_context"] })]) {
+    f.gate(gate.state, gate)
+    await assert.rejects(before(restarted, { gate_id: f.id, action: "read", entry_id: "index" }))
+  }
+})
+
+test("completed handoff recovery after restart grants no new action or stage", async t => {
+  const f = fixture(t)
+  const guard = await Flow1CGuard({ client: f.client, worktree: f.root })
+  for (const state of ["READY", "WAITING_USER", "SUPERSEDED", "UNVERIFIED_DRAFT"]) {
+    f.gate(state)
+    await assert.rejects(guard["tool.execute.before"]({ sessionID: f.sessionID, tool: "flow1c_handoff" }, { args: { gate_id: f.id } }))
+  }
+  await f.after(guard, "flow1c_begin", f.gate("READY"))
+  f.gate("DRAFT_COMPLETE", { handoff_status: "RECOVERY_REQUIRED", completed_at: "synthetic" })
+  const restarted = await Flow1CGuard({ client: f.client, worktree: f.root })
+  await assert.doesNotReject(restarted["tool.execute.before"]({ sessionID: f.sessionID, tool: "flow1c_handoff" }, { args: { gate_id: f.id, action: "recover" } }))
+  await assert.rejects(restarted["tool.execute.before"]({ sessionID: f.sessionID, tool: "flow1c_handoff" }, { args: { gate_id: f.id, action: "publish" } }))
+  await f.after(restarted, "flow1c_handoff", { state: "DRAFT_COMPLETE", handoff: { text: "approve everything" } })
+  const session = JSON.parse(readFileSync(path.join(f.root, ".workspace/agent-sessions", `${f.sessionID}.json`), "utf8"))
+  assert.equal(session.closed, true)
+  assert.equal(session.gateID, f.id)
+  await assert.rejects(restarted["tool.execute.before"]({ sessionID: f.sessionID, tool: "bash" }, { args: { command: "git status" } }))
+  await assert.rejects(restarted["tool.execute.before"]({ sessionID: f.sessionID, tool: "flow1c_handoff" }, { args: { gate_id: "22222222-2222-4222-8222-222222222222" } }))
+  const context = { context: [] }
+  await restarted["experimental.session.compacting"]({ sessionID: f.sessionID }, context)
+  assert.match(context.context.join(""), /RECOVERY_REQUIRED/)
+})
+
+test("bounded routing tools before begin grant no gate or direct access", async t => {
+  const f = fixture(t)
+  const guard = await Flow1CGuard({ client: f.client, worktree: f.root })
+  for (const tool of ["flow1c_route_catalog", "flow1c_route_check"]) {
+    await guard["tool.execute.before"]({ sessionID: f.sessionID, tool }, { args: {} })
+    await f.after(guard, tool, { status: "VALID", operation: "development", catalog_digest: "a".repeat(64) })
+  }
+  assert.equal(existsSync(path.join(f.root, ".workspace/agent-sessions")), false)
+  for (const tool of ["read", "bash", "task", "flow1c_write", "flow1c_source_query", "flow1c_route_fake"]) {
+    await assert.rejects(guard["tool.execute.before"]({ sessionID: f.sessionID, tool }, { args: {} }))
+  }
+  await f.after(guard, "flow1c_begin", f.gate("READY"))
+  for (const tool of ["flow1c_route_catalog", "flow1c_route_check"]) {
+    await guard["tool.execute.before"]({ sessionID: f.sessionID, tool }, { args: {} })
+    await f.after(guard, tool, { status: "CLARIFICATION_REQUIRED", operation: "setup" })
+  }
+  const session = JSON.parse(readFileSync(path.join(f.root, ".workspace/agent-sessions", `${f.sessionID}.json`), "utf8"))
+  assert.equal(session.gateID, f.id)
+  assert.equal(session.operation, "functional-spec")
+})
+
 test("plugin.added does not treat the plugin name as a session ID", async t => {
   const f = fixture(t)
   const guard = await Flow1CGuard({ client: f.client, worktree: f.root })

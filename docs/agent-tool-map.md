@@ -4,6 +4,9 @@ The same CLI contract is used by OpenCode, Codex, and Claude Code. In environmen
 
 | Tool | CLI |
 |---|---|
+| `flow1c_route_catalog` (read-only, pre-gate) | `flow1c.py route-catalog --json`; продуктовый каталог и digest, без пользовательских файлов |
+| `flow1c_route_check` (read-only, pre-gate) | `flow1c.py route-check --json-stdin`; прямой bounded RouteProposal, tool field `proposal_json` |
+| `flow1c_handoff` (completed gate only) | `flow1c.py agent-handoff --json-stdin`; `gate_id`, `action=read|recover`. [Передача и recovery](handoff.md); без нового этапа и повторения effects |
 | `flow1c_begin` | `flow1c.py agent-begin --json-stdin`; `reference_kind=auto|requirement|specification`, для `query-analysis` явный `query_intent=create|review|optimize` |
 | `flow1c_interview` | `flow1c.py interview-register --json-stdin`; `inspect|write|audit`, отдельный interview-preparation gate; XLSX остаётся UNVERIFIED_DRAFT, исходник сохраняется. [Контракт](interview-preparation.md) |
 | `flow1c_git_inspect` | `flow1c.py agent-git-inspect --json-stdin`; `action=integration`, `git_refs`, `target_ref` находят вливания нескольких веток без сканирования bounded log |
@@ -13,7 +16,7 @@ The same CLI contract is used by OpenCode, Codex, and Claude Code. In environmen
 | `flow1c_redmine_relations` (optional, OpenCode; read-only, no gate required) | `flow1c.py redmine relations <issue-number> --json` |
 | `flow1c_redmine_fetch` (optional, OpenCode) | `flow1c.py redmine fetch <issue-number> [--gate-id <active-gate>] [--code <matching-reference>] [--dms-file <id> ... | --all-dms] [--dms-revision <id>]` |
 | `flow1c_redmine_upload` (optional, OpenCode; preflight is read-only, write requires explicit confirmation) | `flow1c.py redmine upload <issue-number> --file <absolute-path> [--confirmed] --json` |
-| `flow1c_context` | `flow1c.py agent-context --json-stdin` |
+| `flow1c_context` | `flow1c.py agent-context --json-stdin`; legacy full default, `view=compact`, `action=read` с `entry_id`, `section_id`, `cursor`, `max_chars`; отдельный CLI `context-read`. [Контракт](context.md) |
 | `flow1c_inspect` | `flow1c.py agent-inspect --json-stdin` |
 | `flow1c_diff` | `flow1c.py agent-diff --json-stdin` |
 | `flow1c_source_read` | `flow1c.py agent-source-read --json-stdin` |
@@ -28,6 +31,12 @@ The same CLI contract is used by OpenCode, Codex, and Claude Code. In environmen
 | `flow1c_promote` | `flow1c.py draft-promote --json-stdin` |
 | `flow1c_action` | `flow1c.py agent-action --json-stdin`; actions также включают typed `provisional-start` и `registry-reconcile` для разрешённых document stages |
 | `flow1c_complete` | `flow1c.py agent-complete --json-stdin` |
+
+`flow1c_begin` принимает необязательный `route_proposal_json`, который передаётся
+CLI как вложенный `route_proposal` через UTF-8 stdin без shell-конкатенации.
+CLI пересчитывает решение; outer operation/mode/summary должны совпадать.
+Первая операция, создающая gate, — begin; route tools и опубликованные Redmine
+исключения допускаются до неё. Решение о маршруте не выдаёт permissions.
 
 ## Доступность по режимам
 

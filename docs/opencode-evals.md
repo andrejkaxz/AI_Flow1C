@@ -1,5 +1,24 @@
 # OpenCode Qwen evals
 
+`python scripts/context-smoke.py --output context-smoke-evidence.json` проверяет
+compact manifest, точные страницы, обязательное покрытие, process death и resume
+после переустановки того же пакета. Changed-source/cursor и containment защищены
+context unit tests. Это deterministic evidence: поддержка клиента/модели и
+token/cost savings требуют отдельных live evals с compact view. [Контракт](context.md).
+
+До begin допускаются `flow1c_route_catalog` и `flow1c_route_check`, а также
+прежние ограниченные Redmine исключения. Первая операция с gate —
+`flow1c_begin`; route decision не заменяет её. Evaluator проверяет эту границу.
+CLI fixtures включают `flow1c/`, а `scripts/opencode_evals.py --output-dir`
+позволяет создать новый каталог fixtures вне workspace автора.
+
+`python scripts/routing-smoke.py --integration` проверяет structured/legacy
+gates, process restart, evidence v1/v2 и сохранение локальных настроек при
+повторной установке Python-пакета той же версии. Это не clean bootstrap,
+Git update или измерение точности модели. Corpus `evals/routing-cases.json`
+остаётся размеченным входом pure checks; 95% routing/mode/source и 20 E2E
+повторений подтверждаются только отдельными model reports.
+
 Реальные прогоны выполняются только в одноразовом checkout с тестовыми репозиториями документации и расширения. Корпус находится в `evals/opencode-natural-language.json`; каждое предусловие должно быть воспроизведено перед запуском соответствующего сценария.
 
 ```powershell

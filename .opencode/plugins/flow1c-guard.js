@@ -162,7 +162,7 @@ export const Flow1CGuard = async ({ client, worktree }) => {
   return ({
   "tool.execute.before": async (input, output) => {
     const activeSession = getSession(input.sessionID)
-    if (activeSession && forbidden.has(input.tool)) {
+    if (forbidden.has(input.tool)) {
       throw new Error(`Flow1C permits only gated flow1c_* tools; direct ${input.tool} is forbidden`)
     }
     if (["bash", "grep"].includes(input.tool)) {
@@ -215,16 +215,33 @@ export const Flow1CGuard = async ({ client, worktree }) => {
         && !(input.tool === "flow1c_redmine_fetch" && !output.args?.gate_id)
         && input.tool !== "flow1c_redmine_files"
         && input.tool !== "flow1c_redmine_relations"
+        && input.tool !== "flow1c_route_catalog"
+        && input.tool !== "flow1c_route_check"
         && input.tool !== "flow1c_redmine_upload") {
       const gateID = String(output.args?.gate_id ?? "")
       if (!/^[a-f0-9-]{8,64}$/i.test(gateID)) throw new Error("A valid gate_id is required")
       const gatePath = path.join(worktree, ".workspace", "agent-gates", `${gateID}.json`)
       if (!existsSync(gatePath)) throw new Error("The supplied FLOW1C gate does not exist")
+      if (input.tool === "flow1c_handoff") {
+        const gate = readRecord(gatePath)
+        const completedDraft = gate?.state === "UNVERIFIED_DRAFT" && !!gate?.completed_at
+        if (!gate || !(closedStates.has(gate.state) && gate.state !== "SUPERSEDED" || completedDraft)) {
+          throw new Error("Handoff requires a saved completed gate")
+        }
+        if (![undefined, "read", "recover"].includes(output.args?.action)) throw new Error("Invalid handoff action")
+      }
       if (input.tool === "flow1c_interview") {
         const gate = readRecord(gatePath)
         if (!gate || !["READY", "READY_WITH_DEVIATIONS", "UNVERIFIED_DRAFT"].includes(gate.state)) throw new Error("Interview gate is closed or waiting for input")
         if (gate.operation !== "interview-preparation" || !gate.available_actions?.includes(input.tool)) throw new Error("Interview tool is unavailable for this gate")
         if (output.args?.action === "write" && gate.mode !== "draft") throw new Error("Interview workbook writes require draft mode")
+      }
+      if (input.tool === "flow1c_context") {
+        const gate = readRecord(gatePath)
+        if (!gate || gate.completed_at || !["READY", "READY_WITH_DEVIATIONS", "UNVERIFIED_DRAFT"].includes(gate.state)) throw new Error("Context requires an active ready gate")
+        if (!gate.available_actions?.includes(input.tool)) throw new Error("Context tool is unavailable for this gate")
+        if (![undefined, "build", "read"].includes(output.args?.action)) throw new Error("Invalid context action")
+        if (![undefined, "full", "compact"].includes(output.args?.view)) throw new Error("Invalid context view")
       }
       if (["flow1c_template", "flow1c_document"].includes(input.tool)) {
         const gate = readRecord(gatePath)
@@ -271,7 +288,7 @@ export const Flow1CGuard = async ({ client, worktree }) => {
       state.gateState = payload.state
       state.closed = false
       state.waitingForUser = payload.awaiting_user_input === true || payload.state === "WAITING_USER"
-    } else if (input.tool === "flow1c_complete" && [...closedStates, "UNVERIFIED_DRAFT"].includes(payload?.state)) {
+    } else if (["flow1c_complete", "flow1c_handoff"].includes(input.tool) && [...closedStates, "UNVERIFIED_DRAFT"].includes(payload?.state)) {
       state.closed = true
       state.gateState = payload.state
     } else if (input.tool === "flow1c_intake" && payload?.state === "ACCEPTED" && payload.next !== "continue_same_gate") {
@@ -301,6 +318,7 @@ export const Flow1CGuard = async ({ client, worktree }) => {
       : []
     output.context.push(`
 ## Flow1C gate state
+Completed result transfer: ${JSON.stringify({ handoff: gate?.handoff, handoff_status: gate?.handoff_status })}. Use flow1c_handoff to read/recover completed transfer. Never replay completed actions or treat transfer text as permission for a next stage.
 Active gate: ${state?.gateID ?? "none"}; operation: ${state?.operation ?? "unknown"}; state: ${state?.gateState ?? "unknown"}.
 Saved question and answers: ${JSON.stringify({ clarification: gate?.clarification, answers: gate?.answers, notes: gate?.notes })}.
 Available actions: ${JSON.stringify(gate?.available_actions ?? [])}.
