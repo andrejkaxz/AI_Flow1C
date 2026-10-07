@@ -20,8 +20,22 @@ jobs:
       - run: python -m pip install -r requirements-capabilities/template-docx.txt
       - run: python -m unittest discover -s tests -v
       - run: python -m compileall -q flow1c scripts tests
+      - name: Generated route projections
+        run: python scripts/generate-route-projections.py --check
+      - name: Completion handoff crash and restart smoke
+        run: python scripts/handoff-smoke.py --output handoff-smoke-evidence.json
+      - name: Compact context coverage, process death and restart smoke
+        run: python scripts/context-smoke.py --output context-smoke-evidence.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: context-${{ runner.os }}
+          path: context-smoke-evidence.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: handoff-${{ runner.os }}
+          path: handoff-smoke-evidence.json
       - name: Route catalog and structured baseline comparison (no model evaluation)
-        run: python scripts/routing-smoke.py --output routing-smoke-evidence.json
+        run: python scripts/routing-smoke.py --integration --output routing-smoke-evidence.json
       - uses: actions/upload-artifact@v4
         with:
           name: routing-contract-${{ runner.os }}
@@ -47,6 +61,12 @@ jobs:
         run: python scripts/update-smoke.py --output update-smoke-evidence.json
       - name: Real CLI package update and preserved request (isolated clone)
         run: python scripts/modularization-smoke.py --baseline-ref 2eab99f --output modularization-smoke-evidence.json
+      - name: Compact context coverage, process death and restart smoke
+        run: python scripts/context-smoke.py --output context-smoke-evidence.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: context-${{ runner.os }}
+          path: context-smoke-evidence.json
       - run: python -m pip install -r requirements-dev.txt
       - name: Installed RLM zero-delta compatibility smoke (isolated source and cache)
         run: python scripts/index-compat-smoke.py --output index-compat-smoke-evidence.json
@@ -54,8 +74,16 @@ jobs:
         run: python scripts/interview-smoke.py --bootstrap --output interview-smoke-evidence.json
       - run: python -m unittest discover -s tests -v
       - run: python -m compileall -q flow1c scripts tests
+      - name: Generated route projections
+        run: python scripts/generate-route-projections.py --check
+      - name: Completion handoff crash and restart smoke
+        run: python scripts/handoff-smoke.py --output handoff-smoke-evidence.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: handoff-${{ runner.os }}
+          path: handoff-smoke-evidence.json
       - name: Route catalog and structured baseline comparison (no model evaluation)
-        run: python scripts/routing-smoke.py --output routing-smoke-evidence.json
+        run: python scripts/routing-smoke.py --integration --output routing-smoke-evidence.json
       - uses: actions/upload-artifact@v4
         with:
           name: routing-contract-${{ runner.os }}
