@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "compact_chars": 12000,
+  "page_chars": 8000,
+  "response_chars": 24000,
+  "max_source_bytes": 10485760,
+  "max_entries": 1000
+}

@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Flow1C immutable AgentHandoff v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "record_id", "producer", "goal", "scope", "completion", "artifacts", "authoritative_records", "evidence", "decisions", "assumptions", "open_questions", "approvals", "deviations", "performed_actions", "errors", "unapplied_proposals", "next_action", "resume", "limitations", "created_at"],
+  "properties": {
+    "schema_version": {"type": "integer", "const": 1},
+    "record_id": {"$ref": "#/$defs/sha256"},
+    "producer": {
+      "type": "object", "additionalProperties": false,
+      "required": ["gate_id", "request_id", "policy_version", "operation", "mode", "primary_skill", "route", "legacy"],
+      "properties": {
+        "gate_id": {"type": "string", "pattern": "^[a-f0-9-]{8,64}$"},
+        "request_id": {"type": "string", "pattern": "^[a-f0-9-]{8,64}$"},
+        "policy_version": {"type": ["integer", "null"]},
+        "operation": {"type": "string"},
+        "mode": {"enum": ["explore", "draft", "formal"]},
+        "primary_skill": {"type": ["string", "null"]},
+        "route": {"type": ["object", "null"]},
+        "legacy": {"type": "boolean"}
+      }
+    },
+    "goal": {"type": "string"},
+    "scope": {"type": "object"},
+    "completion": {
+      "type": "object", "required": ["state", "summary", "output"],
+      "additionalProperties": false,
+      "properties": {
+        "state": {"enum": ["COMPLETE", "COMPLETE_WITH_DEVIATIONS", "CONSULTATION_COMPLETE", "DRAFT_COMPLETE", "UNVERIFIED_DRAFT"]},
+        "summary": {"type": ["string", "null"]},
+        "output": {"anyOf": [{"$ref": "#/$defs/path"}, {"type": "null"}]},
+        "ready": {"type": "boolean"},
+        "document_status": {"type": ["string", "null"]},
+        "compliance": {"enum": ["COMPLIANT", "DEVIATED"]}
+      }
+    },
+    "artifacts": {
+      "type": "array", "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["path", "kind", "sha256", "version", "recorded_by_tool"],
+        "properties": {
+          "path": {"$ref": "#/$defs/path"}, "kind": {"enum": ["tool-output", "completion-output"]},
+          "sha256": {"$ref": "#/$defs/sha256"}, "version": {"$ref": "#/$defs/sha256"},
+          "recorded_by_tool": {"type": "boolean"}
+        }
+      }
+    },
+    "authoritative_records": {
+      "type": "array", "items": {
+        "type": "object", "additionalProperties": false, "required": ["kind", "sha256"],
+        "properties": {"kind": {"enum": ["gate", "evidence", "work-item"]},
+                       "path": {"$ref": "#/$defs/path"}, "sha256": {"$ref": "#/$defs/sha256"}}
+      }
+    },
+    "evidence": {
+      "type": "object", "additionalProperties": false, "required": ["owned", "index"],
+      "properties": {"owned": {"type": "boolean"}, "index": {"type": "array", "items": {"type": "object"}}}
+    },
+    "decisions": {"$ref": "#/$defs/references"},
+    "assumptions": {"$ref": "#/$defs/references"},
+    "open_questions": {"$ref": "#/$defs/references"},
+    "approvals": {
+      "type": "object", "additionalProperties": false, "required": ["record", "values"],
+      "properties": {"record": {"enum": ["work-item", null]}, "values": {"type": "object"}}
+    },
+    "deviations": {"type": "array", "items": {"type": "object"}},
+    "performed_actions": {"type": "array", "items": {"type": "string"}},
+    "errors": {"type": "array", "items": {"type": "string"}},
+    "unapplied_proposals": {"type": "array"},
+    "next_action": {
+      "type": "object", "additionalProperties": false,
+      "required": ["action", "requires_user_request", "prerequisites", "blockers"],
+      "properties": {"action": {"const": "review_result"}, "requires_user_request": {"const": true},
+                     "prerequisites": {"type": "array", "items": {"type": "string"}},
+                     "blockers": {"type": "array", "items": {"type": "string"}}}
+    },
+    "resume": {
+      "type": "object", "additionalProperties": false,
+      "required": ["gate_id", "action", "completed_effects_must_not_repeat", "revalidation_required", "incomplete"],
+      "properties": {"gate_id": {"type": "string"}, "action": {"const": "review_result"},
+                     "completed_effects_must_not_repeat": {"const": true},
+                     "revalidation_required": {"const": true}, "incomplete": {"type": "boolean"}}
+    },
+    "limitations": {"type": "array", "items": {"type": "string"}},
+    "created_at": {"type": "string"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "path": {"type": "string", "minLength": 1, "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\\\:]+$"},
+    "references": {"type": "array", "items": {
+      "type": "object", "additionalProperties": false, "required": ["record", "collection", "index", "sha256"],
+      "properties": {"record": {"const": "gate"}, "collection": {"enum": ["answers", "notes"]},
+                     "index": {"type": "integer", "minimum": 0}, "sha256": {"$ref": "#/$defs/sha256"}}
+    }}
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Flow1C ContextManifest v1",
+  "type": "object",
+  "required": ["schema_version", "gate_id", "scope_id", "selection_id", "operation", "mode", "role", "source_scope", "limits", "entries", "scope", "index"],
+  "properties": {
+    "schema_version": {"type": "integer", "const": 1},
+    "gate_id": {"type": "string", "pattern": "^[a-f0-9-]{8,64}$"},
+    "scope_id": {"$ref": "#/$defs/digest"},
+    "selection_id": {"$ref": "#/$defs/digest"},
+    "operation": {"type": "string"},
+    "mode": {"enum": ["formal", "explore", "draft"]},
+    "role": {"type": ["string", "null"]},
+    "source_scope": {"type": "array"},
+    "limits": {"type": "object"},
+    "scope": {"$ref": "#/$defs/reference"},
+    "index": {"$ref": "#/$defs/reference"},
+    "entries": {"type": "array", "maxItems": 1000, "items": {
+      "type": "object",
+      "required": ["entry_id", "identity", "path", "sha256", "original", "reason", "required", "readable", "unavailable_reason", "length", "parts"],
+      "properties": {
+        "entry_id": {"type": "string", "pattern": "^src-[a-f0-9]{24}$"},
+        "identity": {"$ref": "#/$defs/digest"},
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"type": ["string", "null"]},
+        "original": {"type": ["object", "null"]},
+        "reason": {"type": "string"},
+        "required": {"type": "boolean"},
+        "readable": {"type": "boolean"},
+        "unavailable_reason": {"type": ["string", "null"]},
+        "length": {"type": "integer", "minimum": 0},
+        "parts": {"type": "array", "items": {
+          "type": "object", "required": ["section_id", "start", "end", "required"],
+          "properties": {
+            "section_id": {"type": "string", "pattern": "^part-[0-9]+$"},
+            "start": {"type": "integer", "minimum": 0},
+            "end": {"type": "integer", "minimum": 0},
+            "required": {"type": "boolean"}
+          }, "additionalProperties": false
+        }}
+      }, "additionalProperties": false
+    }}
+  },
+  "$defs": {
+    "digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "reference": {
+      "type": "object", "required": ["schema_version", "path", "sha256"],
+      "properties": {"schema_version": {"const": 1}, "path": {"type": "string"}, "sha256": {"$ref": "#/$defs/digest"}},
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
