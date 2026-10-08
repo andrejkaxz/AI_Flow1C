@@ -8,7 +8,7 @@ from copy import deepcopy
 MODES = ("explore", "draft", "formal")
 FREE_OPERATIONS = {"interview-preparation", "template-management", "template-document", "consultation", "query-analysis", "workflow-review", "functional-spec", "functional-section", "functional-review",
                    "technical-design", "technical-implementation", "code-review", "testing"}
-FREE_TOOLS = ["flow1c_intake", "flow1c_redmine_fetch", "flow1c_inspect", "flow1c_git_refresh", "flow1c_git_inspect",
+FREE_TOOLS = ["flow1c_intake", "flow1c_redmine_fetch", "flow1c_inspect", "flow1c_knowledge", "flow1c_git_refresh", "flow1c_git_inspect",
               "flow1c_git_snapshot", "flow1c_dialogue", "flow1c_source_query", "flow1c_complete"]
 DRAFT_TOOLS = [*FREE_TOOLS, "flow1c_section", "flow1c_docx", "flow1c_source_read", "flow1c_write", "flow1c_promote"]
 TERMINAL = {"COMPLETE", "COMPLETE_WITH_DEVIATIONS", "CONSULTATION_COMPLETE", "DRAFT_COMPLETE", "NON_COMPLIANT"}

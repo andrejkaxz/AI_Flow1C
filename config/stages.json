@@ -89,7 +89,7 @@
       "requires_rlm": true,
       "requires_bsl_ls": false,
       "output": "specification/functional-spec.md",
-      "allowed_tools": ["flow1c_intake", "flow1c_redmine_fetch", "flow1c_context", "flow1c_source_query", "flow1c_dialogue", "flow1c_write", "flow1c_action", "flow1c_complete", "flow1c_template", "flow1c_document", "flow1c_section", "flow1c_docx"],
+      "allowed_tools": ["flow1c_intake", "flow1c_redmine_fetch", "flow1c_context", "flow1c_source_query", "flow1c_dialogue", "flow1c_write", "flow1c_action", "flow1c_complete", "flow1c_template", "flow1c_document", "flow1c_section", "flow1c_docx", "flow1c_knowledge"],
       "writable_targets": ["work-item"]
     },
     "functional-section": {
@@ -105,7 +105,7 @@
       "requires_rlm": false,
       "requires_bsl_ls": false,
       "output": "drafts/<request-id>/sections",
-      "allowed_tools": ["flow1c_dialogue", "flow1c_section", "flow1c_docx", "flow1c_complete"],
+      "allowed_tools": ["flow1c_dialogue", "flow1c_section", "flow1c_docx", "flow1c_complete", "flow1c_knowledge"],
       "writable_targets": ["draft"]
     },
     "functional-review": {
@@ -122,7 +122,7 @@
       "requires_rlm": false,
       "requires_bsl_ls": false,
       "output": "reviews/functional-review.md",
-      "allowed_tools": ["flow1c_intake", "flow1c_redmine_fetch", "flow1c_context", "flow1c_dialogue", "flow1c_write", "flow1c_action", "flow1c_complete"],
+      "allowed_tools": ["flow1c_intake", "flow1c_redmine_fetch", "flow1c_context", "flow1c_dialogue", "flow1c_write", "flow1c_action", "flow1c_complete", "flow1c_knowledge"],
       "writable_targets": ["work-item-review"]
     },
     "technical-design": {
@@ -140,7 +140,7 @@
       "requires_rlm": true,
       "requires_bsl_ls": false,
       "output": "specification/technical-design.md",
-      "allowed_tools": ["flow1c_intake", "flow1c_redmine_fetch", "flow1c_context", "flow1c_source_query", "flow1c_dialogue", "flow1c_write", "flow1c_action", "flow1c_complete"],
+      "allowed_tools": ["flow1c_intake", "flow1c_redmine_fetch", "flow1c_context", "flow1c_source_query", "flow1c_dialogue", "flow1c_write", "flow1c_action", "flow1c_complete", "flow1c_knowledge"],
       "writable_targets": ["work-item"]
     },
     "development": {
@@ -158,7 +158,7 @@
       "requires_extension_branch": true,
       "requires_registry_traceability": true,
       "output": null,
-      "allowed_tools": ["flow1c_intake", "flow1c_redmine_fetch", "flow1c_context", "flow1c_diff", "flow1c_source_read", "flow1c_source_query", "flow1c_dialogue", "flow1c_write", "flow1c_analyze_bsl", "flow1c_complete"],
+      "allowed_tools": ["flow1c_intake", "flow1c_redmine_fetch", "flow1c_context", "flow1c_diff", "flow1c_source_read", "flow1c_source_query", "flow1c_dialogue", "flow1c_write", "flow1c_analyze_bsl", "flow1c_complete", "flow1c_knowledge"],
       "writable_targets": ["extension"]
     },
     "technical-implementation": {
@@ -177,7 +177,7 @@
       "requires_diff": true,
       "requires_registry_traceability": true,
       "output": "specification/technical-implementation.md",
-      "allowed_tools": ["flow1c_intake", "flow1c_redmine_fetch", "flow1c_context", "flow1c_diff", "flow1c_source_read", "flow1c_source_query", "flow1c_dialogue", "flow1c_write", "flow1c_analyze_bsl", "flow1c_complete"],
+      "allowed_tools": ["flow1c_intake", "flow1c_redmine_fetch", "flow1c_context", "flow1c_diff", "flow1c_source_read", "flow1c_source_query", "flow1c_dialogue", "flow1c_write", "flow1c_analyze_bsl", "flow1c_complete", "flow1c_knowledge"],
       "writable_targets": ["work-item"]
     },
     "code-review": {
@@ -196,7 +196,7 @@
       "requires_diff": true,
       "requires_registry_traceability": true,
       "output": "implementation/code-review.md",
-      "allowed_tools": ["flow1c_intake", "flow1c_redmine_fetch", "flow1c_context", "flow1c_diff", "flow1c_source_read", "flow1c_source_query", "flow1c_dialogue", "flow1c_action", "flow1c_write", "flow1c_analyze_bsl", "flow1c_complete"],
+      "allowed_tools": ["flow1c_intake", "flow1c_redmine_fetch", "flow1c_context", "flow1c_diff", "flow1c_source_read", "flow1c_source_query", "flow1c_dialogue", "flow1c_action", "flow1c_write", "flow1c_analyze_bsl", "flow1c_complete", "flow1c_knowledge"],
       "writable_targets": ["work-item-review"]
     },
     "testing": {
@@ -213,7 +213,7 @@
       "requires_bsl_ls": false,
       "requires_diff": true,
       "output": "testing/test-plan.md",
-      "allowed_tools": ["flow1c_intake", "flow1c_redmine_fetch", "flow1c_context", "flow1c_diff", "flow1c_dialogue", "flow1c_write", "flow1c_complete", "flow1c_template", "flow1c_document"],
+      "allowed_tools": ["flow1c_intake", "flow1c_redmine_fetch", "flow1c_context", "flow1c_diff", "flow1c_dialogue", "flow1c_write", "flow1c_complete", "flow1c_template", "flow1c_document", "flow1c_knowledge"],
       "writable_targets": ["work-item"]
     },
     "status": {
@@ -227,7 +227,7 @@
       "requires_rlm": false,
       "requires_bsl_ls": false,
       "output": null,
-      "allowed_tools": ["flow1c_action", "flow1c_dialogue", "flow1c_complete"],
+      "allowed_tools": ["flow1c_action", "flow1c_dialogue", "flow1c_complete", "flow1c_knowledge"],
       "writable_targets": []
     },
     "publish": {

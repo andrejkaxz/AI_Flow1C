@@ -2,6 +2,15 @@
 
 ## В разработке
 
+- Добавлены навигация по существующим результатам и Markdown-база знаний
+  проекта. Корневой README ведёт к каталогу задач/документов и карточкам функций;
+  refresh сохраняет пользовательский текст, persisted paths и завершённые
+  результаты. `knowledge --json-stdin` / `flow1c_knowledge` дают ограниченные
+  navigation/search/read с версиями Git/local, SHA-256 и continuation, а также
+  preview/write карточек и точный commit/PR по поручению пользователя. Wiki
+  не меняет approvals и не доказывает внедрение. Проектный status не зависит
+  от work-item из сохранённого project reference. [Контракт](docs/project-knowledge.md).
+
 - Новые проекты собирают служебные области документации в `.flow1c/`, оставляя
   четыре пользовательские входные папки и README в корне. Добавлен versioned
   layout v2 с общим resolver для registry, intake, work-items, drafts, sections,

@@ -243,6 +243,17 @@ export const Flow1CGuard = async ({ client, worktree }) => {
         if (![undefined, "build", "read"].includes(output.args?.action)) throw new Error("Invalid context action")
         if (![undefined, "full", "compact"].includes(output.args?.view)) throw new Error("Invalid context view")
       }
+      if (input.tool === "flow1c_knowledge") {
+        const gate = readRecord(gatePath)
+        if (!gate || gate.completed_at || !["READY", "READY_WITH_DEVIATIONS", "UNVERIFIED_DRAFT"].includes(gate.state)) throw new Error("Knowledge requires an active ready gate")
+        if (!gate.available_actions?.includes(input.tool)) throw new Error("Knowledge tool is unavailable for this gate")
+        if (!["navigation", "search", "read", "preview", "refresh", "write", "commit", "pr"].includes(output.args?.action)) throw new Error("Invalid knowledge action")
+        if (["refresh", "write", "commit", "pr"].includes(output.args?.action)) {
+          if (gate.operation !== "status" || gate.mode !== "formal" || gate.state !== "READY") throw new Error("Wiki mutation requires a ready formal status gate")
+          const request = JSON.parse(output.args?.request_json ?? "{}")
+          if (!request || typeof request !== "object" || Array.isArray(request) || request.confirmed !== true) throw new Error("Wiki mutation requires the user's instruction")
+        }
+      }
       if (["flow1c_template", "flow1c_document"].includes(input.tool)) {
         const gate = readRecord(gatePath)
         if (!gate || closedStates.has(gate.state)) throw new Error("Template gate is closed or invalid")

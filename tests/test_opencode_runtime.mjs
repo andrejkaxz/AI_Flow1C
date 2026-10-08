@@ -69,6 +69,17 @@ test("context contracts and character budgets invalidate cached adapters", t => 
   assert.throws(() => runtime.assertCurrent(), /context-manifest.schema.json/)
 })
 
+test("knowledge response contracts invalidate cached adapters without consuming local wiki data", t => {
+  const root = fixture(t)
+  const runtime = createRuntimeCheck(root)
+  mkdirSync(path.join(root, "schemas"))
+  mkdirSync(path.join(root, "wiki/features"), { recursive: true })
+  writeFileSync(path.join(root, "wiki/features/local.md"), "User draft")
+  runtime.assertCurrent()
+  writeFileSync(path.join(root, "schemas/project-knowledge-response.schema.json"), '{"schema_version":1}')
+  assert.throws(() => runtime.assertCurrent(), /project-knowledge-response.schema.json/)
+})
+
 test("a saved index continuation may finish after adapter changes without authorizing new updates", t => {
   const root = fixture(t)
   const gateID = "22222222-2222-4222-8222-222222222222"

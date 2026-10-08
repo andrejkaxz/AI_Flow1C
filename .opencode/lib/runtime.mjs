@@ -10,6 +10,7 @@ const runtimeFiles = [
   "config/intent-routes.json", "schemas/route-proposal.schema.json", "schemas/route-decision.schema.json",
   "schemas/agent-handoff.schema.json",
   "config/context.json", "schemas/context-manifest.schema.json",
+  "schemas/project-knowledge-response.schema.json",
 ]
 
 function snapshot(root) {

@@ -18,5 +18,5 @@ For large accepted documents use `flow1c_context(view=compact)` / `agent-context
 
 | Operation | Mode → primary skill / role | Apply when | Exclude | Sources / output |
 |---|---|---|---|---|
-| status | formal → flow1c-wiki / — | Покажи состояние рабочих элементов проекта.; Обнови отчёт статуса по существующим manifests. | Публикация; изменение approvals; статус внешней базы | chat, work_item, registry / schemas/manifest.schema.json |
+| status | formal → flow1c-wiki / — | Покажи состояние рабочих элементов проекта.; Обнови отчёт статуса по существующим manifests.; Найди результаты по согласованию платежей в документации проекта.; Обнови карточку функции в базе знаний и покажи историю изменений. | Публикация формальных ФС и согласования; изменение approvals; статус внешней базы | chat, work_item, registry / schemas/project-knowledge-response.schema.json |
 <!-- flow1c:routes:end -->

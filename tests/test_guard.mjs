@@ -27,6 +27,29 @@ function fixture(t) {
   return { root, id, sessionID, client, gate, after, warnings: () => warnings }
 }
 
+test("knowledge reads follow role gates and wiki mutations require explicit ready status scope", async t => {
+  const f = fixture(t)
+  const guard = await Flow1CGuard({ client: f.client, worktree: f.root })
+  const before = (args) => guard["tool.execute.before"]({ sessionID: f.sessionID, tool: "flow1c_knowledge" }, { args: { gate_id: f.id, ...args } })
+  await assert.rejects(before({ action: "search" }))
+  await f.after(guard, "flow1c_begin", f.gate("READY", { mode: "explore", operation: "consultation", available_actions: ["flow1c_knowledge", "flow1c_complete"] }))
+  await assert.doesNotReject(before({ action: "search" }))
+  await assert.doesNotReject(before({ action: "read" }))
+  await assert.doesNotReject(before({ action: "preview" }))
+  for (const action of ["refresh", "write", "commit", "pr"]) {
+    await assert.rejects(before({ action, request_json: '{"confirmed":true}' }))
+  }
+  await f.after(guard, "flow1c_begin", f.gate("READY", { mode: "formal", operation: "status", available_actions: ["flow1c_knowledge", "flow1c_complete"] }))
+  await assert.rejects(before({ action: "unknown" }))
+  await assert.rejects(before({ action: "write", request_json: '{"confirmed":false}' }))
+  await assert.rejects(before({ action: "write", request_json: '[]' }))
+  await assert.doesNotReject(before({ action: "write", request_json: '{"confirmed":true}' }))
+  const restarted = await Flow1CGuard({ client: f.client, worktree: f.root })
+  await assert.doesNotReject(restarted["tool.execute.before"]({ sessionID: f.sessionID, tool: "flow1c_knowledge" }, { args: { gate_id: f.id, action: "navigation" } }))
+  f.gate("READY", { mode: "formal", operation: "status", completed_at: "synthetic", available_actions: ["flow1c_knowledge"] })
+  await assert.rejects(before({ action: "search" }))
+})
+
 test("documentation layout 2 keeps writes behind the same gate and tools", async t => {
   const f = fixture(t)
   const guard = await Flow1CGuard({ client: f.client, worktree: f.root })

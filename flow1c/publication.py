@@ -224,6 +224,20 @@ def pr_create(args: argparse.Namespace, *, product_root: Path) -> OperationResul
     _, manifest = work_items.load_manifest(code, product_root=product_root)
     config, local = runtime.load_config(product_root=product_root)
     gitea = {**config.get("gitea", {}), **local.get("gitea", {})}
+    phase_reviewers = {
+        "specification": gitea.get("reviewers", {}).get("functional", []),
+        "technical": gitea.get("reviewers", {}).get("technical", []),
+        "acceptance": gitea.get("reviewers", {}).get("functional", []),
+    }
+    title = args.title or f"{code}: {manifest.get('title')} [{args.phase}]"
+    body = f"FS: {code}\n\nRequirements: {', '.join(manifest.get('requirements', []))}\n\nStatus: {manifest.get('status')}\n\nPrepared by Flow1C. Human review and approval are required."
+    return OperationResult(push_documentation_pr(title, body, phase_reviewers.get(args.phase, []), product_root=product_root), 0)
+
+
+def push_documentation_pr(title: str, body: str, reviewers: list[str], *, product_root: Path) -> dict[str, Any]:
+    """Shared Gitea transport after the caller has checked its publication scope."""
+    config, local = runtime.load_config(product_root=product_root)
+    gitea = {**config.get("gitea", {}), **local.get("gitea", {})}
     required = ["base_url", "owner", "repository"]
     missing = [key for key in required if not str(gitea.get(key, "")).strip()]
     if missing:
@@ -237,21 +251,13 @@ def pr_create(args: argparse.Namespace, *, product_root: Path) -> OperationResul
     branch = git_runtime.run_git(
         ["branch", "--show-current"], product_root=product_root
     ).stdout.strip()
-    if not branch or branch in {"main", "master"}:
+    if not branch or branch in {"main", "master", config.get("project", {}).get("default_branch", "main")}:
         raise WorkflowError("Refusing to create a PR from the default branch.")
     if git_runtime.run_git(["status", "--porcelain"], product_root=product_root).stdout.strip():
         raise WorkflowError("Commit all changes before creating a PR.")
     git_runtime.run_git(
         ["push", "--set-upstream", "origin", branch], capture=True, product_root=product_root
     )
-    phase_reviewers = {
-        "specification": gitea.get("reviewers", {}).get("functional", []),
-        "technical": gitea.get("reviewers", {}).get("technical", []),
-        "acceptance": gitea.get("reviewers", {}).get("functional", []),
-    }
-    reviewers = phase_reviewers.get(args.phase, [])
-    title = args.title or f"{code}: {manifest.get('title')} [{args.phase}]"
-    body = f"FS: {code}\n\nRequirements: {', '.join(manifest.get('requirements', []))}\n\nStatus: {manifest.get('status')}\n\nPrepared by Flow1C. Human review and approval are required."
     base_url = str(gitea["base_url"]).rstrip("/")
     owner = urllib.parse.quote(str(gitea["owner"]), safe="")
     repository = urllib.parse.quote(str(gitea["repository"]), safe="")
@@ -263,6 +269,4 @@ def pr_create(args: argparse.Namespace, *, product_root: Path) -> OperationResul
         "body": body,
         "reviewers": reviewers,
     }
-    response = api_request(url, token, method="POST", payload=payload)
-    _value = response
-    return OperationResult(_value, 0)
+    return api_request(url, token, method="POST", payload=payload)

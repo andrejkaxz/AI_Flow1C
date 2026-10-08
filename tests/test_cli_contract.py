@@ -178,8 +178,8 @@ class CliContractTests(unittest.TestCase):
     def test_all_parser_contracts_match_baseline(self) -> None:
         expected = json.loads((FIXTURES / "parser.json").read_text(encoding="utf-8"))
         actual = parser_contract(cli.build_parser())
-        self.assertEqual(set(actual["commands"]) - set(expected["commands"]), {"route-catalog", "route-check", "agent-handoff", "context-read"})
-        for name in ("route-catalog", "route-check", "agent-handoff", "context-read"):
+        self.assertEqual(set(actual["commands"]) - set(expected["commands"]), {"route-catalog", "route-check", "agent-handoff", "context-read", "knowledge"})
+        for name in ("route-catalog", "route-check", "agent-handoff", "context-read", "knowledge"):
             actual["commands"].pop(name)
         # New explicit context options are additive; every legacy option/default is exact.
         additions = {"context-build": {"view", "gate_id"},
@@ -261,7 +261,7 @@ class CliContractTests(unittest.TestCase):
                             if key not in {"route_decision", "route_origin", "completion_record", "handoff", "handoff_status"}}
                 if isinstance(value, list):
                     if parent in {"available_actions", "allowed_tools"}:
-                        value = [item for item in value if item != "flow1c_context"]
+                        value = [item for item in value if item not in {"flow1c_context", "flow1c_knowledge"}]
                     return [legacy_fields(item) for item in value]
                 return value
             self.assertEqual(legacy_fields(actual), expected)

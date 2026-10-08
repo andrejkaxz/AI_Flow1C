@@ -33,6 +33,7 @@ from flow1c.workflow import complete as completion
 from flow1c.workflow import dialogue as dialogue_service
 from flow1c.workflow import git_actions as git_actions
 from flow1c.workflow import source_actions as source_actions
+from flow1c.workflow import knowledge_actions
 from scripts import flow1c_docx as docx
 from scripts import flow1c_interview_policy as interview_policy
 from scripts import flow1c_policy as policy
@@ -198,6 +199,11 @@ def build_parser() -> argparse.ArgumentParser:
     inspect.add_argument("--start-line", type=int, default=1)
     inspect.add_argument("--max-chars", type=int, default=12000)
     inspect.set_defaults(handler=cmd_agent_inspect)
+    knowledge = subparsers.add_parser("knowledge", help="Bounded project results and wiki operations")
+    knowledge.add_argument("--json-stdin", action="store_true", required=True)
+    knowledge.add_argument("--gate-id")
+    knowledge.add_argument("--action", choices=tuple(knowledge_actions.FIELDS), default="navigation")
+    knowledge.set_defaults(request={}, handler=cmd_knowledge)
     git_refresh = subparsers.add_parser(
         "agent-git-refresh", help="Refresh explicitly allowed remote-tracking refs"
     )
@@ -652,7 +658,19 @@ def main(argv: Iterable[str] | None = None) -> int:
         if args.command == "route-check":
             return cmd_route_check(args)
         if getattr(args, "json_stdin", False):
-            request = read_json_stdin()
+            if args.command == "knowledge":
+                raw = sys.stdin.read(280001)
+                if len(raw.encode("utf-8")) > 280000:
+                    raise WorkflowError("Knowledge input exceeds 280000 bytes")
+                try:
+                    request = json.loads(raw)
+                except (ValueError, UnicodeError) as exc:
+                    raise WorkflowError("Invalid knowledge JSON stdin") from exc
+                if not isinstance(request, dict) or set(request) - {"gate_id", "action", "request"}:
+                    raise WorkflowError("Knowledge input accepts only gate_id, action and request")
+                request = storage.sanitize_json_value(request)
+            else:
+                request = read_json_stdin()
             if args.command == "agent-handoff" and set(request) - {"gate_id", "action"}:
                 raise WorkflowError("Handoff input accepts only gate_id and action")
             if args.command in {"agent-context", "context-read"}:
@@ -751,6 +769,13 @@ def main(argv: Iterable[str] | None = None) -> int:
 def cmd_agent_action(args: argparse.Namespace) -> int:
     result = actions_service.agent_action(args, product_root=ROOT)
     return emit_result(result)
+
+
+def cmd_knowledge(args: argparse.Namespace) -> int:
+    result = knowledge_actions.command(args, product_root=ROOT)
+    # The bound includes the serialized envelope, not only excerpts.
+    print(json.dumps(result.value, ensure_ascii=False, separators=(",", ":")))
+    return result.exit_code
 
 
 def cmd_route_catalog(args: argparse.Namespace) -> int:

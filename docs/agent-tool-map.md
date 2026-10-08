@@ -86,3 +86,7 @@ as a substep in setup/update/formal FS/testing; flow1c_document is available in 
 and specialized formal FS/testing gates, and cannot bypass formal
 approvals or write directly into the library. All adapters use canonical
 .agents/skills/flow1c-document-templates/SKILL.md and the same schemas/policy.
+
+## Project knowledge and result navigation
+
+`flow1c_knowledge` maps to `knowledge --json-stdin`, action/request. Reads use the current role gate; mutations require a ready formal status gate and the user instruction. Navigation, Git/local search/read, exact preview/write and selected documentation commit/PR use one contract: [project-knowledge.md](project-knowledge.md).

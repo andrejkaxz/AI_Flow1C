@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://flow1c.local/schemas/project-knowledge-response.schema.json",
+  "title": "Project navigation and knowledge response v1",
+  "type": "object",
+  "required": ["schema_version", "state"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "state": {"enum": ["CATALOG", "SEARCH", "READ", "PREVIEW", "WRITTEN", "REFRESHED", "COMMITTED", "PR_CREATED"]},
+    "snapshot": {
+      "type": "object",
+      "required": ["source", "project", "ref", "commit", "prefix"],
+      "properties": {
+        "source": {"enum": ["git", "local"]},
+        "project": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "ref": {"type": "string"},
+        "commit": {"type": ["string", "null"]},
+        "prefix": {"enum": ["wiki", ".flow1c/wiki"]}
+      },
+      "additionalProperties": false
+    },
+    "version": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "path": {"type": "string"},
+    "scan_complete": {"type": "boolean"},
+    "truncated": {"type": "boolean"},
+    "next_cursor": {"type": ["string", "null"]},
+    "matches": {"type": "array", "maxItems": 5},
+    "items": {"type": "array", "maxItems": 5},
+    "content": {"type": "string"},
+    "source_state": {"enum": ["LOCAL_DRAFT", "COMMITTED"]},
+    "document_state": {"enum": ["UNVERIFIED_DRAFT", "UNSPECIFIED", "CANCELLED"]}
+  },
+  "allOf": [
+    {"if": {"properties": {"state": {"const": "SEARCH"}}}, "then": {"required": ["snapshot", "matches", "scan_complete", "truncated"]}},
+    {"if": {"properties": {"state": {"const": "READ"}}}, "then": {"required": ["snapshot", "path", "version", "content", "start_line", "end_line", "start_offset", "end_offset", "next_cursor", "truncated"]}}
+  ],
+  "additionalProperties": true
+}
