@@ -250,6 +250,11 @@ def _begin_checked_request(args: argparse.Namespace, *, product_root: Path) -> O
         )
     code = reference["work_reference"]
     registry_resolution: dict[str, Any] | None = None
+    if operation == "status":
+        # Project navigation/wiki must not depend on a configured project work-item.
+        reference = {**reference, "status_scope": {"task_reference": reference.get("task_reference"),
+                     "work_reference": code}, "task_reference": None, "work_reference": None}
+        code = None
     if code and stage.get("code_required"):
         registry_resolution = registry_service.resolve_registry_reference(
             str(code),
