@@ -171,7 +171,7 @@ Update возобновляется по gate и `update_id`. [Обновлен�
 
 - [Условия распространения и статус пилота](docs/distribution.md).
 - [Результаты и знания проекта](docs/project-knowledge.md), [структура документации](docs/documentation-layout.md).
-- [Архитектура](docs/architecture.md), [жизненный цикл](docs/lifecycle.md).
+- [Архитектура](docs/architecture.md), [схемы архитектуры](docs/architecture-diagrams.md), [жизненный цикл](docs/lifecycle.md).
 - [Маршрутизация](docs/intent-routing.md), [tool map](docs/agent-tool-map.md).
 - [Основа route contract и ограничения текущей итерации](docs/route-contract.md).
 - [Интервью](docs/interview-preparation.md), [шаблоны](docs/document-templates.md).
