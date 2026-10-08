@@ -241,6 +241,8 @@ if ($FunctionalSpecTemplate -and [IO.Path]::GetExtension($FunctionalSpecTemplate
 }
 
 $DocumentationPath = Connect-Repository "Documentation" $DocumentationRepositoryUrl $DocumentationPath $InitializeDocumentationRepository.IsPresent
+git -C $DocumentationPath rev-parse --verify --quiet HEAD | Out-Null
+$DocumentationHasHead = $LASTEXITCODE -eq 0
 if ($ExtensionMode -eq "Git") {
     $ExtensionPath = Connect-Repository "Extension" $ExtensionRepositoryUrl $ExtensionPath $false
 }
@@ -312,7 +314,10 @@ if (-not ($LocalConfig.PSObject.Properties.Name -contains "template_library")) {
     Set-JsonProperty $LocalConfig "template_library" ([pscustomobject][ordered]@{ schema_version = 1; storage_kind = "documentation"; root = "document-templates"; library_id = $null })
 }
 if ($ProjectReference) { Set-JsonProperty $LocalConfig "project_reference" $ProjectReference.Trim() }
-$PreserveLegacyDocumentationLayout = $LocalConfig.documentation_path -and ([IO.Path]::GetFullPath($LocalConfig.documentation_path) -eq [IO.Path]::GetFullPath($DocumentationPath))
+# A saved path may point to a newly recreated repository. Explicit initialization
+# without HEAD must let the scaffold choose v2 if the directory contains only .git.
+# The scaffold itself preserves any existing files and layout marker.
+$PreserveLegacyDocumentationLayout = $LocalConfig.documentation_path -and ([IO.Path]::GetFullPath($LocalConfig.documentation_path) -eq [IO.Path]::GetFullPath($DocumentationPath)) -and (-not $InitializeDocumentationRepository -or $DocumentationHasHead)
 Set-JsonProperty $LocalConfig "documentation_path" $DocumentationPath
 Set-JsonProperty $LocalConfig "documentation_repository_url" $DocumentationRepositoryUrl
 Set-JsonProperty $LocalConfig "extension_path" $ExtensionPath
@@ -359,8 +364,7 @@ if (Test-Path -LiteralPath $LayoutPath -PathType Leaf) {
 }
 
 
-git -C $DocumentationPath rev-parse --verify --quiet HEAD | Out-Null
-if ($LASTEXITCODE -ne 0) {
+if (-not $DocumentationHasHead) {
     $ConfiguredName = git -C $DocumentationPath config user.name
     $ConfiguredEmail = git -C $DocumentationPath config user.email
     if (-not $ConfiguredName -or -not $ConfiguredEmail) {

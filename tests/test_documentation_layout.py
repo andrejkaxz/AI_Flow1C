@@ -188,6 +188,22 @@ class DocumentationLayoutTests(unittest.TestCase):
 
     @unittest.skipUnless(os.name == "nt", "Windows project configuration")
     def test_real_configure_in_external_clone_and_repeat_preserve_v2(self) -> None:
+        self.run_real_configure()
+
+    @unittest.skipUnless(os.name == "nt", "Windows project configuration")
+    def test_new_repository_at_preconfigured_path_uses_v2(self) -> None:
+        self.run_real_configure(preconfigured=True)
+
+    @unittest.skipUnless(os.name == "nt", "Windows project configuration")
+    def test_empty_repository_resume_at_preconfigured_path_uses_v2(self) -> None:
+        self.run_real_configure(preconfigured=True, initialized=True)
+
+    @unittest.skipUnless(os.name == "nt", "Windows project configuration")
+    def test_committed_legacy_repository_at_preconfigured_path_is_preserved(self) -> None:
+        self.run_real_configure(preconfigured=True, initialized=True, legacy=True)
+
+    def run_real_configure(self, *, preconfigured: bool = False,
+                           initialized: bool = False, legacy: bool = False) -> None:
         def run(arguments: list[str]) -> subprocess.CompletedProcess[str]:
             result = subprocess.run(arguments, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=60)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
@@ -205,6 +221,25 @@ class DocumentationLayoutTests(unittest.TestCase):
         run(["git", "clone", "--no-hardlinks", str(self.root), str(checkout)])
         run([sys.executable, "-m", "venv", "--without-pip", str(checkout / ".venv")])
         docs = self.base / "configured-documentation"
+        if preconfigured:
+            storage.write_json(checkout / ".flow1c.local.json", {
+                "schema_version": 2, "documentation_path": str(docs),
+                "template_library": {"schema_version": 1, "storage_kind": "documentation",
+                                     "root": "document-templates", "library_id": None},
+            })
+        if initialized:
+            docs.mkdir()
+            run(["git", "-C", str(docs), "init", "-b", "main"])
+        data = docs if legacy else docs / ".flow1c"
+        evidence = data / "drafts/saved/evidence.json"
+        if legacy:
+            documentation.initialize(docs, ROOT / "templates/project-documentation", preserve_legacy=True)
+            storage.write_json(evidence, {"answers": ["retained"], "state": "WAITING_USER"})
+            run(["git", "-C", str(docs), "config", "user.name", "Layout fixture"])
+            run(["git", "-C", str(docs), "config", "user.email", "layout@example.invalid"])
+            run(["git", "-C", str(docs), "add", "."])
+            run(["git", "-C", str(docs), "commit", "-m", "retained legacy project"])
+        before_legacy = evidence.read_bytes() if legacy else None
         configuration, extension = self.base / "configuration", self.base / "extension"
         for folder in (configuration, extension):
             folder.mkdir()
@@ -218,15 +253,21 @@ class DocumentationLayoutTests(unittest.TestCase):
             "-GitUserName", "Layout fixture", "-GitUserEmail", "layout@example.invalid",
             "-Profile", "project-basic", "-Json"]
         self.assertEqual(json.loads(run(arguments).stdout)["state"], "COMPLETE")
-        self.assertEqual({p.name for p in docs.iterdir()}, {".git", ".flow1c", "README.md",
-            "Материалы встреч", "Шаблоны документов", "Реестр процессов и требований", "Документы для анализа"})
-        self.assertEqual(storage.read_json(checkout / ".flow1c.local.json")["template_library"]["root"], ".flow1c/document-templates")
-        evidence = docs / ".flow1c/drafts/saved/evidence.json"
+        if legacy:
+            self.assertEqual(documentation.layout_version(docs), 1)
+            self.assertFalse((docs / ".flow1c").exists())
+            self.assertEqual(evidence.read_bytes(), before_legacy)
+        else:
+            self.assertEqual({p.name for p in docs.iterdir()}, {".git", ".flow1c", "README.md",
+                "Материалы встреч", "Шаблоны документов", "Реестр процессов и требований", "Документы для анализа"})
+        self.assertEqual(storage.read_json(checkout / ".flow1c.local.json")["template_library"]["root"],
+                         "document-templates" if legacy else ".flow1c/document-templates")
         storage.write_json(evidence, {"answers": ["retained"], "state": "WAITING_USER"})
         before = evidence.read_bytes()
         self.assertEqual(json.loads(run(arguments).stdout)["state"], "COMPLETE")
         self.assertEqual(evidence.read_bytes(), before)
-        self.assertFalse((docs / "drafts").exists())
+        if not legacy:
+            self.assertFalse((docs / "drafts").exists())
 
 
 if __name__ == "__main__":
