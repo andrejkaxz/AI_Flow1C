@@ -164,7 +164,10 @@ class DocumentationLayoutTests(unittest.TestCase):
     def test_git_commit_uses_repository_paths_and_rejects_unrelated_staged_files(self) -> None:
         self.start_item()
         def git(*args: str) -> subprocess.CompletedProcess[str]:
-            return subprocess.run(["git", "-C", str(self.docs), *args], capture_output=True, text=True, check=True)
+            return subprocess.run(
+                ["git", "-C", str(self.docs), *args], capture_output=True,
+                text=True, encoding="utf-8", check=True,
+            )
         git("init", "-b", "main")
         git("config", "user.name", "Layout fixture")
         git("config", "user.email", "layout@example.invalid")

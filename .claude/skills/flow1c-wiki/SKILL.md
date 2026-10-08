@@ -1,6 +1,6 @@
 ---
 name: flow1c-wiki
-description: Report project status from Git-tracked manifests or update the Markdown project wiki with approved decisions and delivered 1C behavior. Use for status questions, chronology, or wiki synchronization.
+description: Find project results, search and read the versioned project wiki, report manifest status, or propose Markdown feature cards with sources and history. Use for project navigation, knowledge questions, chronology, and wiki synchronization.
 ---
 
 Read and apply the canonical instructions in `../../../.agents/skills/flow1c-wiki/SKILL.md`.
