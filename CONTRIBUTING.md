@@ -9,7 +9,7 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
 .\.venv\Scripts\python.exe -m pytest
-node --test --test-isolation=none tests/test_guard.mjs tests/test_opencode_runtime.mjs
+node --test --experimental-test-isolation=none tests/test_guard.mjs tests/test_opencode_runtime.mjs
 .\.venv\Scripts\python.exe -m compileall -q flow1c scripts tests
 ```
 
@@ -18,6 +18,9 @@ Python 3.10+, четыре пробела и явные типы. Policy дет�
 пакет несвязанными обязанностями и не дублируют смысловые правила в адаптерах.
 `scripts/flow1c.py` остаётся запускателем; CLI, сервисы и policy имеют отдельных
 владельцев по `docs/architecture.md`. Импорт не имеет side effects.
+
+Команда Node выше соответствует Node.js 22 в CI. В версиях со стабильным
+флагом используйте `--test-isolation=none`.
 
 Полные unittest и pytest выполняйте последовательно: DOCX fixtures используют
 общий тестовый каталог. Проверки границ модулей входят в оба прогона.
