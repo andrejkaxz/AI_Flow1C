@@ -1,4 +1,10 @@
+<p align="center">
+  <img src="docs/assets/flow1c-logo.svg" alt="AI Flow1C — логотип с бабочкой" width="640">
+</p>
+
 # Flow1C
+
+**Анализ — легко. Процесс — в удовольствие.**
 
 **Рабочий процесс аналитика и архитектора 1С с AI-агентом: от интервью до документов, ревью и базы знаний проекта.**
 
@@ -169,6 +175,7 @@ Update возобновляется по gate и `update_id`. [Обновлен�
 
 ## Документация
 
+- [Логотип и слоган](docs/brand.md).
 - [Условия распространения и статус пилота](docs/distribution.md).
 - [Результаты и знания проекта](docs/project-knowledge.md), [структура документации](docs/documentation-layout.md).
 - [Архитектура](docs/architecture.md), [схемы архитектуры](docs/architecture-diagrams.md), [жизненный цикл](docs/lifecycle.md).
