@@ -26,6 +26,23 @@ Flow1C — инструменты и правила для аналитиков 
 конфигурации 1С и проектные документы подключаются отдельно.
 [Что проверено и как оценивать готовность установки](docs/distribution.md).
 
+## Flow1C за 80 секунд
+
+От материалов встречи к требованиям, документам, ревью и сохранённым результатам.
+Ролик показывает пример согласования платежей, открытые вопросы и основания
+решений. Демонстрационные данные, пилотная версия Windows/OpenCode.
+
+<p align="center">
+  <a href="docs/assets/flow1c-intro.mp4">
+    <img src="docs/assets/flow1c-intro-cover.jpg" alt="Открыть ролик Flow1C: от встречи к требованиям и документам" width="320">
+  </a>
+</p>
+
+[Открыть или скачать MP4 — 1:20, 5,4 МиБ](docs/assets/flow1c-intro.mp4) ·
+[Описание и музыка](docs/intro-video.md).
+
+Music by Prime Arch – Spotify: [https://open.spotify.com/artist/7IcnaORPxZ03Hp8l9kKLQP](https://open.spotify.com/artist/7IcnaORPxZ03Hp8l9kKLQP).
+
 ## Начало работы
 
 Нужны Windows, Git, Python 3.10+ и установленный AI-клиент. Setup проверит
