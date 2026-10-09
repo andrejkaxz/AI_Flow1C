@@ -33,12 +33,12 @@ Flow1C — инструменты и правила для аналитиков 
 решений. Демонстрационные данные, пилотная версия Windows/OpenCode.
 
 <p align="center">
-  <a href="docs/assets/flow1c-intro.mp4">
+  <a href="https://github.com/andrejkaxz/AI_Flow1C/raw/refs/heads/main/docs/assets/flow1c-intro.mp4">
     <img src="docs/assets/flow1c-intro-cover.jpg" alt="Открыть ролик Flow1C: от встречи к требованиям и документам" width="320">
   </a>
 </p>
 
-[Открыть или скачать MP4 — 1:20, 5,4 МиБ](docs/assets/flow1c-intro.mp4) ·
+[Скачать MP4 — 1:20, 5,4 МиБ](https://github.com/andrejkaxz/AI_Flow1C/raw/refs/heads/main/docs/assets/flow1c-intro.mp4) ·
 [Описание и музыка](docs/intro-video.md).
 
 Music by Prime Arch – Spotify: [https://open.spotify.com/artist/7IcnaORPxZ03Hp8l9kKLQP](https://open.spotify.com/artist/7IcnaORPxZ03Hp8l9kKLQP).
