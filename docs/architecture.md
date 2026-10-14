@@ -19,6 +19,13 @@ authoritative records, пишет неизменяемые версии/журн
 данными после смены policy, а новые действия проверяются текущим gate.
 [Хранение, восстановление и ограничения](handoff.md).
 
+Рабочая память разделена на `memory_policy` (лимиты, ранжирование и состояния
+без I/O), `memory_store` (локальные records, containment, lock и атомарная
+запись), `memory` (короткие операции) и `workflow.memory_actions` (проверка
+gate и source evidence). `memory --json-stdin` и OpenCode adapter передают
+один контракт. Обзор читает проверенные sealed handoff; память не копирует их
+и не меняет wiki, approvals или результаты. [Контракт](project-memory.md).
+
 `flow1c.context_policy` выбирает управляемые документы и определяет identities,
 обязательные диапазоны, coverage и бюджеты без I/O. `flow1c.context_manifest`
 сохраняет immutable manifests/coverage, проверяет provenance и обслуживает

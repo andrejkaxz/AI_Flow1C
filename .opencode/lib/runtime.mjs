@@ -11,6 +11,7 @@ const runtimeFiles = [
   "schemas/agent-handoff.schema.json",
   "config/context.json", "schemas/context-manifest.schema.json",
   "schemas/project-knowledge-response.schema.json",
+  "schemas/project-memory-record.schema.json",
 ]
 
 function snapshot(root) {

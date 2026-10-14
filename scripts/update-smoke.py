@@ -124,6 +124,9 @@ def smoke(parent: Path, powershell: str = "powershell.exe") -> dict:
     (documentation / ".flow1c/drafts/saved-request").mkdir(parents=True)
     (documentation / ".flow1c/layout.json").write_text(json.dumps({"schema_version": 1, "layout_version": 2}))
     (documentation / ".flow1c/drafts/saved-request/evidence.json").write_text(json.dumps({"answers": ["saved"], "state": "WAITING_USER"}))
+    memory_dir = documentation / ".flow1c/.workspace/memory"
+    memory_dir.mkdir(parents=True)
+    (memory_dir / "synthetic-memory.json").write_text(json.dumps({"schema_version": 1, "text": "Synthetic local finding"}))
     legacy_documentation = parent / "legacy documentation"
     (legacy_documentation / "work-items/USER-1").mkdir(parents=True)
     (legacy_documentation / "work-items/USER-1/manifest.yaml").write_text(json.dumps({"approvals": {"user": "approved"}}))
@@ -217,7 +220,7 @@ def smoke(parent: Path, powershell: str = "powershell.exe") -> dict:
     return {"schema_version": 1, "state": "PASSED", "platform": sys.platform,
             "powershell": powershell, "clean_venv_bootstrap": True, "network_used": False,
             "external_boundaries": "synthetic RLM/service/tool fixtures",
-            "checks": ["fast-forward upgrade", "legacy configuration migration", "user field preservation", "v2 documentation and legacy approvals preserved",
+            "checks": ["fast-forward upgrade", "legacy configuration migration", "user field preservation", "v2 documentation, local memory and legacy approvals preserved",
                        "blocked extension recovery on the same checkpoint and original backup",
                        "two background sources", "same checkpoint and backup on resume",
                        "restart requirement preserved", "no repeated fetch/tool check on resume",

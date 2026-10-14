@@ -233,6 +233,14 @@ def new_gate(
         "created_at": storage.utc_now(),
         **values,
     }
+    # Bind memory to the configured documentation identity at begin, never at a later read.
+    try:
+        from flow1c.memory_store import project as memory_project
+        _, memory_directory, memory_id = memory_project(product_root=product_root)
+        gate["memory_project_id"] = memory_id
+        gate["memory_data_root"] = str(memory_directory)
+    except WorkflowError:
+        pass
     stage = runtime.load_stages(product_root=product_root)["operations"].get(operation, {})
     mode = str(gate.get("mode", "formal"))
     if gate.get("route_decision", {}).get("status") == "VALID":

@@ -90,3 +90,11 @@ approvals or write directly into the library. All adapters use canonical
 ## Project knowledge and result navigation
 
 `flow1c_knowledge` maps to `knowledge --json-stdin`, action/request. Reads use the current role gate; mutations require a ready formal status gate and the user instruction. Navigation, Git/local search/read, exact preview/write and selected documentation commit/PR use one contract: [project-knowledge.md](project-knowledge.md).
+
+## Project working memory
+
+`flow1c_memory` maps to `memory --json-stdin` with the same gate, action and
+request in Codex, Claude Code and OpenCode. After begin, get `overview`, read
+relevant records, recheck stale sources and remember only a short finding from
+saved gate evidence. The service verifies project, gate, source and revision;
+the guard supplies an early OpenCode refusal. See [project-memory.md](project-memory.md).

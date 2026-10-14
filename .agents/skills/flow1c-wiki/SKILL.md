@@ -5,6 +5,11 @@ description: Find project results, search and read the versioned project wiki, r
 
 # FLOW1C wiki and status
 
+Working memory is separate from reviewed wiki. After begin use `memory --json-stdin`
+overview for recent sealed results and short source-linked findings; read a hit
+and recheck stale sources. Record a useful verified finding through memory rather
+than editing a wiki card without the separate user request. See `docs/project-memory.md`.
+
 Use `flow1c_knowledge` / `scripts/flow1c.py knowledge --json-stdin` for results and wiki. Contract: `docs/project-knowledge.md`. For project-wide navigation/wiki choose operation=status, mode=formal; no work-item is required. Knowledge reads from another role's current gate do not require a new operation.
 
 For a status question, read manifests first and query Gitea only when open PR state is needed. Do not infer completion, approval or deployment from draft files. `action=navigation` returns existing tasks/results by title with links and continuation; `action=refresh` updates the human catalog and managed README links on the user's instruction. Preserve user documents, empty templates, sources and historical paths; distinguish templates, fragments and consultation summaries from actual output documents. Never delete files as navigation cleanup.

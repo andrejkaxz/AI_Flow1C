@@ -78,6 +78,8 @@ complete; завершённое действие повторять нельз�
 
 Для навигации по результатам и базы знаний используй `flow1c_knowledge`: navigation ищет задачи/документы по названию, search ищет карточки, read читает раздел с snapshot/version и continuation. Git default branch — источник по умолчанию; локальные материалы доступны явно через source=local и не считаются принятыми. Для сохранения каталога/карточки выбирай operation=status mode=formal без work-item; preview показывает точный diff, write проверяет его версию. Refresh/write/commit/pr требуют поручения пользователя. По итогам кода и проверок предложи конкретную правку знаний с источниками и ограничениями; не запускай следующий gate автоматически, не дописывай завершённую задачу. Контракт: docs/project-knowledge.md.
 
+После begin в настроенном проекте вызови `flow1c_memory` action=`overview` с целью запроса. Подходящую запись прочти точечно через `read`; `STALE`/`MISSING` требуют проверки источника. После подтверждённого источника сохрани короткий повторно полезный вывод через `remember`, указав source identity и locator; старый вывод замени с `memory_id`/`expected_revision`. Память не заменяет обязательное чтение, gate или approvals. `forget` выполняй только по явной просьбе пользователя. Контракт: docs/project-memory.md.
+
 <!-- flow1c:routes:start -->
 Generated from `config/intent-routes.json` and `config/stages.json`.
 

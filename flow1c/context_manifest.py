@@ -192,6 +192,27 @@ def _check_version(root: Path, entry: dict[str, Any], limits: dict[str, int]) ->
     return text
 
 
+def verified_memory_entry(gate: dict[str, Any], entry_id: str, locator: str, *, product_root: Path) -> tuple[Path, dict[str, Any]]:
+    """Return one covered context entry with its current pinned source version."""
+    root, _, manifest, coverage, _ = _load(gate, product_root)
+    entry = next((item for item in manifest["entries"] if item["entry_id"] == entry_id), None)
+    ranges = coverage["ranges"].get(entry_id, [])
+    if not entry or not ranges:
+        raise ContextError("CONTEXT_SCOPE_REQUIRED", "Context source was not read in this gate")
+    text = _check_version(root, entry, _limits(product_root))
+    if locator.startswith("line:"):
+        first, _, last = locator[5:].partition("-")
+        start_line, end_line = int(first), int(last or first)
+        lines = text.splitlines(keepends=True) if text is not None else []
+        if start_line < 1 or end_line < start_line or end_line > len(lines):
+            raise ContextError("CONTEXT_SCOPE_REQUIRED", "Memory locator is outside the accepted source")
+        start = sum(len(line) for line in lines[:start_line - 1])
+        stop = sum(len(line) for line in lines[:end_line])
+        if not any(left <= start and stop <= right for left, right in ranges):
+            raise ContextError("CONTEXT_SCOPE_REQUIRED", "Memory locator was not covered by context reading")
+    return _safe(root, entry["path"]), entry
+
+
 def build(gate: dict[str, Any], *, product_root: Path) -> dict[str, Any]:
     limits = _limits(product_root)
     root, store, work_manifest = _roots(gate, product_root)

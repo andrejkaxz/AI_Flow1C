@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "project-memory-record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "memory_id", "revision", "project_id", "kind", "subject", "aliases", "text", "basis", "source", "origin_gate_id", "created_at", "updated_at", "state"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "memory_id": {"type": "string", "pattern": "^[a-f0-9-]{36}$"},
+    "revision": {"type": "integer", "minimum": 1},
+    "project_id": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "kind": {"enum": ["project_fact", "decision", "open_question", "source_location"]},
+    "subject": {"type": "string", "minLength": 1, "maxLength": 160},
+    "aliases": {"type": "array", "maxItems": 8, "items": {"type": "string", "minLength": 1, "maxLength": 80}},
+    "text": {"type": "string", "minLength": 1, "maxLength": 800},
+    "basis": {"enum": ["user_statement", "accepted_document", "completed_result"]},
+    "source": {
+      "type": "object", "additionalProperties": false,
+      "required": ["type", "path", "locator", "sha256", "gate_id"],
+      "properties": {
+        "type": {"enum": ["context_entry", "dialogue_answer", "dialogue_note", "sealed_handoff"]},
+        "path": {"type": "string", "maxLength": 500},
+        "locator": {"type": "string", "minLength": 1, "maxLength": 200},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "gate_id": {"type": "string", "pattern": "^[a-f0-9-]{36}$"},
+        "entry_id": {"type": "string", "maxLength": 100},
+        "answer_index": {"type": "integer", "minimum": 0},
+        "note_index": {"type": "integer", "minimum": 0}
+      }
+    },
+    "origin_gate_id": {"type": "string", "pattern": "^[a-f0-9-]{36}$"},
+    "created_at": {"type": "string"}, "updated_at": {"type": "string"},
+    "state": {"const": "WORKING"}
+  }
+}

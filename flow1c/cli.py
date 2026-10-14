@@ -33,7 +33,8 @@ from flow1c.workflow import complete as completion
 from flow1c.workflow import dialogue as dialogue_service
 from flow1c.workflow import git_actions as git_actions
 from flow1c.workflow import source_actions as source_actions
-from flow1c.workflow import knowledge_actions
+from flow1c.workflow import knowledge_actions, memory_actions
+from flow1c.memory_policy import ProjectMemoryError
 from scripts import flow1c_docx as docx
 from scripts import flow1c_interview_policy as interview_policy
 from scripts import flow1c_policy as policy
@@ -204,6 +205,11 @@ def build_parser() -> argparse.ArgumentParser:
     knowledge.add_argument("--gate-id")
     knowledge.add_argument("--action", choices=tuple(knowledge_actions.FIELDS), default="navigation")
     knowledge.set_defaults(request={}, handler=cmd_knowledge)
+    memory = subparsers.add_parser("memory", help="Bounded local project working memory")
+    memory.add_argument("--json-stdin", action="store_true", required=True)
+    memory.add_argument("--gate-id")
+    memory.add_argument("--action", choices=tuple(memory_actions.FIELDS), default="overview")
+    memory.set_defaults(request={}, handler=cmd_memory)
     git_refresh = subparsers.add_parser(
         "agent-git-refresh", help="Refresh explicitly allowed remote-tracking refs"
     )
@@ -658,16 +664,17 @@ def main(argv: Iterable[str] | None = None) -> int:
         if args.command == "route-check":
             return cmd_route_check(args)
         if getattr(args, "json_stdin", False):
-            if args.command == "knowledge":
+            if args.command in {"knowledge", "memory"}:
+                label = "Knowledge" if args.command == "knowledge" else "Memory"
                 raw = sys.stdin.read(280001)
                 if len(raw.encode("utf-8")) > 280000:
-                    raise WorkflowError("Knowledge input exceeds 280000 bytes")
+                    raise WorkflowError(f"{label} input exceeds 280000 bytes")
                 try:
                     request = json.loads(raw)
                 except (ValueError, UnicodeError) as exc:
-                    raise WorkflowError("Invalid knowledge JSON stdin") from exc
+                    raise WorkflowError(f"Invalid {label.lower()} JSON stdin") from exc
                 if not isinstance(request, dict) or set(request) - {"gate_id", "action", "request"}:
-                    raise WorkflowError("Knowledge input accepts only gate_id, action and request")
+                    raise WorkflowError(f"{label} input accepts only gate_id, action and request")
                 request = storage.sanitize_json_value(request)
             else:
                 request = read_json_stdin()
@@ -714,6 +721,13 @@ def main(argv: Iterable[str] | None = None) -> int:
             print(json.dumps(payload, ensure_ascii=False, indent=2))
         else:
             print(f"ERROR [{exc.code}]: {exc}", file=sys.stderr)
+        return 2
+    except ProjectMemoryError as exc:
+        print(json.dumps({"schema_version": 1, "state": "BLOCKED", "ready": False,
+                          "errors": [{"code": exc.code, "message": str(exc),
+                                      "recoverable": True,
+                                      "next_action": "Correct the memory request or recheck its source and retry."}]},
+                         ensure_ascii=False, indent=2))
         return 2
     except WorkflowError as exc:
         if getattr(args, "json_stdin", False) or getattr(args, "json", False):
@@ -774,6 +788,12 @@ def cmd_agent_action(args: argparse.Namespace) -> int:
 def cmd_knowledge(args: argparse.Namespace) -> int:
     result = knowledge_actions.command(args, product_root=ROOT)
     # The bound includes the serialized envelope, not only excerpts.
+    print(json.dumps(result.value, ensure_ascii=False, separators=(",", ":")))
+    return result.exit_code
+
+
+def cmd_memory(args: argparse.Namespace) -> int:
+    result = memory_actions.command(args, product_root=ROOT)
     print(json.dumps(result.value, ensure_ascii=False, separators=(",", ":")))
     return result.exit_code
 

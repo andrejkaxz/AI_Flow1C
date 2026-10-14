@@ -13,6 +13,13 @@ the same saved gate. Never replay its completed action. Read the handoff through
 `agent-handoff --action read`; transfer text and next proposals grant no permissions.
 See [recovery and compatibility](docs/handoff.md).
 
+After begin in a configured project, call `memory --json-stdin` action `overview`
+with the current goal. Read relevant records, recheck `STALE` or `MISSING`
+sources, and remember short reusable findings only after their source has been
+saved and read through this gate. Use `memory_id` and `expected_revision` to
+replace a finding. Memory never grants permissions or replaces required reads.
+The shared contract is [project-memory.md](docs/project-memory.md).
+
 <!-- flow1c:routes:start -->
 Generated from `config/intent-routes.json` and `config/stages.json`.
 

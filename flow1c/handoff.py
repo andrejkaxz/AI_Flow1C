@@ -88,6 +88,17 @@ def _roots(gate: dict[str, Any], product_root: Path) -> tuple[Path, Path]:
     return root, store
 
 
+def producer_in_project(gate: dict[str, Any], root: Path, project_id: str, product_root: Path) -> bool:
+    """Legacy handoffs qualify only when their verified store is inside this project."""
+    if gate.get("memory_project_id") is not None:
+        return gate["memory_project_id"] == project_id
+    try:
+        _, directory = _roots(gate, product_root)
+        return storage.path_is_within(directory, root)
+    except (OSError, WorkflowError):
+        return False
+
+
 def load_producer(gate_id: str, *, product_root: Path) -> dict[str, Any]:
     """Completed records are data across policy updates, never executable gates."""
     path = state.gate_path(gate_id, product_root=product_root)
@@ -128,7 +139,7 @@ def _gate_record(gate: dict[str, Any]) -> dict[str, Any]:
               "manifest_status", "manifest_approvals", "action_completed", "action_result",
               "update_result", "template_result", "template_operations", "query_verification",
               "completion_errors", "output", "result_summary", "work_reference", "code",
-              "project_reference", "task_reference", "git_ref", "storage_kind")
+              "project_reference", "task_reference", "git_ref", "storage_kind", "memory_project_id", "memory_data_root")
     return {key: gate[key] for key in fields if key in gate}
 
 

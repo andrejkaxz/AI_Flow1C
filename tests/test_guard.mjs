@@ -50,6 +50,20 @@ test("knowledge reads follow role gates and wiki mutations require explicit read
   await assert.rejects(before({ action: "search" }))
 })
 
+test("memory adapter needs an active allowed gate and explicit deletion", async t => {
+  const f = fixture(t)
+  const guard = await Flow1CGuard({ client: f.client, worktree: f.root })
+  const before = args => guard["tool.execute.before"]({ sessionID: f.sessionID, tool: "flow1c_memory" }, { args: { gate_id: f.id, ...args } })
+  await assert.rejects(before({ action: "overview" }))
+  await f.after(guard, "flow1c_begin", f.gate("READY", { available_actions: ["flow1c_memory", "flow1c_complete"] }))
+  for (const action of ["overview", "search", "read", "remember"]) await assert.doesNotReject(before({ action }))
+  await assert.rejects(before({ action: "forget", request_json: '{"confirmed":false}' }))
+  await assert.doesNotReject(before({ action: "forget", request_json: '{"confirmed":true}' }))
+  await assert.rejects(before({ action: "unknown" }))
+  f.gate("DRAFT_COMPLETE", { completed_at: "synthetic", available_actions: ["flow1c_memory"] })
+  await assert.rejects(before({ action: "overview" }))
+})
+
 test("documentation layout 2 keeps writes behind the same gate and tools", async t => {
   const f = fixture(t)
   const guard = await Flow1CGuard({ client: f.client, worktree: f.root })
