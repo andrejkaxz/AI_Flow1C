@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "memory-review.schema.json",
+  "title": "Verified memory review receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "project_id", "scope_sha256", "findings", "records", "status", "reviewed_at"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "project_id": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "scope_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "status": {"enum": ["UPDATED", "ALREADY_COVERED", "NO_NEW_FINDINGS"]},
+    "reviewed_at": {"type": "string", "minLength": 1},
+    "findings": {
+      "type": "array", "minItems": 1, "maxItems": 20,
+      "items": {"$ref": "#/$defs/finding"}
+    },
+    "records": {
+      "type": "array", "maxItems": 100,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["memory_id", "revision", "sha256"],
+        "properties": {
+          "memory_id": {"type": "string", "pattern": "^[a-f0-9-]{36}$"},
+          "revision": {"type": "integer", "minimum": 1},
+          "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "finding": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "topic", "disposition", "records", "reason"],
+      "properties": {
+        "kind": {"enum": ["project_fact", "decision", "open_question", "source_location", "none"]},
+        "topic": {"type": "string", "minLength": 1, "maxLength": 160},
+        "disposition": {"enum": ["saved", "already_covered", "not_reusable"]},
+        "reason": {"type": "string", "minLength": 20, "maxLength": 800},
+        "records": {
+          "type": "array", "maxItems": 5,
+          "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["memory_id", "revision"],
+            "properties": {
+              "memory_id": {"type": "string", "pattern": "^[a-f0-9-]{36}$"},
+              "revision": {"type": "integer", "minimum": 1}
+            }
+          }
+        }
+      }
+    }
+  }
+}

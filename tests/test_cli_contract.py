@@ -258,7 +258,8 @@ class CliContractTests(unittest.TestCase):
             def legacy_fields(value, parent=""):
                 if isinstance(value, dict):
                     return {key: legacy_fields(item, key) for key, item in value.items()
-                            if key not in {"route_decision", "route_origin", "completion_record", "handoff", "handoff_status"}}
+                            if key not in {"route_decision", "route_origin", "completion_record", "handoff", "handoff_status",
+                                           "memory_lifecycle_version", "memory_review_required"}}
                 if isinstance(value, list):
                     if parent in {"available_actions", "allowed_tools"}:
                         value = [item for item in value if item not in {"flow1c_context", "flow1c_knowledge", "flow1c_memory"}]

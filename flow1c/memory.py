@@ -11,7 +11,8 @@ from flow1c.memory_policy import ProjectMemoryError
 from flow1c.workflow import state
 
 
-def _freshness(record: dict[str, Any], root: Path, product_root: Path) -> str:
+def freshness(record: dict[str, Any], root: Path, product_root: Path) -> str:
+    """Check the pinned source of a validated memory record without mutating it."""
     source = record["source"]
     try:
         if source["type"] == "context_entry":
@@ -41,7 +42,7 @@ def _freshness(record: dict[str, Any], root: Path, product_root: Path) -> str:
 def _summary(record: dict[str, Any], root: Path, product_root: Path) -> dict[str, Any]:
     return {"memory_id": record["memory_id"], "revision": record["revision"],
             "kind": record["kind"], "subject": record["subject"],
-            "text": record["text"][:240], "state": _freshness(record, root, product_root),
+            "text": record["text"][:240], "state": freshness(record, root, product_root),
             "source": record["source"]}
 
 
@@ -80,7 +81,7 @@ def read(request: dict[str, Any], project: store.Project, *, product_root: Path)
     record = store.read(directory, identifier, project_id)
     if record["revision"] != revision:
         raise ProjectMemoryError("MEMORY_CONFLICT: record revision changed; search again")
-    return {"schema_version": 1, "state": _freshness(record, root, product_root),
+    return {"schema_version": 1, "state": freshness(record, root, product_root),
             "record": record, "next_action": "Recheck the source before relying on this statement"}
 
 
@@ -180,7 +181,7 @@ def remember(request: dict[str, Any], gate: dict[str, Any], source: dict[str, An
                  "project_id": project_id, **candidate, "origin_gate_id": gate["gate_id"],
                  "created_at": previous["created_at"] if previous else now, "updated_at": now, "state": "WORKING"}
         store.validate(value, identifier, project_id)
-        if _freshness(value, root, product_root) != "WORKING":
+        if freshness(value, root, product_root) != "WORKING":
             raise ProjectMemoryError("MEMORY_SOURCE_STALE: source changed before save")
         store.put(directory, value)
     return {"schema_version": 1, "state": "SAVED", "memory_id": identifier,

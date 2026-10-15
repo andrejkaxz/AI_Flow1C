@@ -258,7 +258,7 @@ export const Flow1CGuard = async ({ client, worktree }) => {
         const gate = readRecord(gatePath)
         if (!gate || gate.completed_at || !["READY", "READY_WITH_DEVIATIONS", "UNVERIFIED_DRAFT"].includes(gate.state)) throw new Error("Memory requires an active ready gate")
         if (!gate.available_actions?.includes(input.tool)) throw new Error("Memory tool is unavailable for this gate")
-        if (!["overview", "search", "read", "remember", "forget"].includes(output.args?.action)) throw new Error("Invalid memory action")
+        if (!["overview", "search", "read", "remember", "forget", "review"].includes(output.args?.action)) throw new Error("Invalid memory action")
         if (output.args?.action === "forget") {
           const request = JSON.parse(output.args?.request_json ?? "{}")
           if (!request || typeof request !== "object" || Array.isArray(request) || request.confirmed !== true) throw new Error("Memory deletion requires the user's explicit request")

@@ -192,6 +192,15 @@ def _check_version(root: Path, entry: dict[str, Any], limits: dict[str, int]) ->
     return text
 
 
+def memory_review_scope(gate: dict[str, Any], *, product_root: Path) -> dict[str, Any]:
+    """Validate current compact sources and return their pinned read coverage."""
+    root, _, manifest, coverage, _ = _load(gate, product_root)
+    limits = _limits(product_root)
+    for entry in manifest["entries"]:
+        _check_version(root, entry, limits)
+    return {"manifest": digest(manifest), "coverage": digest(coverage)}
+
+
 def verified_memory_entry(gate: dict[str, Any], entry_id: str, locator: str, *, product_root: Path) -> tuple[Path, dict[str, Any]]:
     """Return one covered context entry with its current pinned source version."""
     root, _, manifest, coverage, _ = _load(gate, product_root)

@@ -13,6 +13,7 @@ from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from unittest import mock
 import test_flow1c as fixtures
+from memory_fixture import review_before_complete
 from scripts.flow1c_query_policy import (
     analyze_query,
     compare_optimization,
@@ -107,6 +108,8 @@ class QueryCliTests(unittest.TestCase):
     tearDown = fixtures.NaturalLanguageGateTests.tearDown
 
     def call(self, command: str, *, expected: int = 0, **data):
+        if command == "agent-complete":
+            review_before_complete(self.root, data["gate_id"])
         stdout, stderr = (io.StringIO(), io.StringIO())
         with (
             mock.patch.object(sys, "stdin", io.StringIO(json.dumps(data))),

@@ -10,6 +10,8 @@ from typing import Any
 from flow1c import context as runtime
 from flow1c import handoff
 from flow1c import context_manifest
+from flow1c import memory_review
+from flow1c.memory_review_policy import summary as memory_summary
 from flow1c.handoff_policy import COMPLETED_STATES, HandoffError
 from flow1c import publication as publication
 from flow1c import storage as storage
@@ -145,6 +147,8 @@ def complete_free_request(
             .decode("utf-8")
         )
     _value = result
+    if gate.get("memory_review_required"):
+        _value["memory"] = memory_summary(gate)
     result = OperationResult(_value, 0)
     handoff.save_completion(gate, result, product_root=product_root)
     return result
@@ -394,6 +398,8 @@ def _agent_complete(args: argparse.Namespace, *, product_root: Path) -> Operatio
         "output": str(output_path) if output_path else None,
     }
     _value = result
+    if gate.get("memory_review_required"):
+        _value["memory"] = memory_summary(gate)
     result = OperationResult(
         _value, 0 if state in {"COMPLETE", "COMPLETE_WITH_DEVIATIONS", "UNVERIFIED_DRAFT"} else 2
     )
@@ -420,7 +426,13 @@ def agent_complete(args: argparse.Namespace, *, product_root: Path) -> Operation
                     handoff.verify_completion(gate, receipt, product_root=product_root)
                     result = OperationResult(receipt["result"], receipt["exit_code"])
             else:
-                result = _agent_complete(args, product_root=product_root)
+                gate = gate_state.load_gate(args.gate_id,
+                                            states={"READY", "READY_WITH_DEVIATIONS", "UNVERIFIED_DRAFT", "NON_COMPLIANT"},
+                                            product_root=product_root)
+                with memory_review.completion_guard(gate, product_root=product_root) as failure:
+                    if failure is not None:
+                        return failure
+                    result = _agent_complete(args, product_root=product_root)
                 if result.exit_code:
                     return result
                 gate = handoff.load_producer(args.gate_id, product_root=product_root)

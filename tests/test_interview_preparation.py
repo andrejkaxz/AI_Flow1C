@@ -13,6 +13,7 @@ from contextlib import redirect_stdout, redirect_stderr
 from pathlib import Path
 from unittest import mock
 import test_flow1c as fixtures
+from memory_fixture import review_before_complete
 from scripts.flow1c_interview_policy import (
     COLUMNS,
     InterviewError,
@@ -96,6 +97,8 @@ class InterviewGateTests(unittest.TestCase):
     tearDown = fixtures.NaturalLanguageGateTests.tearDown
 
     def call(self, command, *, expected=0, **data):
+        if command == "agent-complete":
+            review_before_complete(self.root, data["gate_id"])
         output, errors = (io.StringIO(), io.StringIO())
         with (
             mock.patch.object(sys, "stdin", io.StringIO(json.dumps(data))),

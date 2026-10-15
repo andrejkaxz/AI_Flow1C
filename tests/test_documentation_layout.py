@@ -22,6 +22,7 @@ from scripts.flow1c_templates import TemplateService
 from scripts.flow1c_templates_store import LibraryStore
 from test_cli_contract import CliScenario
 from test_flow1c import make_registry
+from memory_fixture import review_before_complete
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -42,6 +43,8 @@ class DocumentationLayoutTests(unittest.TestCase):
         storage.write_json(self.root / ".flow1c.local.json", self.local)
 
     def call(self, command: str, request: dict) -> dict:
+        if command == "agent-complete":
+            review_before_complete(self.root, request["gate_id"])
         output = io.StringIO()
         with mock.patch.object(cli, "ROOT", self.root), \
                 mock.patch.object(cli.sys, "stdin", io.StringIO(json.dumps(request))), redirect_stdout(output):

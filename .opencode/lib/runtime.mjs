@@ -12,6 +12,7 @@ const runtimeFiles = [
   "config/context.json", "schemas/context-manifest.schema.json",
   "schemas/project-knowledge-response.schema.json",
   "schemas/project-memory-record.schema.json",
+  "schemas/memory-review.schema.json",
 ]
 
 function snapshot(root) {

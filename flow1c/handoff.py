@@ -140,6 +140,8 @@ def _gate_record(gate: dict[str, Any]) -> dict[str, Any]:
               "update_result", "template_result", "template_operations", "query_verification",
               "completion_errors", "output", "result_summary", "work_reference", "code",
               "project_reference", "task_reference", "git_ref", "storage_kind", "memory_project_id", "memory_data_root")
+    if gate.get("memory_lifecycle_version"):
+        fields += ("memory_lifecycle_version", "memory_review_required", "memory_review")
     return {key: gate[key] for key in fields if key in gate}
 
 

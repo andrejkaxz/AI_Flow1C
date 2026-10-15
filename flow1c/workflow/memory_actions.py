@@ -5,9 +5,9 @@ import re
 from pathlib import Path
 from typing import Any
 
-from flow1c import context_manifest, handoff, memory, memory_store, storage
+from flow1c import context_manifest, handoff, memory, memory_review, memory_store, storage
 from flow1c.errors import WorkflowError
-from flow1c.handoff_policy import digest
+from flow1c.handoff_policy import HandoffError, digest
 from flow1c.memory_policy import ProjectMemoryError
 from flow1c.results import OperationResult
 from flow1c.workflow import state
@@ -18,6 +18,7 @@ FIELDS = {
     "read": {"memory_id", "revision"},
     "remember": {"kind", "subject", "aliases", "text", "basis", "source", "memory_id", "expected_revision"},
     "forget": {"memory_id", "expected_revision", "confirmed"},
+    "review": {"findings"},
 }
 
 
@@ -85,7 +86,7 @@ def _authorized_source(source: Any, basis: str, gate: dict[str, Any], project: m
     raise ProjectMemoryError("MEMORY_SOURCE: basis and source type do not match")
 
 
-def command(args: Any, *, product_root: Path) -> OperationResult:
+def _command(args: Any, *, product_root: Path) -> OperationResult:
     action, request = args.action, args.request
     if action not in FIELDS or not isinstance(request, dict) or set(request) - FIELDS[action]:
         raise ProjectMemoryError("MEMORY_INVALID: invalid action or request fields")
@@ -108,6 +109,7 @@ def command(args: Any, *, product_root: Path) -> OperationResult:
         raise ProjectMemoryError("MEMORY_SCOPE: begin a new gate for the configured documentation project")
     if action == "overview":
         result = memory.overview(request, gate, project, product_root=product_root)
+        gate["memory_overview_done"] = True
     elif action == "search":
         result = memory.search(request, project, product_root=product_root)
     elif action == "read":
@@ -115,6 +117,8 @@ def command(args: Any, *, product_root: Path) -> OperationResult:
     elif action == "remember":
         source = _authorized_source(request.get("source"), request.get("basis"), gate, project, product_root)
         result = memory.remember(request, gate, source, project, product_root=product_root)
+    elif action == "review":
+        return OperationResult(memory_review.review(request, gate, product_root=product_root))
     else:
         statements = [str(gate.get("summary") or ""),
                       *(str(item.get("answer") or "") for item in gate.get("answers", []) if isinstance(item, dict)),
@@ -123,4 +127,20 @@ def command(args: Any, *, product_root: Path) -> OperationResult:
         if not any(re.search(r"(забуд|удал|forget|delete).{0,60}(памят|memory|запис)", item, re.I) for item in statements):
             raise ProjectMemoryError("MEMORY_CONFIRMATION_REQUIRED: current gate must record the user's deletion request")
         result = memory.forget(request, project, product_root=product_root)
+        gate.get("memory_observations", {}).pop(result["memory_id"], None)
+    if action in {"read", "remember"}:
+        memory_review.observe(gate, result, action=action, project=project)
+    state.save_gate(gate, product_root=product_root)
     return OperationResult(result)
+
+
+def command(args: Any, *, product_root: Path) -> OperationResult:
+    """Serialize with context, dialogue and complete, before reading the gate."""
+    try:
+        with handoff.writer(args.gate_id, product_root=product_root):
+            return _command(args, product_root=product_root)
+    except HandoffError as exc:
+        code = "MEMORY_BUSY" if exc.code == "HANDOFF_RECOVERY_REQUIRED" else "MEMORY_GATE"
+        raise ProjectMemoryError(f"{code}: gate lock unavailable; preserve the result and retry memory on this gate") from exc
+    except OSError as exc:
+        raise ProjectMemoryError("MEMORY_UNAVAILABLE: preserve the result and retry memory on the same gate") from exc

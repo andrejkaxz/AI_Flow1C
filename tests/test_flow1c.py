@@ -1038,6 +1038,8 @@ class NaturalLanguageGateTests(unittest.TestCase):
             product_root=flow1c.ROOT,
         )
         result = io.StringIO()
+        from memory_fixture import review_before_complete
+        review_before_complete(self.root, gate["gate_id"])
         with redirect_stdout(result):
             self.assertEqual(
                 flow1c.cmd_agent_complete(

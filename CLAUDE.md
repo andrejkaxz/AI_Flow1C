@@ -20,6 +20,17 @@ saved and read through this gate. Use `memory_id` and `expected_revision` to
 replace a finding. Memory never grants permissions or replaces required reads.
 The shared contract is [project-memory.md](docs/project-memory.md).
 
+Maintain memory without a separate user reminder. After substantive reading or
+new user input, remember reusable facts, business rules, decisions, significant
+open questions and contradictions with exact sources. Read existing records
+first and update them rather than duplicating them. A file path alone does not
+cover a content analysis; keep assumptions and unapproved requirements distinct.
+Before complete, call memory action `review` with assessed topics and exact
+saved/read record versions, or specific reasons why nothing new is reusable.
+Repeat review after new input. On `MEMORY_REVIEW_REQUIRED`, preserve the result,
+repair only memory, then retry complete on the same gate without repeating the
+workflow action. Report memory status from the verified tool result.
+
 <!-- flow1c:routes:start -->
 Generated from `config/intent-routes.json` and `config/stages.json`.
 

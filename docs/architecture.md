@@ -26,6 +26,13 @@ gate и source evidence). `memory --json-stdin` и OpenCode adapter переда
 один контракт. Обзор читает проверенные sealed handoff; память не копирует их
 и не меняет wiki, approvals или результаты. [Контракт](project-memory.md).
 
+`memory_review_policy` задаёт чистый контракт оценки новых выводов;
+`memory_review` проверяет наблюдавшиеся records, источники и digest входов,
+сохраняет receipt. Completion использует общий preflight до всех ветвей
+завершения. Порядок блокировок: gate, затем memory project; project lock
+удерживается до durable completion. Новые ответы dialogue и compact context
+сериализуются с review; старые gates сохраняют прежний lifecycle.
+
 `flow1c.context_policy` выбирает управляемые документы и определяет identities,
 обязательные диапазоны, coverage и бюджеты без I/O. `flow1c.context_manifest`
 сохраняет immutable manifests/coverage, проверяет provenance и обслуживает

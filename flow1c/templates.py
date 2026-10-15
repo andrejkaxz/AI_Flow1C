@@ -13,6 +13,7 @@ from flow1c import setup as setup_service
 from flow1c import storage as storage
 from flow1c import work_items as work_items
 from flow1c.results import OperationResult
+from flow1c.memory_review_policy import summary as memory_summary
 from flow1c.workflow import state as gate_state
 from scripts import flow1c_policy as policy
 from scripts import flow1c_sections_policy as sections_policy
@@ -522,6 +523,8 @@ def complete(gate: dict, args: argparse.Namespace, *, product_root: Path) -> Ope
     }
     from flow1c import handoff
 
+    if gate.get("memory_review_required"):
+        _value["memory"] = memory_summary(gate)
     result = OperationResult(_value, 0)
     handoff.save_completion(gate, result, product_root=product_root)
     return result

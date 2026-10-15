@@ -188,6 +188,8 @@ class ProjectMemoryTests(unittest.TestCase):
         historical = storage.read_json(state.gate_path(producer["gate_id"], product_root=self.product))
         historical.pop("memory_project_id")
         historical.pop("memory_data_root")
+        historical.pop("memory_lifecycle_version")
+        historical.pop("memory_review_required")
         state.save_gate(historical, product_root=self.product)
         exit_code, completed = cli_call("agent-complete", {"gate_id": producer["gate_id"], "summary": "Weekly review agreed"})
         self.assertEqual(exit_code, 0, completed)

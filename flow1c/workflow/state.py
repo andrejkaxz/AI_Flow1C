@@ -10,6 +10,7 @@ from typing import Any
 
 from flow1c import context as runtime
 from flow1c import routing
+from flow1c import memory_review_policy as memory_lifecycle
 from flow1c import storage as storage
 from flow1c import work_items as work_items
 from flow1c.errors import WorkflowError
@@ -66,6 +67,7 @@ def validate_json_record(value: Any, schema_path: Path) -> list[str]:
         "array": list,
         "string": str,
         "integer": int,
+        "boolean": bool,
         "number": (int, float),
         "null": type(None),
     }
@@ -269,6 +271,15 @@ def new_gate(
         ),
     )
     refresh_gate_actions(gate, product_root=product_root)
+    # Additive lifecycle: existing gates keep their saved contract through update.
+    gate["memory_lifecycle_version"] = memory_lifecycle.LIFECYCLE_VERSION
+    gate["memory_review_required"] = memory_lifecycle.requires_review(
+        operation, project_bound=bool(gate.get("memory_project_id")) or bool(
+            storage.read_json(product_root / runtime.LOCAL_CONFIG_FILE, {}).get("documentation_path")
+        ),
+        allowed_tools=(policy.allowed_tools_for_mode(mode, operation) if mode != "formal"
+                       else stage.get("allowed_tools", [])),
+    )
     save_gate(gate, product_root=product_root)
     return gate
 

@@ -96,3 +96,13 @@ test("a saved index continuation may finish after adapter changes without author
   assert.equal(isSavedUpdateContinuation(root, JSON.stringify({action: "publish", gate_id: gateID})), false)
   assert.equal(isSavedUpdateContinuation(root, JSON.stringify({action: "update", gate_id: "../../file"})), false)
 })
+
+test("memory review contract changes require reload without changing user memory", t => {
+  const root = fixture(t)
+  const runtime = createRuntimeCheck(root)
+  mkdirSync(path.join(root, "schemas"))
+  writeFileSync(path.join(root, ".workspace-memory.json"), '{"user":"retained"}')
+  writeFileSync(path.join(root, "schemas/memory-review.schema.json"), '{"schema_version":1}')
+  assert.throws(() => runtime.assertCurrent(), /memory-review.schema.json/)
+  assert.equal(readFileSync(path.join(root, ".workspace-memory.json"), "utf8"), '{"user":"retained"}')
+})

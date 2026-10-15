@@ -11,6 +11,7 @@ from typing import Any
 
 from flow1c import context as runtime
 from flow1c import context_manifest
+from flow1c import handoff
 from flow1c.context_policy import ROLE_FILES, ContextError
 from flow1c import intake as intake_service
 from flow1c import storage as storage
@@ -129,9 +130,15 @@ def update_route_mode(gate: dict[str, Any], mode: str, *, product_root: Path) ->
 
 
 def agent_dialogue(args: argparse.Namespace, *, product_root: Path) -> OperationResult:
+    """Keep new user answers serialized with memory review and completion."""
+    with handoff.writer(args.gate_id, product_root=product_root):
+        return _agent_dialogue(args, product_root=product_root)
+
+
+def _agent_dialogue(args: argparse.Namespace, *, product_root: Path) -> OperationResult:
     gate = gate_state.load_gate(args.gate_id, product_root=product_root)
     gate_state.require_gate_tool(gate, "flow1c_dialogue", product_root=product_root)
-    if gate["state"] in {
+    if gate.get("completed_at") or gate["state"] in {
         "COMPLETE",
         "COMPLETE_WITH_DEVIATIONS",
         "CONSULTATION_COMPLETE",

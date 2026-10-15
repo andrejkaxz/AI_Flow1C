@@ -97,4 +97,8 @@ approvals or write directly into the library. All adapters use canonical
 request in Codex, Claude Code and OpenCode. After begin, get `overview`, read
 relevant records, recheck stale sources and remember only a short finding from
 saved gate evidence. The service verifies project, gate, source and revision;
-the guard supplies an early OpenCode refusal. See [project-memory.md](project-memory.md).
+the guard supplies an early OpenCode refusal. Maintain reusable findings without
+user reminders. Before complete, call action `review` with assessed topics and
+saved/read record versions or specific reasons for no new findings. New scoped
+gates require a current verified review; retry memory on the same gate when
+complete returns `MEMORY_REVIEW_REQUIRED`. See [project-memory.md](project-memory.md).
