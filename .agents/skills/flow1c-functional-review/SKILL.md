@@ -11,6 +11,10 @@ For discussion, research or document drafting without formal prerequisites, use 
 
 Build the context with role `functional-architect`. Review the clean specification, requirements snapshot, traceability and only related wiki decisions.
 
+Apply the supporting [flow1c-requirements-quality](../flow1c-requirements-quality/SKILL.md)
+to all requirements in the review scope. Report four quality verdicts and exact
+sources; a positive quality review does not approve the specification.
+
 Check that every requirement is represented without changing its meaning; actors, states, validations, exceptions, permissions and acceptance criteria are explicit; unsupported behavior is marked as a question or proposal; rules do not conflict with approved work items; and the FS is implementable and testable without guessing.
 
 Write findings to `reviews/functional-review.md`, ordered by business impact. Cite the requirement and FS section for each finding. Edit the analyst's files only when the user asks to apply the review. Human approval remains a Gitea review action.

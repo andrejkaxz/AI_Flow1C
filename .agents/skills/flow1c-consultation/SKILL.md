@@ -5,6 +5,12 @@ description: Discuss an FLOW1C task, review the workflow product, or prepare a f
 
 # FLOW1C consultation and independent drafts
 
+When authoring, refining or reviewing requirements in a meeting record, register
+or specification, apply the supporting
+[flow1c-requirements-quality](../flow1c-requirements-quality/SKILL.md)
+inside this gate. Preserve explore/draft and UNVERIFIED_DRAFT where applicable;
+do not apply this review to formatting alone.
+
 For a configured documentation project, request a short `memory --json-stdin`
 overview after begin. Read only relevant records, verify stale sources, and
 remember a reusable finding after its exact source has been saved/read in this

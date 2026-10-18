@@ -18,6 +18,10 @@ Build the analyst context with `scripts/flow1c.py context-build --code "<user re
 
 Before drafting:
 
+Apply the supporting [flow1c-requirements-quality](../flow1c-requirements-quality/SKILL.md)
+to requirements in scope, preserving the current gate and primary skill.
+Keep quality findings separate from approval and retain source traceability.
+
 1. Separate source facts, assumptions, open questions and proposed decisions.
 2. Check actors, trigger, preconditions, target behavior, exceptions, permissions and acceptance outcomes.
 3. Add unresolved items to `analysis/questions.md` and ask concise grouped questions.

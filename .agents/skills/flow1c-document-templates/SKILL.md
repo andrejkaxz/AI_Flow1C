@@ -17,6 +17,12 @@ Resolve the type from user intent/content, not the filename alone. Types come
 from config/document-types.json; never require all types before making one
 document. A request to update a template does not update Flow1C.
 
+For content work on requirements in a protocol, register or specification,
+apply the supporting [flow1c-requirements-quality](../flow1c-requirements-quality/SKILL.md)
+within the document request. Preserve its pinned template, guide and schema;
+use a companion review when the template has no quality fields. Template
+management or formatting alone does not require a requirements review.
+
 Project users can place source templates in `Шаблоны документов` as described
 in docs/project-materials.md. Reuse their selected file; do not ask for another
 upload or treat that folder as the managed library. Skip its README instruction.

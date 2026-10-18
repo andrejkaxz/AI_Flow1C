@@ -11,6 +11,12 @@ Use `registry-reconcile` for a corrected workbook. Apply only exact or user-conf
 
 Read `docs/lifecycle.md` when assessing changes to an existing work item.
 
+When the user requests content analysis or refinement of requirements, apply
+the supporting [flow1c-requirements-quality](../flow1c-requirements-quality/SKILL.md)
+within this request. Structural import alone does not require that review and
+does not prove requirement quality. Preserve the workbook and official IDs;
+report quality findings separately from existing registry statuses.
+
 Accept a new workbook from any user-selected location or from `<documentation_path>/inbox/`. Run `scripts/flow1c.py registry-import --file <xlsx>` from the workflow repository; the CLI writes results to the external documentation repository configured in `.flow1c.local.json`. `--allow-errors` remains a compatibility alias; partial indexes are written by default and never replace the last fully verified normalized indexes.
 
 MVP invariants:
