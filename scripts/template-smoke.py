@@ -68,6 +68,14 @@ def smoke(checkout: Path, docs: Path, *, bootstrap: bool, format_name: str) -> d
     pin = run(cli + ["template", "resolve", "--json-stdin"], stdin={"gate_id": document_gate, "request": {"document_type": "meeting-minutes"}})
     plan = run(cli + ["document-plan", "--json-stdin"], stdin={"gate_id": document_gate, "request": {"operations": ops}})
     output = run(cli + ["document-write", "--json-stdin"], stdin={"gate_id": document_gate, "request": {"plan_id": plan["plan_id"]}})
+    verification = output.get("result_verification", {})
+    if verification.get("status") != "PASSED" or verification.get("output_sha256") != output["output_sha256"]:
+        raise RuntimeError("Independent document verification is missing or unbound")
+    run(cli + ["memory", "--json-stdin"], stdin={"gate_id": document_gate, "action": "overview",
+                                                "request": {"query": "Synthetic template smoke"}})
+    run(cli + ["memory", "--json-stdin"], stdin={"gate_id": document_gate, "action": "review", "request": {
+        "findings": [{"kind": "none", "topic": "Synthetic template smoke", "disposition": "not_reusable",
+                      "records": [], "reason": "Only fixed synthetic fixture content was copied; no customer facts, decisions or open questions were introduced."}]}})
     complete = run(cli + ["agent-complete", "--json-stdin"], stdin={"gate_id": document_gate, "summary": "Checked draft"})
     source.unlink()
     local_path = checkout / ".flow1c.local.json"
@@ -84,7 +92,8 @@ def smoke(checkout: Path, docs: Path, *, bootstrap: bool, format_name: str) -> d
         raise RuntimeError("Migration changed the library")
     return {"format": format_name, "bootstrap": bootstrap, "doctor": doctor, "active": active["state"],
             "document": complete["state"], "layout_state": output["layout_state"], "migration": migrated["state"],
-            "source_sha256": received["source_sha256"], "output_sha256": output["output_sha256"], "library_preserved": True}
+            "source_sha256": received["source_sha256"], "output_sha256": output["output_sha256"],
+            "result_verification": verification, "library_preserved": True}
 
 
 def main() -> int:
