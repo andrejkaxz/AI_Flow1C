@@ -485,7 +485,10 @@ def _markdown_nodes(content: str, document: DocumentObject | None = None, candid
                 index += 1
             if rows:
                 if document is not None:
-                    temp.element.body.append(_table_from_exemplar(document, table_exemplar, rows) if table_exemplar is not None else _new_table(document, rows))
+                    temp.element.body.insert_element_before(
+                        _table_from_exemplar(document, table_exemplar, rows) if table_exemplar is not None else _new_table(document, rows),
+                        "w:sectPr",
+                    )
                 else:
                     table = temp.add_table(rows=len(rows), cols=max(len(row) for row in rows))
                     table.style = "Table Grid"
