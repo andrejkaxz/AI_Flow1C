@@ -221,3 +221,17 @@ mechanics in `flow1c_docx_templates.py`. `flow1c_templates.py` orchestrates thes
 services; `flow1c.templates` integrates shared gates. Agent adapters only
 interpret user intent/content and call these contracts. Adding/removing catalog
 types does not alter storage, selection or generation code or delete saved data.
+
+Independent result verification is owned by `flow1c_templates_verify.py`:
+it dispatches a bounded child process and returns a receipt bound to source,
+output and operations. `flow1c_markdown_verify.py` checks immutable spans and
+encoded plan values; `flow1c_docx_verify.py` checks unchanged package parts,
+an addressed XML skeleton and typed paragraph/table/section values. Neither
+checker invokes a write adapter. Shared read-only format parsers and the
+Markdown escaping contract are reused. Optional format imports remain lazy.
+The template service invokes the same verifier before output publication,
+on pending-write recovery and on every document validation/completion. Legacy
+validation records are rechecked without rewriting storage; new records add
+`result_verification` v1. A rejected candidate is retained without publishing
+success or replacing user files. Structural verification is separate from
+visual rendering and from the truth of business statements.

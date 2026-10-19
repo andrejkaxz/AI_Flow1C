@@ -10,6 +10,8 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import unquote, urlsplit
 
+from scripts.flow1c_templates_verify import verify
+
 try:
     from flow1c_templates_policy import TemplateError, build_content, build_guide, fingerprint, select_template, validate_content, validate_profile, revision_diff
     from flow1c_templates_store import LibraryStore, atomic_bytes, atomic_json, documentation_root, exclusive, identifier, new_id, read_json, safe_path, sha256
@@ -433,6 +435,12 @@ class TemplateService:
         atomic_json(request_root / "document-plans" / (plan_id + ".json"), plan)
         return self.result(state="PLANNED", plan_id=plan_id, pin=pin, output=str(output))
 
+    def _verify_result(self, plan: dict, output: Path) -> dict:
+        revision, manifest = self.store.revision(plan["pin"])
+        validate_content(read_json(revision / "profile.json"), plan["operations"])
+        return verify(safe_path(revision / manifest["source"], revision), output,
+                      revision / "extraction.json", plan["operations"])
+
     def document_write(self, request: dict, request_root: Path) -> dict:
         request_root = safe_path(request_root, self.documentation)
         plan_path = safe_path(request_root / "document-plans" / (identifier(request["plan_id"]) + ".json"), request_root)
@@ -448,7 +456,8 @@ class TemplateService:
             pending = plan["pending_result"]
             if sha256(output) != pending["output_sha256"]:
                 raise TemplateError("TEMPLATE_INTEGRITY_FAILED", "Interrupted output changed; preserved without replacement.")
-            extract(output, manifest["source_format"])
+            pending = {**pending, "result_verification": self._verify_result(plan, output)}
+            validate_schema(self.workflow_root, "document-template-validation", pending)
             atomic_json(validation_path, pending)
             plan.update(state="WRITTEN", result=pending)
             atomic_json(plan_path, plan)
@@ -492,11 +501,12 @@ class TemplateService:
                     stream.write(data)
                     stream.flush()
                     os.fsync(stream.fileno())
-                # Re-read before publication: a valid package is not visual QA.
-                final_structure = extract(temporary, manifest["source_format"])
+                # The readback checker never invokes the format writer.
+                verification = self._verify_result(plan, temporary)
                 check = {"schema_version": 1, "state": "WRITTEN", "ready": True, "plan_id": plan["plan_id"],
                          "output": str(output), "output_sha256": sha256(temporary), "pin": plan["pin"],
                          "operations_sha256": plan["content_sha256"],
+                         "result_verification": verification,
                          "document_status": "UNVERIFIED_DRAFT", "integrity": "PASSED", "structure": "PASSED",
                          "completeness": "PASSED", "layout_state": "NOT_APPLICABLE" if manifest["source_format"] == "markdown" else "UNVERIFIED",
                          "content": str(content_path), "content_sha256": sha256(content_path),
@@ -510,6 +520,12 @@ class TemplateService:
                 atomic_json(validation_path, check)
                 plan.update(state="WRITTEN", result=check)
                 atomic_json(plan_path, plan)
+            except TemplateError as exc:
+                candidate = safe_path(request_root / (plan["plan_id"] + ".rejected-" + new_id() + output.suffix), request_root)
+                os.link(temporary, candidate)
+                details = exc.preserved_state if isinstance(exc.preserved_state, dict) else {}
+                exc.preserved_state = {**details, "candidate": str(candidate)}
+                raise
             finally:
                 temporary.unlink(missing_ok=True)
         return check
@@ -540,7 +556,7 @@ class TemplateService:
             resource = safe_path(root / relative, root)
             if not resource.is_file() or sha256(resource) != expected:
                 raise TemplateError("TEMPLATE_INTEGRITY_FAILED", "A result resource is missing or changed after validation.")
-        return check
+        return {**check, "result_verification": self._verify_result(plan, output)}
 
     def dispatch(self, action: str, request: dict, request_root: Path | None = None) -> dict:
         if action == "list":

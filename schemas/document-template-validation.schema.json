@@ -4,6 +4,18 @@
   "properties": {
     "schema_version": {"const": 1}, "state": {"enum": ["VALIDATED", "WRITTEN", "FAILED"]},
     "operations_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "result_verification": {
+      "type": "object",
+      "required": ["schema_version", "status", "source_sha256", "output_sha256", "operations_sha256", "operation_count"],
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {"const": 1}, "status": {"const": "PASSED"},
+        "source_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "output_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "operations_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "operation_count": {"type": "integer", "minimum": 0}
+      }
+    },
     "integrity": {"enum": ["PASSED", "FAILED"]}, "completeness": {"enum": ["PASSED", "FAILED"]},
     "layout_state": {"enum": ["PASSED", "FAILED", "UNVERIFIED", "NOT_APPLICABLE"]}
   }
