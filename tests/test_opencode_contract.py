@@ -160,7 +160,8 @@ class OpenCodeContractTests(unittest.TestCase):
         self.assertIn('command.append("-RepairPrerequisites")', cli)
         self.assertIn('[switch]$RepairPrerequisites', updater)
         self.assertIn('Emit-Result "NEEDS_CONFIRMATION"', updater)
-        self.assertRegex(updater, r"Stop-OwnedRlm\s+\$BootstrapOutput")
+        self.assertIn('if (-not $TemplateOnly) { Stop-OwnedRlm }', updater)
+        self.assertIn('-Profile $RepairProfile -InstallPrerequisites', updater)
         self.assertIn('start-rlm-tools-bsl.ps1") *>&1', updater)
 
     def test_update_refreshes_git_extension_and_uses_incremental_rlm_index(self) -> None:

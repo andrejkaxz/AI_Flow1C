@@ -26,6 +26,8 @@ $RequestedResume = [bool]$UpdateId
 $ResumeValidated = $false
 $Phase = "preflight"; $CheckpointPath = ""; $ConfigSignature = ""
 $UpdateLock = $null; $LockAcquired = $false
+$DoctorProfile = ""
+$VenvRepaired = $false
 $UpdateOptions = [ordered]@{ allow_external_updates = [bool]$AllowExternalUpdates; skip_external_tool_updates = [bool]$SkipExternalToolUpdates; repair_prerequisites = [bool]$RepairPrerequisites }
 if ($UpdateId -and $UpdateId -notmatch '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$') {
     $InvalidResult = @{ schema_version = 2; state = "BLOCKED"; ready = $false; error = "UpdateId must be a UUID from an update result; no files were changed." }
@@ -99,6 +101,7 @@ function Emit-Result([string]$State, [string]$ErrorMessage = "", [switch]$Checkp
         config_signature = $ConfigSignature; options = $UpdateOptions; forced_sources = @($ForcedSources)
         external_state = $ExternalState; jobs = @($Indexes.sources | Where-Object state -eq "RUNNING")
     }
+    if ($DoctorProfile) { $Result.doctor_profile = $DoctorProfile }
     if (-not $CheckExternalToolsOnly) { Save-UpdateCheckpoint $Result }
     if ($CheckpointOnly) { return }
     if ($Json) {
@@ -118,6 +121,22 @@ function Get-SupportedPythonVersion([string]$Executable) {
     try { $Version = [version]$Value } catch { return $null }
     if ($Version -lt [version]"3.10") { return $null }
     return $Version
+}
+function Test-TemplateOnlyInstall([object]$LocalConfig) {
+    return ($LocalConfig.schema_version -eq 2 -and $LocalConfig.template_library.schema_version -eq 1 -and
+        $LocalConfig.template_library.storage_kind -eq "documentation" -and $LocalConfig.documentation_path -is [string] -and
+        -not [string]::IsNullOrWhiteSpace($LocalConfig.documentation_path) -and
+        -not ($LocalConfig.PSObject.Properties.Name | Where-Object { $_ -in @(
+            "setup", "configuration_path", "extension_path", "extension_mode", "extension_repository_url",
+            "extension_branch_prefix", "rlm", "bsl_language_server"
+        ) }))
+}
+function Get-TemplateUpdateProfile {
+    $Output = (& $VenvPython -m flow1c.update_template_profile | Out-String).Trim()
+    if ($LASTEXITCODE -ne 0 -or $Output -notin @("template-markdown", "template-docx")) {
+        throw "Cannot determine template readiness profile: $Output"
+    }
+    return $Output
 }
 function Invoke-ExternalTools([ValidateSet("check", "apply")][string]$Mode, [switch]$Offline) {
     $VenvPython = Join-Path $Root ".venv\Scripts\python.exe"
@@ -209,6 +228,7 @@ try {
     if (-not (Test-Path -LiteralPath $LocalConfigPath -PathType Leaf)) { $SettingsReconfirmationRequired = $true; throw "Local configuration is missing. Run /setup." }
     try { $LocalConfig = Get-Content -LiteralPath $LocalConfigPath -Raw -Encoding utf8 | ConvertFrom-Json }
     catch { $SettingsReconfirmationRequired = $true; throw "Local configuration is not valid JSON: $($_.Exception.Message)" }
+    $TemplateOnly = Test-TemplateOnlyInstall $LocalConfig
     $ConfigSignature = Get-ConfigSignature $LocalConfigPath
     if ($RequestedResume -and -not (Test-Path -LiteralPath $CheckpointPath -PathType Leaf)) { throw "Update checkpoint does not exist. Start a new update without UpdateId." }
     if (Test-Path -LiteralPath $CheckpointPath) {
@@ -305,11 +325,13 @@ try {
                 Emit-Result "NEEDS_CONFIRMATION" "A supported project Python is unavailable. Confirm prerequisite repair to continue this same update gate."
                 exit 1
             }
-            Stop-OwnedRlm
-            $BootstrapOutput = (& (Join-Path $Root "scripts\bootstrap.ps1") -Profile analysis -InstallPrerequisites -Json 2>&1 | Out-String).Trim()
+            if (-not $TemplateOnly) { Stop-OwnedRlm }
+            $RepairProfile = if ($TemplateOnly) { "template-markdown" } else { "analysis" }
+            $BootstrapOutput = (& (Join-Path $Root "scripts\bootstrap.ps1") -Profile $RepairProfile -InstallPrerequisites -Json 2>&1 | Out-String).Trim()
             if ($LASTEXITCODE -ne 0) { throw "Prerequisite repair failed: $BootstrapOutput" }
             $VenvVersion = Get-SupportedPythonVersion $VenvPython
             if (-not $VenvVersion) { throw "Prerequisite repair completed without a supported project Python." }
+            $VenvRepaired = $true
             Add-Step "Python runtime" "REPAIRED" ".venv now uses Python $VenvVersion; the previous incompatible environment was preserved in .workspace/backups"
         } else {
             Add-Step "Python runtime" "OK" ".venv uses Python $VenvVersion"
@@ -319,13 +341,15 @@ try {
         $MigrationResult = $MigrationOutput | ConvertFrom-Json; Add-Step "Local configuration migration" ([string]$MigrationResult.state) "schema $($MigrationResult.current_schema_version)"
         $LocalConfig = Get-Content -LiteralPath $LocalConfigPath -Raw -Encoding utf8 | ConvertFrom-Json
         $ConfigSignature = Get-ConfigSignature $LocalConfigPath
-        $ExtensionUpdate = Update-Extension $LocalConfig
-        Add-Step "Extension repository" $ExtensionUpdate.state $ExtensionUpdate.detail
+        if (-not $TemplateOnly) {
+            $ExtensionUpdate = Update-Extension $LocalConfig
+            Add-Step "Extension repository" $ExtensionUpdate.state $ExtensionUpdate.detail
+        }
 
         $Apply = $false; $Check = $null
-        if ($SkipExternalToolUpdates) {
+        if (-not $TemplateOnly -and $SkipExternalToolUpdates) {
             $ExternalTools = [ordered]@{ state = "SKIPPED"; detail = "emergency override requested" }; Add-Step "External tools check" "SKIPPED" "-SkipExternalToolUpdates was specified"
-        } else {
+        } elseif (-not $TemplateOnly) {
             $Check = Invoke-ExternalTools "check"; $ExternalTools = $Check.external_tools; $ExternalState = $Check.state; Add-Step "External tools check" $Check.state "before snapshot included"
             $Manifest = Get-Content -LiteralPath (Join-Path $Root "config\external-tools.json") -Raw -Encoding utf8 | ConvertFrom-Json
             $Apply = $AllowExternalUpdates -or [bool]$Manifest.policy.apply_updates
@@ -356,23 +380,47 @@ try {
             else { Add-Step "External tools update" "CURRENT" "no allowed update is pending" }
         }
     }
-    $Phase = "indexes"
-    Emit-Result "WAITING_BACKGROUND" -CheckpointOnly
-    $RlmOutput = (& (Join-Path $Root "scripts\start-rlm-tools-bsl.ps1") *>&1 | Out-String).Trim()
-    if ($LASTEXITCODE -ne 0) { throw "RLM MCP failed to start: $RlmOutput" }; Add-Step "RLM health" "OK" $(if ($RlmOutput) { $RlmOutput } else { "healthy" })
-    $Indexes = Update-Indexes $LocalConfig ($ExtensionUpdate.state -eq "UPDATED")
-    if ($Indexes.state -eq "RUNNING") {
-        $NextActions = @([ordered]@{ action = "update"; parameters = @{ confirmed = $true; update_id = $UpdateId; wait_seconds = 30 } })
-        Add-Step "RLM indexes" "RUNNING" "Background jobs are saved; resume the same update_id after waiting."
-        Emit-Result "WAITING_BACKGROUND"; exit 0
+    if ($TemplateOnly) {
+        $Phase = "doctor"
+        $TemplateProfile = Get-TemplateUpdateProfile
+        if (-not $ResumeLoaded -or $ResumeSnapshot.doctor_profile -ne $TemplateProfile) {
+            $TemplateDependencies = @("requirements-capabilities/template-markdown.txt", "requirements-capabilities/constraints-py312.txt", "scripts/bootstrap.ps1")
+            if ($TemplateProfile -eq "template-docx") { $TemplateDependencies += "requirements-capabilities/template-docx.txt" }
+            $TemplateDependencyDiff = Invoke-Git (@("diff", "--name-only", $PreviousCommit, $CurrentCommit, "--") + $TemplateDependencies)
+            if ($TemplateDependencyDiff -or ($VenvRepaired -and $TemplateProfile -eq "template-docx")) {
+                $BootstrapOutput = (& (Join-Path $Root "scripts\bootstrap.ps1") -Profile $TemplateProfile -Json 2>&1 | Out-String).Trim()
+                if ($LASTEXITCODE -ne 0) { throw "Template dependency synchronization failed: $BootstrapOutput" }
+                Add-Step "Dependencies" "UPDATED" "template dependencies synchronized for $TemplateProfile"
+            } else { Add-Step "Dependencies" "CURRENT" "template dependency manifests are unchanged" }
+        }
+        $DoctorProfile = $TemplateProfile
+        $Detail = "installation configured for document templates"
+        $ExternalState = "SKIPPED"
+        $ExternalTools = [ordered]@{ state = "SKIPPED"; detail = $Detail }
+        $ExtensionUpdate = [ordered]@{ state = "SKIPPED"; previous_commit = ""; current_commit = ""; detail = $Detail }
+        $Indexes = [ordered]@{ state = "SKIPPED"; sources = @() }
+        $ForcedSources = @()
+        Add-Step "1C tools and sources" "SKIPPED" $Detail
+    } else {
+        $DoctorProfile = "project-basic"
+        $Phase = "indexes"
+        Emit-Result "WAITING_BACKGROUND" -CheckpointOnly
+        $RlmOutput = (& (Join-Path $Root "scripts\start-rlm-tools-bsl.ps1") *>&1 | Out-String).Trim()
+        if ($LASTEXITCODE -ne 0) { throw "RLM MCP failed to start: $RlmOutput" }; Add-Step "RLM health" "OK" $(if ($RlmOutput) { $RlmOutput } else { "healthy" })
+        $Indexes = Update-Indexes $LocalConfig ($ExtensionUpdate.state -eq "UPDATED")
+        if ($Indexes.state -eq "RUNNING") {
+            $NextActions = @([ordered]@{ action = "update"; parameters = @{ confirmed = $true; update_id = $UpdateId; wait_seconds = 30 } })
+            Add-Step "RLM indexes" "RUNNING" "Background jobs are saved; resume the same update_id after waiting."
+            Emit-Result "WAITING_BACKGROUND"; exit 0
+        }
+        Add-Step "RLM indexes" "CURRENT" "all configured source indexes are fresh"
     }
-    Add-Step "RLM indexes" "CURRENT" "all configured source indexes are fresh"
     $Phase = "doctor"
-    $DoctorOutput = (& $VenvPython (Join-Path $Root "scripts\flow1c.py") doctor --json --profile project-basic 2>&1 | Out-String).Trim()
+    $DoctorOutput = (& $VenvPython (Join-Path $Root "scripts\flow1c.py") doctor --json --profile $DoctorProfile 2>&1 | Out-String).Trim()
     if ($LASTEXITCODE -ne 0) { Add-Step "Doctor" "BLOCKED" $DoctorOutput; throw "Post-update doctor did not reach READY." }
     $DoctorResult = $DoctorOutput | ConvertFrom-Json
     if (-not $DoctorResult.ready) { throw "Post-update doctor returned an unexpected state: $DoctorOutput" }
-    $SmokeTests = [ordered]@{ state = "PASSED"; doctor = "READY" }; Add-Step "Smoke tests" "PASSED" "RLM, indexes, skills and BSL checks passed"
+    $SmokeTests = [ordered]@{ state = "PASSED"; doctor = "READY" }; Add-Step "Smoke tests" "PASSED" "doctor profile $DoctorProfile is ready"
     $FinalState = "READY"
     if ($ExternalState -in @("UPDATE_AVAILABLE", "REVIEW_REQUIRED")) { $FinalState = $ExternalState }
     $Phase = "complete"

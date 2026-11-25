@@ -14,6 +14,7 @@
     "previous_commit": {"type": "string"},
     "current_commit": {"type": "string"},
     "backup_directory": {"type": "string"},
+    "doctor_profile": {"enum": ["project-basic", "template-markdown", "template-docx"]},
     "jobs": {"type": "array", "items": {"type": "object"}},
     "options": {
       "type": "object",

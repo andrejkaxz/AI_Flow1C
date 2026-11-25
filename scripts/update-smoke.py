@@ -33,15 +33,25 @@ def run(command: list[str], cwd: Path, *, check: bool = True, timeout: float = 6
 def smoke(parent: Path, powershell: str = "powershell.exe") -> dict:
     seed, checkout = parent / "origin", parent / "clean checkout"
     (seed / "scripts").mkdir(parents=True)
-    for name in ("update.ps1", "git-identity.ps1", "rlm-index.ps1", "rlm_index_runtime.py", "rlm_index_policy.py", "migrate-local-config.py"):
+    for name in ("update.ps1", "git-identity.ps1", "rlm-index.ps1", "rlm_index_runtime.py", "rlm_index_policy.py",
+                 "migrate-local-config.py", "flow1c_templates_store.py", "flow1c_templates_policy.py"):
         shutil.copy2(ROOT / "scripts" / name, seed / "scripts" / name)
+    (seed / "flow1c").mkdir()
+    for name in ("__init__.py", "update_template_profile.py", "documentation.py", "documentation_policy.py",
+                 "errors.py", "storage.py"):
+        shutil.copy2(ROOT / "flow1c" / name, seed / "flow1c" / name)
     (seed / ".opencode/agents").mkdir(parents=True)
     (seed / ".opencode/agents/flow1c-controller.md").write_text("fixture v1", encoding="utf-8")
     (seed / "VERSION").write_text("0.1.0", encoding="utf-8")
     (seed / ".gitignore").write_text(".workspace/\n.venv/\n.flow1c.local.json\n__pycache__/\n")
     (seed / "config").mkdir()
     (seed / "config/external-tools.json").write_text(json.dumps({"policy": {"apply_updates": False}}))
-    (seed / "scripts/start-rlm-tools-bsl.ps1").write_text("Write-Output 'fixture service healthy'\nexit 0\n")
+    (seed / "scripts/start-rlm-tools-bsl.ps1").write_text(
+        "Add-Content -LiteralPath .workspace/rlm-starts.txt -Value 'start'\n"
+        "Write-Output 'fixture service healthy'\nexit 0\n")
+    (seed / "scripts/bootstrap.ps1").write_text(
+        "param([string]$Profile, [switch]$Json)\n"
+        "Add-Content -LiteralPath .workspace/bootstrap-profiles.txt -Value $Profile\nexit 0\n")
     (seed / "scripts/external_tools.py").write_text(
         "import json,pathlib\n"
         "root=pathlib.Path(__file__).resolve().parents[1]\n"
@@ -49,12 +59,15 @@ def smoke(parent: Path, powershell: str = "powershell.exe") -> dict:
         "with p.open('a') as f:f.write('check\\n')\n"
         "print(json.dumps({'state':'CURRENT','external_tools':{'rlm_tools_bsl':{'state':'CURRENT'}}}))\n")
     (seed / "scripts/flow1c.py").write_text(
-        "import json,pathlib\nfrom rlm_index_runtime import IndexManager\n"
+        "import json,pathlib,sys\nfrom rlm_index_runtime import IndexManager\n"
         "root=pathlib.Path(__file__).resolve().parents[1]\n"
         "config=json.loads((root/'.flow1c.local.json').read_text(encoding='utf-8-sig'))\n"
-        "states=[IndexManager(root,pathlib.Path(config[k])).status()['state'] for k in ('configuration_path','extension_path')]\n"
-        "ready=all(s=='FRESH' for s in states)\n"
-        "print(json.dumps({'ready':ready,'state':'READY' if ready else 'BLOCKED'}))\n"
+        "profile=sys.argv[sys.argv.index('--profile')+1]\n"
+        "if profile in ('template-markdown','template-docx'):\n"
+        " ready=pathlib.Path(config['documentation_path']).is_dir()\n"
+        "else:\n"
+        " ready=profile=='project-basic' and all(config.get(k) and IndexManager(root,pathlib.Path(config[k])).status()['state']=='FRESH' for k in ('configuration_path','extension_path'))\n"
+        "print(json.dumps({'ready':ready,'state':'READY' if ready else 'BLOCKED','requested_profile':profile}))\n"
         "raise SystemExit(0 if ready else 1)\n")
     git = shutil.which("git")
     if not git:
@@ -217,6 +230,59 @@ def smoke(parent: Path, powershell: str = "powershell.exe") -> dict:
     assert blocked["state"] == "BLOCKED" and "configuration changed" in blocked["error"]
     assert json.loads(config.read_text()) == edited
     assert checkpoint.read_bytes() == original_checkpoint
+
+    # Template configure writes a library marker even before intake, and can use a non-Git folder.
+    template_docs = parent / "template documentation"
+    template_docs.mkdir()
+    template_config = {"schema_version": 2, "documentation_path": str(template_docs),
+                       "template_library": {"schema_version": 1, "storage_kind": "documentation",
+                                            "root": "document-templates", "library_id": None}}
+    config.write_text(json.dumps(template_config), encoding="utf-8")
+    external_calls = (checkout / ".workspace/external-checks.txt").read_bytes()
+    rlm_calls = (checkout / ".workspace/rlm-starts.txt").read_bytes()
+    markdown = update()
+    assert markdown["state"] == "READY" and markdown["doctor_profile"] == "template-markdown", markdown
+    assert markdown["external_tools"]["state"] == markdown["indexes"]["state"] == "SKIPPED", markdown
+    assert not (template_docs / "document-templates").exists()
+
+    library = template_docs / "document-templates"
+    revision = library / "templates/aaaaaaaa/revisions/bbbbbbbb"
+    revision.mkdir(parents=True)
+    (revision / "manifest.json").write_text(json.dumps({"schema_version": 1, "source_format": "docx"}))
+    (library / "library.json").write_text(json.dumps({"schema_version": 1, "library_id": "cccccccc",
+        "templates": [{"template_id": "aaaaaaaa", "active_revision": "bbbbbbbb"}]}))
+    template_config["template_library"]["library_id"] = "cccccccc"
+    config.write_text(json.dumps(template_config), encoding="utf-8")
+    template_bytes = config.read_bytes()
+    (seed / "requirements-capabilities").mkdir()
+    (seed / "requirements-capabilities/template-docx.txt").write_text("# fixture dependency change\n")
+    git_run("add", ".")
+    git_run("commit", "-m", "change template dependencies")
+    docx = update()
+    assert docx["state"] == "READY" and docx["doctor_profile"] == "template-docx", docx
+    assert docx["current_commit"] == git_run("rev-parse", "HEAD")
+    assert config.read_bytes() == (Path(docx["backup_directory"]) / ".flow1c.local.json").read_bytes() == template_bytes
+    bootstrap_profiles = checkout / ".workspace/bootstrap-profiles.txt"
+    assert bootstrap_profiles.read_text().splitlines() == ["template-docx"]
+
+    # Older updaters reached the 1C checkpoints on template-only installs.
+    legacy_result = {**docx, "state": "BLOCKED", "ready": False, "phase": "indexes",
+                     "external_state": "UPDATE_AVAILABLE", "external_tools": {"state": "UPDATE_AVAILABLE"}}
+    legacy_result.pop("doctor_profile")
+    Path(docx["checkpoint_path"]).write_text(json.dumps(legacy_result), encoding="utf-8")
+    recovered = update("-UpdateId", docx["update_id"])
+    assert recovered["state"] == "READY" and recovered["doctor_profile"] == "template-docx", recovered
+    assert recovered["update_id"] == docx["update_id"] and recovered["backup_directory"] == docx["backup_directory"]
+    assert recovered["external_state"] == recovered["indexes"]["state"] == "SKIPPED", recovered
+    assert (checkout / ".workspace/external-checks.txt").read_bytes() == external_calls
+    assert (checkout / ".workspace/rlm-starts.txt").read_bytes() == rlm_calls
+    assert bootstrap_profiles.read_text().splitlines() == ["template-docx", "template-docx"]
+    assert update("-UpdateId", docx["update_id"])["state"] == "READY"
+    assert bootstrap_profiles.read_text().splitlines() == ["template-docx", "template-docx"]
+
+    config.write_text(json.dumps({**template_config, "configuration_path": str(sources[0])}), encoding="utf-8")
+    partial_project = update()
+    assert partial_project["state"] == "BLOCKED" and partial_project["doctor_profile"] == "project-basic", partial_project
     return {"schema_version": 1, "state": "PASSED", "platform": sys.platform,
             "powershell": powershell, "clean_venv_bootstrap": True, "network_used": False,
             "external_boundaries": "synthetic RLM/service/tool fixtures",
@@ -225,7 +291,10 @@ def smoke(parent: Path, powershell: str = "powershell.exe") -> dict:
                        "two background sources", "same checkpoint and backup on resume",
                        "restart requirement preserved", "no repeated fetch/tool check on resume",
                        "zero-delta old-index validation", "idempotent repeat update",
-                       "concurrent updater blocked without state overwrite", "config drift blocked"]}
+                       "concurrent updater blocked without state overwrite", "config drift blocked",
+                       "template-only Markdown and DOCX without RLM or tool checks",
+                       "DOCX dependency synchronization and legacy checkpoint recovery",
+                       "partial 1C configuration retains project checks"]}
 
 
 def main() -> int:

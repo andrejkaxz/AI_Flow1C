@@ -64,6 +64,8 @@ OS writer lock; services возвращают данные без вызовов
   Git документации и ограниченный RLM transport.
 - `setup.py`, `readiness.py` — setup checkpoints, запуск setup/update и readiness.
 - `update_policy.py` — идемпотентная миграция незавершённого update scope;
+  `update_template_profile.py` проверяет доступность библиотеки и выбирает
+  профиль для установки, настроенной через template configure без 1С;
   `update_diagnostics.py` — ограниченное чтение настроенных Git metadata без
   секретов, fetch и mutation. Update gate не зависит от work-items.
 - `registry.py`, `work_items.py` — импорт/разрешение реестра, безопасные пути,
