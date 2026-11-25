@@ -380,6 +380,10 @@ def handle(args: argparse.Namespace, *, product_root: Path) -> OperationResult:
                 storage.write_json(evidence_path, evidence)
         if action == "configure":
             gate.update(state="READY", clarification=None)
+            if gate.get("operation") == "template-document" and not gate.get("evidence_path"):
+                gate["storage_kind"] = "documentation"
+                gate_state.initialize_request_evidence(gate, product_root=product_root)
+                gate_state.save_request(gate, product_root=product_root)
         if gate.get("operation") == "setup":
             gate.setdefault("template_progress", {})[
                 result.get("operation_id") or "configuration"
@@ -465,7 +469,11 @@ def begin(args: argparse.Namespace, *, product_root: Path) -> OperationResult:
             next_action="template configure or defer",
             errors=[exc.as_dict()],
         )
-    gate_state.save_gate(gate, product_root=product_root)
+    if mode == "draft" and gate["state"] == "READY":
+        gate_state.initialize_request_evidence(gate, product_root=product_root)
+        gate_state.save_request(gate, product_root=product_root)
+    else:
+        gate_state.save_gate(gate, product_root=product_root)
     _value = gate
     return OperationResult(_value, 0 if gate["state"] == "READY" else 1)
 
@@ -502,9 +510,15 @@ def complete(gate: dict, args: argparse.Namespace, *, product_root: Path) -> Ope
     else:
         result = gate.get("template_result")
         if not result:
+            next_action = (
+                "Run document-plan, document-write and document-validate on this gate before completing."
+                if gate.get("template_pin") else
+                "Resolve an active revision of the selected template on this gate, then create and validate a new copy."
+            )
             raise template_policy.TemplateError(
                 "TEMPLATE_PROFILE_INCOMPLETE",
                 "Create and validate the pinned document before completing.",
+                next_action=next_action,
             )
         service = template_library.TemplateService(
             product_root, storage.read_json(product_root / runtime.LOCAL_CONFIG_FILE, {})

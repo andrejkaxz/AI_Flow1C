@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from flow1c import context as runtime
+from flow1c import documentation
 from flow1c import routing
 from flow1c import memory_review_policy as memory_lifecycle
 from flow1c import storage as storage
@@ -297,7 +298,42 @@ def request_root(gate: dict[str, Any], *, product_root: Path) -> Path:
             if local.get("documentation_path")
             else product_root / ".workspace" / "drafts"
         )
-    return (base / request_id).resolve()
+    path = base / request_id
+    if gate.get("operation") == "template-document" and gate.get("mode") == "draft":
+        return documentation.regular_path(path)
+    return path.resolve()
+
+
+def initialize_request_evidence(
+    gate: dict[str, Any], *, product_root: Path, fields: dict[str, Any] | None = None
+) -> None:
+    path = request_root(gate, product_root=product_root) / "evidence.json"
+    if gate.get("operation") == "template-document" and gate.get("mode") == "draft":
+        path = documentation.regular_path(path)
+    gate["evidence_path"] = str(path)
+    if path.exists():
+        _, existing = evidence_for_gate(gate, product_root=product_root)
+        if existing.get("gate_id") != gate["gate_id"]:
+            raise WorkflowError("Existing request evidence is not bound to this gate.")
+        return
+    storage.write_json(path, {
+        "schema_version": 2,
+        "gate_id": gate["gate_id"],
+        "operation": gate["operation"],
+        "code": None,
+        "git_ref": None,
+        "artifacts": [],
+        "rlm_queries": [],
+        "cc_inspections": [],
+        "source_reads": [],
+        "git_reads": [],
+        "git_analysis": [],
+        "snapshots": [],
+        "changed_files": [],
+        "query_schemas": [],
+        "query_checks": [],
+        **(fields or {}),
+    })
 
 
 def save_request(gate: dict[str, Any], *, product_root: Path) -> None:

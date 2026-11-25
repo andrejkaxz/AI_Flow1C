@@ -12,7 +12,13 @@
       "properties": {
         "id": {"type": "string"}, "kind": {"enum": ["field", "section", "paragraph", "table"]},
         "range": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "integer", "minimum": 0}},
-        "part": {"type": "string"}, "supported": {"type": "boolean"}, "text": {"type": "string"}
+        "part": {"type": "string"}, "supported": {"type": "boolean"}, "text": {"type": "string"},
+        "blank_cell": {"const": true},
+        "cell_address": {
+          "type": "object", "additionalProperties": false, "required": ["table", "row", "cell"],
+          "description": "Zero-based physical table index in the OOXML part and row/cell indices in that table.",
+          "properties": {"table": {"type": "integer", "minimum": 0}, "row": {"type": "integer", "minimum": 0}, "cell": {"type": "integer", "minimum": 0}}
+        }
       }
     }},
     "blocks": {"type": "array"}, "resources": {"type": "array", "items": {"type": "string"}},

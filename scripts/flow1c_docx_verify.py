@@ -71,6 +71,37 @@ def _text_target(original: Any, actual: Any, edits: list[tuple[int, int, str]]) 
     _compare(before, after)
 
 
+def _blank_cell_target(original: Any, actual: Any, value: str) -> None:
+    if not value:
+        _compare(original, actual)
+        return
+    actual = copy.deepcopy(actual)
+    original_run = original.find(W + "r")
+    runs = actual.findall(W + "r")
+    nodes = list(actual.iter(W + "t"))
+    if len(runs) != 1 or len(nodes) != 1 or nodes[0].getparent() is not runs[0]:
+        mismatch("blank-cell-text-structure")
+    run, node = runs[0], nodes[0]
+    original_node = original_run.find(W + "t") if original_run is not None else None
+    attributes = dict(original_node.attrib) if original_node is not None else {}
+    if node.text != value or dict(node.attrib) != {**attributes, SPACE: "preserve"} or len(node):
+        mismatch("planned-blank-cell-value")
+    if original_node is None:
+        if node.tail or run[-1] is not node:
+            mismatch("blank-cell-text-structure")
+        run.remove(node)
+    else:
+        node.text = original_node.text
+        node.attrib.clear()
+        node.attrib.update(attributes)
+    if original_run is None:
+        if actual[-1] is not run:
+            mismatch("blank-cell-text-structure")
+        _compare(actual.makeelement(W + "r"), run)
+        actual.remove(run)
+    _compare(original, actual)
+
+
 def _inline(value: str) -> list[tuple[str, bool]]:
     value = re.sub(r"\\([#*`_])", r"\1", value)
     pieces, cursor = [], 0
@@ -268,8 +299,11 @@ def verify_document(source: Path, output: Path, targets: dict, operations: list[
                     if any(c in str(op["value"]) for c in "\r\n\t"):
                         mismatch("unsupported-text-value", target=target["id"])
                     p = paragraphs[target["paragraph"]]
-                    start, end = target.get("offset", [0, len(_text(p))])
-                    text_edits.setdefault(target["paragraph"], []).append((start, end, str(op["value"])))
+                    if target.get("blank_cell"):
+                        add_slot(p, 1, lambda nodes, p=p, value=op["value"]: _blank_cell_target(p, nodes[0], value))
+                    else:
+                        start, end = target.get("offset", [0, len(_text(p))])
+                        text_edits.setdefault(target["paragraph"], []).append((start, end, str(op["value"])))
                 elif op["kind"] == "table":
                     if not isinstance(op["value"], list) or not op["value"] or any(
                             not isinstance(row, list) or len(row) != target["columns"] for row in op["value"]):

@@ -68,6 +68,9 @@ Template-only configure does not create the full project scaffold.
    handling. Choose non-overlapping supported write targets. Ask only material
    ambiguities and save answers and their exact user_statement provenance.
    Map all canonical FS sections when the catalog declares functional-spec policy.
+   For DOCX, match editable empty cells by the reported `cell_address` in the
+   template. Use `text` on those paragraph targets and classify unused cells
+   as constants. Preserve merged headings and the existing rows.
 5. profile-save builds the guide deterministically. When VALIDATED, activate with
    expected_revision (null for a new variant); the original update request permits
    activation. Preserve the previous active revision on ambiguity/failure.

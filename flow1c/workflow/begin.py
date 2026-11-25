@@ -146,29 +146,8 @@ def begin_free_request(args: argparse.Namespace, *, product_root: Path) -> Opera
         if skill_path.exists()
         else "Discuss the goal; use chat sources; draft without changing formal status."
     )
-    gate["evidence_path"] = str(
-        gate_state.request_root(gate, product_root=product_root) / "evidence.json"
-    )
-    storage.write_json(
-        Path(gate["evidence_path"]),
-        {
-            "schema_version": 2,
-            "gate_id": gate["gate_id"],
-            "operation": operation,
-            "code": None,
-            "git_ref": git_ref,
-            **reference,
-            "artifacts": [],
-            "rlm_queries": [],
-            "cc_inspections": [],
-            "source_reads": [],
-            "git_reads": [],
-            "git_analysis": [],
-            "snapshots": [],
-            "changed_files": [],
-            "query_schemas": [],
-            "query_checks": [],
-        },
+    gate_state.initialize_request_evidence(
+        gate, product_root=product_root, fields={"git_ref": git_ref, **reference}
     )
     gate_state.save_request(gate, product_root=product_root)
     _value = gate

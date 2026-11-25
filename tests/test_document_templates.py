@@ -558,6 +558,85 @@ class TemplateIntegrationTests(unittest.TestCase):
             Document(output).sections[0].header.paragraphs[0].text, "Actual user supplied content"
         )
 
+    def test_docx_addresses_blank_cells_without_changing_merged_table_layout(self):
+        from docx import Document
+        from docx.oxml import OxmlElement
+        from scripts.flow1c_docx import DocxError, validate_docx_package
+        from scripts.flow1c_templates_verify import verify_local
+
+        source = self.source / "merged-header.docx"
+        original = self.source / "synthetic-base.docx"
+        document = Document()
+        table = document.add_table(rows=5, cols=3)
+        table.cell(0, 0).merge(table.cell(0, 2)).text = "Permanent merged title"
+        table.cell(1, 0).text = "SAMPLE participant"
+        styled = table.cell(1, 2).paragraphs[0].add_run()
+        styled.bold = True
+        styled._r.append(OxmlElement("w:t"))
+        table.cell(2, 0).merge(table.cell(3, 0))
+        table.cell(4, 0).paragraphs[0].add_run().add_break()
+        document.sections[0].header.paragraphs[0].text = "Fixed header"
+        document.save(original)
+        opaque = "customXml/item1.xml"
+        for path, replaced_part, value in [
+            (source, opaque, b""),
+            (self.source / "malformed-custom-data.docx", opaque, b"<"),
+            (self.source / "empty-main-part.docx", "word/document.xml", b""),
+        ]:
+            with zipfile.ZipFile(original) as before, zipfile.ZipFile(path, "w") as after:
+                self.assertIn(replaced_part, before.namelist())
+                for member in before.namelist():
+                    after.writestr(member, value if member == replaced_part else before.read(member))
+            if path != source:
+                with self.assertRaises(DocxError):
+                    validate_docx_package(path)
+
+        received = self.service.intake({"source": str(source), "document_type": "meeting-minutes"})
+        op_id = received["operation_id"]
+        extraction = read_json(self.service.store.operation_path(op_id) / "candidate/extraction.json")
+        self.assertFalse(next(t["supported"] for t in extraction["targets"] if t["kind"] == "table"))
+        blanks = {(t["cell_address"]["row"], t["cell_address"]["cell"]): t
+                  for t in extraction["targets"] if t.get("blank_cell")}
+        self.assertTrue({(1, 1), (1, 2), (2, 1)} <= blanks.keys())
+        self.assertTrue({(2, 0), (3, 0), (4, 0)}.isdisjoint(blanks))
+
+        profile, operations = interpreted_profile(extraction, "meeting-minutes")
+        for cell, value in [((1, 1), "Pavel"), ((1, 2), "  Confirmed  "), ((2, 1), "")]:
+            target_id = blanks[cell]["id"]
+            entry = next(item for item in profile["coverage"] if item["target_id"] == target_id)
+            entry.update(role="variable", purpose="Fill an existing cell")
+            operations.append({"target_id": target_id, "kind": "text", "value": value,
+                               "basis": "Synthetic meeting input"})
+        saved = self.service.profile_save({"operation_id": op_id, "profile": profile})
+        self.assertEqual(saved["state"], "VALIDATED")
+        active = self.service.activate({"operation_id": op_id, "expected_revision": None})
+        self.assertEqual(active["state"], "ACTIVE")
+        root = self.docs / "drafts" / new_id()
+        self.service.resolve({"document_type": "meeting-minutes"}, root)
+        plan = self.service.document_plan({"operations": operations}, root)
+        result = self.service.document_write({"plan_id": plan["plan_id"]}, root)
+        output = Path(result["output"])
+        self.assertTrue(self.service.document_validate({"plan_id": plan["plan_id"]}, root)["ready"])
+        with zipfile.ZipFile(output) as saved_package:
+            self.assertEqual(saved_package.read(opaque), b"")
+        written = Document(output).tables[0]
+        self.assertEqual(len(written.rows), 5)
+        self.assertEqual(written.cell(0, 2).text, "Permanent merged title")
+        self.assertEqual(written.cell(1, 1).text, "Pavel")
+        self.assertEqual(written.cell(1, 2).text, "  Confirmed  ")
+        self.assertTrue(written.cell(1, 2).paragraphs[0].runs[0].bold)
+        self.assertEqual(written.cell(2, 1).text, "")
+
+        tampered = self.source / "missing-cell-value.docx"
+        with zipfile.ZipFile(output) as before, zipfile.ZipFile(tampered, "w") as after:
+            for member in before.namelist():
+                data = before.read(member)
+                after.writestr(member, data.replace(b">Pavel<", b">Other<") if member == "word/document.xml" else data)
+        revision = self.service.store.revision_path(active["template_id"], active["revision_id"])
+        with self.assertRaises(TemplateError) as rejected:
+            verify_local(source, tampered, revision / "extraction.json", operations)
+        self.assertEqual(rejected.exception.preserved_state["check"], "planned-blank-cell-value")
+
     def test_future_schema_and_junction_escape_are_blocked(self):
         from scripts.flow1c_templates_store import safe_path
 

@@ -18,6 +18,7 @@ except ModuleNotFoundError:
     from scripts.flow1c_templates_policy import TemplateError
 
 NS = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
+W = "{" + NS["w"] + "}"
 STRIDE = 1_000_000
 UNSUPPORTED = {"txbxContent", "object", "ins", "del", "altChunk", "fldChar"}
 
@@ -40,8 +41,26 @@ def supported(node) -> bool:
     return not any(t.xpath(".//w:tbl|.//w:vMerge|.//w:gridSpan", namespaces=NS) for t in tables)
 
 
+def blank_cell_paragraph(paragraph) -> bool:
+    cell = paragraph.getparent()
+    if cell is None or cell.tag != W + "tc" or not supported(paragraph):
+        return False
+    if (len(cell.findall(W + "p")) != 1
+            or any(child.tag not in {W + "tcPr", W + "p"} for child in cell)
+            or cell.find(f"{W}tcPr/{W}vMerge") is not None
+            or len(paragraph.xpath("ancestor::w:tbl", namespaces=NS)) != 1):
+        return False
+    runs = paragraph.findall(W + "r")
+    return (all(child.tag in {W + "pPr", W + "r"} for child in paragraph)
+            and len(runs) <= 1
+            and all(child.tag in {W + "rPr", W + "t"} for run in runs for child in run)
+            and all(len(run.findall(W + "t")) <= 1 for run in runs)
+            and not text(paragraph))
+
+
 def extract(path: Path) -> dict:
     targets, parts = [], []
+    blank_cells = []
     document = core.Document(path)
     heading_levels = {i: core._paragraph_level(p) for i, p in enumerate(document.paragraphs)}
     with zipfile.ZipFile(path) as package:
@@ -50,9 +69,18 @@ def extract(path: Path) -> dict:
                 continue
             root = xml(package.read(part))
             paragraphs = root.xpath(".//w:p", namespaces=NS)
+            tables = root.xpath(".//w:tbl", namespaces=NS)
+            cell_positions = {
+                paragraph: {"table": table_index, "row": row_index, "cell": cell_index}
+                for table_index, table in enumerate(tables)
+                for row_index, row in enumerate(table.findall(W + "tr"))
+                for cell_index, cell in enumerate(row.findall(W + "tc"))
+                for paragraph in cell.findall(W + "p")
+            }
             parts.append({"part": part, "paragraphs": len(paragraphs)})
             for i, paragraph in enumerate(paragraphs):
                 value = text(paragraph)
+                address = {"cell_address": cell_positions[paragraph]} if paragraph in cell_positions else {}
                 if len(value) >= STRIDE:
                     raise TemplateError("TEMPLATE_LAYOUT_UNSUPPORTED", "DOCX paragraph exceeds parsing budget.")
                 fields = list(PLACEHOLDER.finditer(value))
@@ -61,12 +89,17 @@ def extract(path: Path) -> dict:
                         targets.append({"id": f"target-{len(targets)}", "kind": "field", "part": part,
                                         "paragraph": i, "offset": list(match.span()), "text": match.group(),
                                         "range": [i * STRIDE + match.start(), i * STRIDE + match.end()],
-                                        "supported": supported(paragraph)})
+                                        "supported": supported(paragraph), **address})
                 elif value.strip():
                     targets.append({"id": f"target-{len(targets)}", "kind": "paragraph", "part": part,
                                     "paragraph": i, "text": value, "range": [i * STRIDE, (i + 1) * STRIDE],
-                                    "supported": supported(paragraph) and not paragraph.xpath(".//w:drawing|.//w:hyperlink", namespaces=NS)})
-            for i, table in enumerate(root.xpath(".//w:tbl", namespaces=NS)):
+                                    "supported": supported(paragraph) and not paragraph.xpath(".//w:drawing|.//w:hyperlink", namespaces=NS),
+                                    **address})
+                elif address and blank_cell_paragraph(paragraph):
+                    blank_cells.append({"kind": "paragraph", "part": part, "paragraph": i, "text": "",
+                                        "range": [i * STRIDE, (i + 1) * STRIDE], "supported": True,
+                                        "blank_cell": True, **address})
+            for i, table in enumerate(tables):
                 descendants = table.xpath(".//w:p", namespaces=NS)
                 indices = [paragraphs.index(p) for p in descendants]
                 targets.append({"id": f"target-{len(targets)}", "kind": "table", "part": part, "table": i,
@@ -91,6 +124,8 @@ def extract(path: Path) -> dict:
                     parts.append({"anchor": etree.QName(node).localname,
                                   "name": node.get(core.qn("w:name")) or node.get(core.qn("w:val")),
                                   "write_support": "use the containing unambiguous paragraph/section target"})
+        for target in blank_cells:
+            targets.append({"id": f"target-{len(targets)}", **target})
         package_parts = len(package.namelist())
         relationships = []
         for part in package.namelist():
@@ -124,6 +159,21 @@ def replace_text(paragraph, start: int, end: int, value: str) -> None:
         raise TemplateError("TEMPLATE_ANCHOR_AMBIGUOUS", "Text target no longer exists.")
 
 
+def fill_blank_cell(paragraph, value: str) -> None:
+    if not blank_cell_paragraph(paragraph):
+        raise TemplateError("TEMPLATE_LAYOUT_UNSUPPORTED", "Blank cell is no longer a simple DOCX paragraph.")
+    if not value:
+        return
+    run = paragraph.find(W + "r")
+    if run is None:
+        run = etree.SubElement(paragraph, W + "r")
+    node = run.find(W + "t")
+    if node is None:
+        node = etree.SubElement(run, W + "t")
+    node.text = value
+    node.set("{http://www.w3.org/XML/1998/namespace}space", "preserve")
+
+
 def write_bytes(path: Path, extraction: dict, operations: list[dict]) -> bytes:
     targets = {t["id"]: t for t in extraction["targets"]}
     document = core.Document(path)
@@ -146,7 +196,10 @@ def write_bytes(path: Path, extraction: dict, operations: list[dict]) -> bytes:
                     value = str(op["value"])
                     if "\n" in value or "\r" in value or "\t" in value:
                         raise TemplateError("TEMPLATE_LAYOUT_UNSUPPORTED", "Use a section operation for multiline DOCX content.")
-                    replace_text(paragraph, start, end, value)
+                    if t.get("blank_cell"):
+                        fill_blank_cell(paragraph, value)
+                    else:
+                        replace_text(paragraph, start, end, value)
                 elif op["kind"] == "table" and t["kind"] == "table":
                     rows = op["value"]
                     if not isinstance(rows, list) or not rows or any(not isinstance(row, list) or len(row) != t["columns"] for row in rows):
@@ -191,7 +244,7 @@ def write_bytes(path: Path, extraction: dict, operations: list[dict]) -> bytes:
         with zipfile.ZipFile(result, "w", zipfile.ZIP_DEFLATED) as output:
             for info in package.infolist():
                 raw = changed.get(info.filename, package.read(info.filename))
-                if info.filename.endswith((".xml", ".rels")):
+                if info.filename.endswith((".xml", ".rels")) and not core.empty_custom_xml_part(info.filename, raw):
                     xml(raw)
                 output.writestr(info, raw)
     return result.getvalue()

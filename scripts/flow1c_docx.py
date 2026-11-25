@@ -63,6 +63,11 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def empty_custom_xml_part(name: str, content: bytes) -> bool:
+    """Recognize empty Word custom-data payloads preserved as opaque package parts."""
+    return not content and re.fullmatch(r"customXml/item[1-9][0-9]*\.xml", name) is not None
+
+
 def validate_docx_package(path: Path) -> None:
     if Document is None:
         raise DocxError("DOCX_RENDER_UNAVAILABLE", "Зависимость python-docx недоступна в текущем профиле.", next_action="Запустите bootstrap профиля office/documents и повторите операцию.")
@@ -93,6 +98,8 @@ def validate_docx_package(path: Path) -> None:
             for info in package.infolist():
                 if info.filename.endswith((".xml", ".rels")):
                     raw = package.read(info)
+                    if empty_custom_xml_part(info.filename, raw):
+                        continue
                     if b"<!DOCTYPE" in raw.upper() or b"<!ENTITY" in raw.upper():
                         raise DocxError("DOCX_INVALID", "DTD/entities are forbidden in OOXML.")
                     from lxml import etree

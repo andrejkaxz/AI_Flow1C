@@ -45,7 +45,9 @@ def smoke(checkout: Path, docs: Path, *, bootstrap: bool, format_name: str) -> d
     if format_name == "markdown":
         source.write_text("# Meeting\n\n{{content}}\n", encoding="utf-8")
     else:
-        run([python, "-c", "from docx import Document; import sys,json; d=Document(); d.add_heading('Meeting',1); d.add_paragraph('{{content}}'); d.save(sys.argv[1]); print(json.dumps({'created':True}))", str(source)])
+        run([python, "-c", "from docx import Document; import sys; d=Document(); "
+             "t=d.add_table(rows=2,cols=2); t.cell(0,0).merge(t.cell(0,1)).text='Meeting'; "
+             "t.cell(1,0).text='Decision'; d.save(sys.argv[1])", str(source)])
     received = run(cli + ["template", "intake", "--json-stdin"], stdin={"gate_id": gate_id, "request": {"source": str(source), "document_type": "meeting-minutes"}})
     if received["state"] != "PROFILE_DRAFT":
         raise RuntimeError(f"Intake failed: {received}")
@@ -54,7 +56,7 @@ def smoke(checkout: Path, docs: Path, *, bootstrap: bool, format_name: str) -> d
     profile = {"schema_version": 1, "source_sha256": received["source_sha256"], "rules": [], "questions": [], "coverage": []}
     ops = []
     for t in inspection["targets"]:
-        variable = t["kind"] == "field"
+        variable = t["kind"] == "field" or t.get("blank_cell", False)
         profile["coverage"].append({"target_id": t["id"], "role": "variable" if variable else "constant",
             "purpose": "Content supplied by user" if variable else "Preserve structure", "required": variable,
             "required_basis": "user defined" if variable else None, "unknown": "Ask the user"})
@@ -65,6 +67,13 @@ def smoke(checkout: Path, docs: Path, *, bootstrap: bool, format_name: str) -> d
     run(cli + ["agent-complete", "--json-stdin"], stdin={"gate_id": gate_id, "summary": "Stored and checked template"})
     document = run(cli + ["agent-begin", "--operation", "template-document", "--mode", "draft", "--summary", "Generate smoke draft"])
     document_gate = document["gate_id"]
+    meeting = docs / "meeting-input.md"
+    meeting.write_text("# Synthetic meeting\nUse weekly review.\n", encoding="utf-8")
+    run(cli + ["artifact-intake", "--json-stdin"], stdin={"gate_id": document_gate, "source": [str(meeting)]})
+    run(cli + ["agent-context", "--json-stdin"], stdin={"gate_id": document_gate, "view": "compact"})
+    index = run(cli + ["context-read", "--json-stdin"], stdin={"gate_id": document_gate, "entry_id": "index"})
+    entry = json.loads(index["content"].splitlines()[0])["entry_id"]
+    read = run(cli + ["context-read", "--json-stdin"], stdin={"gate_id": document_gate, "entry_id": entry})
     pin = run(cli + ["template", "resolve", "--json-stdin"], stdin={"gate_id": document_gate, "request": {"document_type": "meeting-minutes"}})
     plan = run(cli + ["document-plan", "--json-stdin"], stdin={"gate_id": document_gate, "request": {"operations": ops}})
     output = run(cli + ["document-write", "--json-stdin"], stdin={"gate_id": document_gate, "request": {"plan_id": plan["plan_id"]}})
@@ -73,10 +82,19 @@ def smoke(checkout: Path, docs: Path, *, bootstrap: bool, format_name: str) -> d
         raise RuntimeError("Independent document verification is missing or unbound")
     run(cli + ["memory", "--json-stdin"], stdin={"gate_id": document_gate, "action": "overview",
                                                 "request": {"query": "Synthetic template smoke"}})
+    memory = run(cli + ["memory", "--json-stdin"], stdin={"gate_id": document_gate, "action": "remember", "request": {
+        "kind": "decision", "subject": "Synthetic meeting review cadence", "text": "Use weekly review.",
+        "basis": "accepted_document", "source": {"type": "context_entry", "entry_id": entry,
+                                                  "locator": "line:2", "sha256": read["source_sha256"]}}})
+    if memory["state"] != "SAVED":
+        raise RuntimeError(f"Template draft did not save evidence-backed memory: {memory}")
     run(cli + ["memory", "--json-stdin"], stdin={"gate_id": document_gate, "action": "review", "request": {
-        "findings": [{"kind": "none", "topic": "Synthetic template smoke", "disposition": "not_reusable",
-                      "records": [], "reason": "Only fixed synthetic fixture content was copied; no customer facts, decisions or open questions were introduced."}]}})
+        "findings": [{"kind": "decision", "topic": "Synthetic meeting review cadence", "disposition": "saved",
+                      "records": [{"memory_id": memory["memory_id"], "revision": memory["revision"]}],
+                      "reason": "The source line was read from an accepted attachment on the same draft gate."}]}})
     complete = run(cli + ["agent-complete", "--json-stdin"], stdin={"gate_id": document_gate, "summary": "Checked draft"})
+    if complete.get("memory", {}).get("status") != "UPDATED":
+        raise RuntimeError(f"Template draft did not complete with the memory receipt: {complete}")
     source.unlink()
     local_path = checkout / ".flow1c.local.json"
     local = json.loads(local_path.read_text(encoding="utf-8"))
@@ -93,7 +111,7 @@ def smoke(checkout: Path, docs: Path, *, bootstrap: bool, format_name: str) -> d
     return {"format": format_name, "bootstrap": bootstrap, "doctor": doctor, "active": active["state"],
             "document": complete["state"], "layout_state": output["layout_state"], "migration": migrated["state"],
             "source_sha256": received["source_sha256"], "output_sha256": output["output_sha256"],
-            "result_verification": verification, "library_preserved": True}
+            "result_verification": verification, "library_preserved": True, "memory": complete["memory"]}
 
 
 def main() -> int:
