@@ -168,7 +168,7 @@ def remember(request: dict[str, Any], gate: dict[str, Any], source: dict[str, An
                 return {"schema_version": 1, "state": "UNCHANGED", "memory_id": replay["memory_id"],
                         "revision": replay["revision"], "source": source}
             if len(records) >= policy.MAX_RECORDS:
-                raise ProjectMemoryError("MEMORY_LIMIT: project record limit reached")
+                raise ProjectMemoryError(f"MEMORY_LIMIT: project record limit reached ({len(records)}/{policy.MAX_RECORDS})")
             previous = None
             identifier = store.new_id()
         if previous and previous["revision"] != expected:

@@ -11,7 +11,7 @@ from typing import Any, Iterator
 
 from flow1c import documentation, navigation, storage
 from flow1c.errors import WorkflowError
-from flow1c.memory_policy import MAX_RECORDS, MAX_SCAN_BYTES, ProjectMemoryError, memory_id
+from flow1c.memory_policy import MAX_RECORD_BYTES, MAX_RECORDS, MAX_SCAN_BYTES, ProjectMemoryError, memory_id
 
 Project = tuple[Path, Path, str]
 
@@ -79,7 +79,7 @@ def writer(root: Path, directory: Path) -> Iterator[None]:
 
 def read(directory: Path, identifier: str, project_id: str) -> dict[str, Any]:
     path = record_path(directory, identifier)
-    if not path.is_file() or path.stat().st_size > 16_384:
+    if not path.is_file() or path.stat().st_size > MAX_RECORD_BYTES:
         raise ProjectMemoryError("MEMORY_MISSING: record is absent or exceeds the file limit")
     try:
         value = storage.read_json(path)

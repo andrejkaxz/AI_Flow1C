@@ -9,6 +9,7 @@ import shutil
 import sys
 import tempfile
 import unittest
+import uuid
 from contextlib import redirect_stdout
 from pathlib import Path
 from unittest import mock
@@ -84,6 +85,26 @@ class ProjectMemoryTests(unittest.TestCase):
         self.assertEqual(self.call("forget", {"memory_id": first["memory_id"],
                                          "expected_revision": 2, "confirmed": True})["state"], "FORGOTTEN")
         self.assertFalse(self.call("search", {"query": "review"})["matches"])
+
+    def test_existing_records_remain_usable_past_the_old_capacity(self) -> None:
+        first = self.remember(subject="Historical sentinel")
+        _, directory, project_id = memory_store.project(product_root=self.product)
+        file = memory_store.record_path(directory, first["memory_id"])
+        previous_bytes = file.read_bytes()
+        previous = memory_store.read(directory, first["memory_id"], project_id)
+        for number in range(199):
+            memory_store.put(directory, {**previous, "memory_id": str(uuid.UUID(int=number)),
+                                         "subject": f"Old entry {number}"})
+
+        added = self.remember(subject="Newest sentinel")
+        self.assertEqual(added["state"], "SAVED")
+        self.assertEqual(self.remember(subject="Newest sentinel")["state"], "UNCHANGED")
+        for subject, expected in [("Historical", first), ("Newest", added)]:
+            result = self.call("search", {"query": subject})
+            self.assertTrue(result["scan_complete"])
+            self.assertEqual(result["matches"][0]["memory_id"], expected["memory_id"])
+        self.assertEqual(self.call("read", {"memory_id": first["memory_id"], "revision": 1})["state"], "WORKING")
+        self.assertEqual(file.read_bytes(), previous_bytes)
 
     def test_scope_corruption_and_closed_gate(self) -> None:
         first = self.remember()

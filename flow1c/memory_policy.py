@@ -19,8 +19,9 @@ KINDS = {"project_fact", "decision", "open_question", "source_location"}
 BASES = {"user_statement", "accepted_document", "completed_result"}
 SOURCE_BASIS = {"context_entry": "accepted_document", "dialogue_answer": "user_statement",
                 "dialogue_note": "user_statement", "sealed_handoff": "completed_result"}
-MAX_RECORDS = 200
-MAX_SCAN_BYTES = 2_000_000
+MAX_RECORDS = 2_000
+MAX_RECORD_BYTES = 16_384
+MAX_SCAN_BYTES = 32 * 1024 * 1024
 MAX_RESULTS = 5
 MAX_RESPONSE_CHARS = 8000
 ID_PATTERN = re.compile(r"[a-f0-9-]{36}\Z")
