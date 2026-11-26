@@ -89,6 +89,66 @@
       "expected_outcome": "gate-checks-required"
     },
     {
+      "case_id": "workbook-format-1",
+      "split": "development",
+      "prompt": "Примени стиль книги-образца к двум шаблонам загрузки Excel, сохрани все колонки.",
+      "context": [],
+      "answers": [],
+      "expected": {
+        "status": "VALID",
+        "operation": "workbook-format",
+        "mode": "draft",
+        "primary_skill": "flow1c-workbook-format",
+        "role": null,
+        "sources": [{"kind": "chat", "version": "provided"}],
+        "source_relation": "single"
+      },
+      "allowed_substeps": [],
+      "rejected_routes": ["template-document", "registry"],
+      "requires_question": false,
+      "expected_outcome": "gate-checks-required"
+    },
+    {
+      "case_id": "workbook-format-2",
+      "split": "development",
+      "prompt": "Оформи копию листа загрузки по приложенному XLSX. Сохрани формулы и выпадающие списки.",
+      "context": ["Синтетический файл Examples.xlsx предоставлен пользователем."],
+      "answers": [],
+      "expected": {
+        "status": "VALID",
+        "operation": "workbook-format",
+        "mode": "draft",
+        "primary_skill": "flow1c-workbook-format",
+        "role": null,
+        "sources": [{"kind": "attachment", "selector": "Examples.xlsx", "version": "provided"}],
+        "source_relation": "single"
+      },
+      "allowed_substeps": [],
+      "rejected_routes": ["interview-preparation"],
+      "requires_question": false,
+      "expected_outcome": "gate-checks-required"
+    },
+    {
+      "case_id": "workbook-format-3",
+      "split": "held-out",
+      "prompt": "У файлов XLS разные поля. Сделай одинаковое оформление шапок по указанному образцу, оставь книги в XLS.",
+      "context": [],
+      "answers": [],
+      "expected": {
+        "status": "VALID",
+        "operation": "workbook-format",
+        "mode": "draft",
+        "primary_skill": "flow1c-workbook-format",
+        "role": null,
+        "sources": [{"kind": "chat", "version": "provided"}],
+        "source_relation": "single"
+      },
+      "allowed_substeps": [],
+      "rejected_routes": ["registry", "consultation"],
+      "requires_question": false,
+      "expected_outcome": "gate-checks-required"
+    },
+    {
       "case_id": "consultation-1",
       "split": "development",
       "prompt": "Объясни подход к проектированию учёта заказов.",

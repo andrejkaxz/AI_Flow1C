@@ -9,6 +9,7 @@ The same CLI contract is used by OpenCode, Codex, and Claude Code. In environmen
 | `flow1c_handoff` (completed gate only) | `flow1c.py agent-handoff --json-stdin`; `gate_id`, `action=read|recover`. [Передача и recovery](handoff.md); без нового этапа и повторения effects |
 | `flow1c_begin` | `flow1c.py agent-begin --json-stdin`; `reference_kind=auto|requirement|specification`, для `query-analysis` явный `query_intent=create|review|optimize` |
 | `flow1c_interview` | `flow1c.py interview-register --json-stdin`; `inspect|write|audit`, отдельный interview-preparation gate; XLSX остаётся UNVERIFIED_DRAFT, исходник сохраняется. [Контракт](interview-preparation.md) |
+| `flow1c_workbook` | `flow1c.py workbook-format --json-stdin`; `list`, `inspect`, `write` в активном `workbook-format` draft. [Оформление Excel](workbook-format.md) |
 | `flow1c_git_inspect` | `flow1c.py agent-git-inspect --json-stdin`; `action=integration`, `git_refs`, `target_ref` находят вливания нескольких веток без сканирования bounded log |
 | `flow1c_dialogue` | `flow1c.py agent-dialogue --json-stdin`; для `deviate`: `deviation_type`, `scope`, `condition_ids`, `user_statement`, `answer` |
 | `flow1c_intake` | `flow1c.py artifact-intake --json-stdin` |

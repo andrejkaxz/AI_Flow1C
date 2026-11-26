@@ -88,6 +88,7 @@ class RoutingContractTests(unittest.TestCase):
     def test_all_operation_mode_combinations_match_owner_contract(self) -> None:
         # Free primary selection is the published begin behavior, not a new specialized mapping.
         exceptions = {"query-analysis": "flow1c-query-analysis", "interview-preparation": "flow1c-interview-preparation",
+                      "workbook-format": "flow1c-workbook-format",
                       "template-management": "flow1c-document-templates", "template-document": "flow1c-document-templates"}
         stages = read("config/stages.json")["operations"]
         for operation, route in self.rules["routes"].items():

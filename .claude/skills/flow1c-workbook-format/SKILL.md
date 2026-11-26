@@ -1,6 +1,6 @@
 ---
 name: flow1c-workbook-format
-description: Оформление визуальных диапазонов копий XLS и XLSX по книге-образцу.
+description: Оформи копии исходных XLS и XLSX по визуальному примеру Excel. Используй для изменения шрифтов, заливок, границ, выравнивания и размеров без изменения структуры и содержимого.
 ---
 
 Read and apply the canonical instructions in `../../../.agents/skills/flow1c-workbook-format/SKILL.md`.
