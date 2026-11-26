@@ -25,8 +25,10 @@ from flow1c.routing_policy import MAX_PROPOSAL_BYTES, RoutingError
 from flow1c import storage as storage
 from flow1c import templates as templates_service
 from flow1c import work_items as work_items
+from flow1c import workbook_format
 from flow1c.errors import WorkflowError
 from flow1c.results import OperationResult
+from flow1c.workbook_format_policy import WorkbookFormatError
 from flow1c.workflow import actions as actions_service
 from flow1c.workflow import begin as begin_service
 from flow1c.workflow import complete as completion
@@ -652,6 +654,11 @@ def build_parser() -> argparse.ArgumentParser:
     interview.add_argument("--gate-id")
     interview.add_argument("--action", choices=("inspect", "audit", "write"), default="inspect")
     interview.set_defaults(request={}, handler=cmd_interview_register)
+    workbook = subparsers.add_parser("workbook-format", help="Inspect Excel books and format a verified copy")
+    workbook.add_argument("--json-stdin", action="store_true", required=True)
+    workbook.add_argument("--gate-id")
+    workbook.add_argument("--action", choices=("list", "inspect", "write"), default="inspect")
+    workbook.set_defaults(request={}, handler=cmd_workbook_format)
     register_template_parser(subparsers)
     return parser
 
@@ -664,8 +671,8 @@ def main(argv: Iterable[str] | None = None) -> int:
         if args.command == "route-check":
             return cmd_route_check(args)
         if getattr(args, "json_stdin", False):
-            if args.command in {"knowledge", "memory"}:
-                label = "Knowledge" if args.command == "knowledge" else "Memory"
+            if args.command in {"knowledge", "memory", "workbook-format"}:
+                label = args.command.capitalize()
                 raw = sys.stdin.read(280001)
                 if len(raw.encode("utf-8")) > 280000:
                     raise WorkflowError(f"{label} input exceeds 280000 bytes")
@@ -710,6 +717,7 @@ def main(argv: Iterable[str] | None = None) -> int:
         docx.DocxError,
         template_policy.TemplateError,
         interview_policy.InterviewError,
+        WorkbookFormatError,
     ) as exc:
         payload = {
             "schema_version": 1,
@@ -942,6 +950,10 @@ def cmd_git_commit(args: argparse.Namespace) -> int:
 def cmd_interview_register(args: argparse.Namespace) -> int:
     result = documents.interview_register(args, product_root=ROOT)
     return emit_result(result)
+
+
+def cmd_workbook_format(args: argparse.Namespace) -> int:
+    return emit_result(workbook_format.command(args, product_root=ROOT))
 
 
 def cmd_pr_create(args: argparse.Namespace) -> int:

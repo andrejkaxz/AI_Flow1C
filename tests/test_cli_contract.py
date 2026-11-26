@@ -178,9 +178,17 @@ class CliContractTests(unittest.TestCase):
     def test_all_parser_contracts_match_baseline(self) -> None:
         expected = json.loads((FIXTURES / "parser.json").read_text(encoding="utf-8"))
         actual = parser_contract(cli.build_parser())
-        self.assertEqual(set(actual["commands"]) - set(expected["commands"]), {"route-catalog", "route-check", "agent-handoff", "context-read", "knowledge", "memory"})
-        for name in ("route-catalog", "route-check", "agent-handoff", "context-read", "knowledge", "memory"):
+        added_commands = {"route-catalog", "route-check", "agent-handoff", "context-read",
+                          "knowledge", "memory", "workbook-format"}
+        self.assertEqual(set(actual["commands"]) - set(expected["commands"]), added_commands)
+        workbook_actions = {item["dest"]: item for item in actual["commands"]["workbook-format"]["actions"]}
+        self.assertTrue(workbook_actions["json_stdin"]["required"])
+        self.assertEqual(workbook_actions["action"]["choices"], ["list", "inspect", "write"])
+        for name in added_commands:
             actual["commands"].pop(name)
+        for name in ("agent-begin", "doctor"):
+            operation = next(item for item in actual["commands"][name]["actions"] if item["dest"] == "operation")
+            operation["choices"].remove("workbook-format")
         # New explicit context options are additive; every legacy option/default is exact.
         additions = {"context-build": {"view", "gate_id"},
                      "agent-context": {"view", "action", "entry_id", "section_id", "cursor", "max_chars"}}

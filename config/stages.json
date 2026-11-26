@@ -10,6 +10,15 @@
       "allowed_tools": ["flow1c_intake", "flow1c_inspect", "flow1c_dialogue", "flow1c_source_query", "flow1c_interview", "flow1c_write", "flow1c_complete"],
       "writable_targets": ["draft"]
     },
+    "workbook-format": {
+      "required_profile": "conversation",
+      "code_required": false,
+      "skill": "flow1c-workbook-format",
+      "requires_rlm": false,
+      "requires_bsl_ls": false,
+      "allowed_tools": ["flow1c_workbook", "flow1c_inspect", "flow1c_dialogue", "flow1c_memory", "flow1c_complete"],
+      "writable_targets": ["draft"]
+    },
     "consultation": {
       "required_profile": "conversation",
       "code_required": false,

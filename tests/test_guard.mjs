@@ -116,6 +116,24 @@ test("interview tools require an allowed live gate and preserve draft completion
   await assert.doesNotReject(guard["tool.execute.before"]({ sessionID: f.sessionID, tool: "flow1c_interview" }, { args: { gate_id: f.id, action: "inspect" } }))
 })
 
+test("workbook actions require a matching active draft and an allowed action", async t => {
+  const f = fixture(t)
+  const guard = await Flow1CGuard({ client: f.client, worktree: f.root })
+  const before = action => guard["tool.execute.before"](
+    { sessionID: f.sessionID, tool: "flow1c_workbook" },
+    { args: { gate_id: f.id, action } },
+  )
+  await assert.rejects(before("list"))
+  const scope = { operation: "workbook-format", available_actions: ["flow1c_workbook", "flow1c_complete"] }
+  await f.after(guard, "flow1c_begin", f.gate("READY", scope))
+  for (const action of ["list", "inspect", "write"]) await assert.doesNotReject(before(action))
+  await assert.rejects(before("other"))
+  f.gate("READY", { ...scope, mode: "explore" })
+  await assert.rejects(before("write"))
+  f.gate("UNVERIFIED_DRAFT", { ...scope, completed_at: "synthetic" })
+  await assert.rejects(before("write"))
+})
+
 test("a direct question is allowed before begin and while running", async t => {
   const f = fixture(t)
   const guard = await Flow1CGuard({ client: f.client, worktree: f.root })

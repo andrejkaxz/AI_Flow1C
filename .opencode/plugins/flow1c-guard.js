@@ -236,6 +236,14 @@ export const Flow1CGuard = async ({ client, worktree }) => {
         if (gate.operation !== "interview-preparation" || !gate.available_actions?.includes(input.tool)) throw new Error("Interview tool is unavailable for this gate")
         if (output.args?.action === "write" && gate.mode !== "draft") throw new Error("Interview workbook writes require draft mode")
       }
+      if (input.tool === "flow1c_workbook") {
+        const gate = readRecord(gatePath)
+        if (!gate || gate.completed_at || !["READY", "UNVERIFIED_DRAFT"].includes(gate.state) ||
+            gate.operation !== "workbook-format" || gate.mode !== "draft" || !gate.available_actions?.includes(input.tool)) {
+          throw new Error("Workbook formatting requires an active workbook-format draft gate")
+        }
+        if (!["list", "inspect", "write"].includes(output.args?.action)) throw new Error("Invalid workbook action")
+      }
       if (input.tool === "flow1c_context") {
         const gate = readRecord(gatePath)
         if (!gate || gate.completed_at || !["READY", "READY_WITH_DEVIATIONS", "UNVERIFIED_DRAFT"].includes(gate.state)) throw new Error("Context requires an active ready gate")

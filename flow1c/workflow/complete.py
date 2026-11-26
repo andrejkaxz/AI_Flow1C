@@ -18,6 +18,7 @@ from flow1c import storage as storage
 from flow1c import system as system
 from flow1c import templates as templates_service
 from flow1c import work_items as work_items
+from flow1c import workbook_format
 from flow1c.errors import WorkflowError
 from flow1c.results import OperationResult
 from flow1c.workflow import state as gate_state
@@ -35,7 +36,14 @@ def complete_free_request(
     if gate.get("operation") in {"template-management", "template-document"}:
         return templates_service.complete(gate, args, product_root=product_root)
     output = None
-    if (
+    workbook_outputs = []
+    if gate.get("operation") == "workbook-format" and gate.get("mode") == "draft":
+        if args.output:
+            raise WorkflowError("Workbook completion uses the outputs recorded by workbook-format.")
+        workbook_outputs = workbook_format.complete_outputs(gate, product_root=product_root)
+        output = workbook_outputs[0]
+        gate.update(state="DRAFT_COMPLETE", document_status="UNVERIFIED_DRAFT", output=str(output))
+    elif (
         gate["mode"] == "draft"
         and gate.get("interview_output")
         and (not args.output or str(args.output).lower().endswith(".xlsx"))
@@ -139,6 +147,8 @@ def complete_free_request(
         "deviations": gate.get("deviations", []),
         "output": str(output) if output else None,
     }
+    if workbook_outputs:
+        result["outputs"] = [str(path) for path in workbook_outputs]
     if gate.get("query_verification"):
         result["query_verification"] = gate["query_verification"]
         result["query_text"] = (

@@ -199,6 +199,7 @@ Update возобновляется по gate и `update_id`. [Обновлен�
 - [Маршрутизация](docs/intent-routing.md), [tool map](docs/agent-tool-map.md).
 - [Основа route contract и ограничения текущей итерации](docs/route-contract.md).
 - [Интервью](docs/interview-preparation.md), [шаблоны](docs/document-templates.md).
+- [Оформление копий XLS и XLSX по примеру](docs/workbook-format.md).
 - [Консультации и черновики](docs/dialogue.md), [Redmine](docs/redmine.md).
 - [Разработка и проверки](CONTRIBUTING.md), [изменения](CHANGELOG.md).
 

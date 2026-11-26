@@ -53,7 +53,8 @@ class RoutingIntegrationTests(unittest.TestCase):
         before = {path.relative_to(self.root) for path in self.root.rglob("*")}
         catalog = self.scenario.run(["route-catalog", "--json"], outside=True)
         self.assertEqual(catalog["exit_code"], 0)
-        self.assertEqual(len(catalog["stdout"]["routes"]), 19)
+        self.assertEqual(set(catalog["stdout"]["routes"]),
+                         set(routing.load_rules(ROOT)["routes"]))
         self.assertNotIn("owners", catalog["stdout"])
         schema = json.loads((ROOT / "schemas/route-proposal.schema.json").read_text(encoding="utf-8"))
         self.assertEqual(catalog["stdout"]["proposal_schema"], schema)
@@ -252,7 +253,8 @@ class RoutingIntegrationTests(unittest.TestCase):
         result = run([sys.executable, "-B", "scripts/flow1c.py", "route-catalog", "--json"],
                      cwd=workflow, capture_output=True, encoding="utf-8", timeout=30)
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(len(json.loads(result.stdout)["routes"]), 19)
+        self.assertEqual(set(json.loads(result.stdout)["routes"]),
+                         set(routing.load_rules(ROOT)["routes"]))
 
 
 if __name__ == "__main__":

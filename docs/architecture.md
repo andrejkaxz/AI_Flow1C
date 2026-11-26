@@ -72,6 +72,9 @@ OS writer lock; services возвращают данные без вызовов
   manifest, создание и reconciliation рабочих элементов.
 - `intake.py`, `redmine.py` — intake/provenance и транзакции Redmine credentials.
 - `documents.py`, `templates.py` — разделы, DOCX, интервью и lifecycle шаблонов.
+- `workbook_format.py` — общий для CLI и OpenCode сервис оформления Excel,
+  проверки результата и evidence. Карта диапазонов проверяется отдельно от
+  файлового I/O, а визуальные свойства применяет Windows-адаптер Excel.
 - `publication.py` — status, validation snapshots, commit и PR.
 - `workflow/state.py` — gate/request/evidence persistence и tool authorization.
 - `workflow/begin.py`, `dialogue.py`, `complete.py` — assessment, ответы/resume,

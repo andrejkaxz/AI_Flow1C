@@ -6,7 +6,7 @@ import unicodedata
 from copy import deepcopy
 
 MODES = ("explore", "draft", "formal")
-FREE_OPERATIONS = {"interview-preparation", "template-management", "template-document", "consultation", "query-analysis", "workflow-review", "functional-spec", "functional-section", "functional-review",
+FREE_OPERATIONS = {"interview-preparation", "workbook-format", "template-management", "template-document", "consultation", "query-analysis", "workflow-review", "functional-spec", "functional-section", "functional-review",
                    "technical-design", "technical-implementation", "code-review", "testing"}
 FREE_TOOLS = ["flow1c_intake", "flow1c_redmine_fetch", "flow1c_inspect", "flow1c_knowledge", "flow1c_memory", "flow1c_git_refresh", "flow1c_git_inspect",
               "flow1c_git_snapshot", "flow1c_dialogue", "flow1c_source_query", "flow1c_complete"]
@@ -48,6 +48,8 @@ GIT_COMMIT_PATTERN = re.compile(
 
 def allowed_tools_for_mode(mode: str, operation: str | None = None) -> list[str]:
     """Return a fresh, duplicate-free tool list for a non-formal mode."""
+    if operation == "workbook-format" and mode == "draft":
+        return ["flow1c_workbook", "flow1c_inspect", "flow1c_dialogue", "flow1c_memory", "flow1c_complete"]
     if mode == "explore":
         tools = FREE_TOOLS
     elif mode == "draft":
@@ -79,8 +81,9 @@ def select_request_mode(operation: str, summary: str, explicit_mode: str | None)
             raise ValueError("Unknown work mode")
         return {"mode": explicit_mode, "actor": "caller", "reason": "explicit"}
     text = str(summary or "")
-    if operation == "interview-preparation":
-        return {"mode": "draft", "actor": "workflow", "reason": "interview_draft_default"}
+    if operation in {"interview-preparation", "workbook-format"}:
+        reason = "interview_draft_default" if operation == "interview-preparation" else "workbook_draft_default"
+        return {"mode": "draft", "actor": "workflow", "reason": reason}
     if operation in {"template-management", "template-document"}:
         return {"mode": "draft" if operation == "template-document" else "explore", "actor": "workflow", "reason": "template_operation"}
     if operation == "functional-section" or (operation == "functional-spec" and SECTION_INTENT_PATTERN.search(text) and not FORMAL_INTENT_PATTERN.search(text)):

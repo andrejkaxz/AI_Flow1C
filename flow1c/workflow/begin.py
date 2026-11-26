@@ -133,6 +133,7 @@ def begin_free_request(args: argparse.Namespace, *, product_root: Path) -> Opera
     gate["skill"] = {
         "query-analysis": "flow1c-query-analysis",
         "interview-preparation": "flow1c-interview-preparation",
+        "workbook-format": "flow1c-workbook-format",
     }.get(operation, "flow1c-consultation")
     if query_intent:
         gate["query_intent"] = query_intent
@@ -199,6 +200,8 @@ def _begin_checked_request(args: argparse.Namespace, *, product_root: Path) -> O
     if mode != "formal":
         return begin_free_request(args, product_root=product_root)
     stage = stages["operations"].get(operation)
+    if operation == "workbook-format":
+        raise WorkflowError("Use draft mode for workbook formatting")
     if operation in {"consultation", "query-analysis", "workflow-review", "interview-preparation"}:
         raise WorkflowError("Use a free mode for consultation, query analysis, and workflow review")
     if not isinstance(stage, dict):

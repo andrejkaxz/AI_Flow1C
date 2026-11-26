@@ -299,7 +299,7 @@ def request_root(gate: dict[str, Any], *, product_root: Path) -> Path:
             else product_root / ".workspace" / "drafts"
         )
     path = base / request_id
-    if gate.get("operation") == "template-document" and gate.get("mode") == "draft":
+    if gate.get("operation") in {"template-document", "workbook-format"} and gate.get("mode") == "draft":
         return documentation.regular_path(path)
     return path.resolve()
 
@@ -308,7 +308,7 @@ def initialize_request_evidence(
     gate: dict[str, Any], *, product_root: Path, fields: dict[str, Any] | None = None
 ) -> None:
     path = request_root(gate, product_root=product_root) / "evidence.json"
-    if gate.get("operation") == "template-document" and gate.get("mode") == "draft":
+    if gate.get("operation") in {"template-document", "workbook-format"} and gate.get("mode") == "draft":
         path = documentation.regular_path(path)
     gate["evidence_path"] = str(path)
     if path.exists():

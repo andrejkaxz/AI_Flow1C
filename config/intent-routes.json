@@ -41,6 +41,34 @@
       }
     },
     {
+      "route_id": "workbook-format",
+      "intent_family": "workbook-format",
+      "operation": "workbook-format",
+      "description": "Визуальное оформление копии книги Excel по примеру",
+      "activation": [
+        "Оформи шаблоны загрузки XLS по этому примеру Excel.",
+        "Примени шрифты, заливки и границы эталона к копиям таблиц."
+      ],
+      "exclusions": [
+        "Перенос структуры, перестройка колонок и обновление данных или формул",
+        "Импорт реестра и загрузка в 1С"
+      ],
+      "boundary_examples": [
+        "При подготовке нового реестра вопросов выбери interview-preparation",
+        "При заполнении DOCX или Markdown выбери template-document"
+      ],
+      "modes": ["draft"],
+      "free_primary_skill": "flow1c-workbook-format",
+      "stage_policy": "workbook-format",
+      "sources": ["chat", "attachment"],
+      "substeps": [],
+      "output_contract": "docs/workbook-format.md",
+      "clarification": {
+        "question": "Какую книгу Excel использовать как образец оформления?",
+        "options": ["Использовать выбранный файл", "Указать другой образец"]
+      }
+    },
+    {
       "route_id": "consultation",
       "intent_family": "consultation",
       "operation": "consultation",

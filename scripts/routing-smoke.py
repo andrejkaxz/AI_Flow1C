@@ -40,7 +40,8 @@ def integration_smoke() -> dict:
                 raise AssertionError(f"{command} returned {result.returncode}; expected {expected}: {result.stdout}")
             return json.loads(result.stdout)
 
-        assert len(call("route-catalog")["routes"]) == 19
+        catalog = set(call("route-catalog")["routes"])
+        assert catalog == set(load_rules(ROOT)["routes"]), catalog
         proposal = {"schema_version": 1, "operation": "functional-spec", "mode": "draft",
                     "expected_outcome": "Synthetic saved draft", "sources": []}
         assert call("route-check", proposal)["status"] == "VALID"
